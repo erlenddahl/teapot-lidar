@@ -4,7 +4,7 @@ from contextlib import closing
 from more_itertools import nth
 
 # Configure PCAP and JSON file paths
-pathBase = "2021-10-05 - Honefoss med parkeringshus\\OS-1-128_992035000186_1024x10_20211005_134603"
+pathBase = "..\\data\\2021-10-05 - Honefoss med parkeringshus\\OS-1-128_992035000186_1024x10_20211005_134603"
 pcapPath = pathBase + ".pcap"
 metaDataPath = pathBase + ".json"
 
