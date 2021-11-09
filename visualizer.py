@@ -1,4 +1,3 @@
-import pptk
 from ouster import client, pcap
 from contextlib import closing
 from more_itertools import nth
@@ -8,6 +7,9 @@ import numpy as np
 class LidarVisualizer:
 
     def __init__(self, pcapPath, metaDataPath):
+        """Initialize a LidarVisualizer by reading metadata and setting
+        up a package source from the pcap file.
+        """
 
         self.pcapPath = pcapPath
         self.metaDataPath = metaDataPath
@@ -21,6 +23,8 @@ class LidarVisualizer:
         self.readFrames = []
 
     def printInfo(self):
+        """Print information about all the packets in this file."""
+
         for packet in self.source:
             if isinstance(packet, client.LidarPacket):
                 # Now we can process the LidarPacket. In this case, we access
@@ -38,11 +42,15 @@ class LidarVisualizer:
                 print(f'  angular_velocity = {packet.angular_vel}')
 
     def reset_view(self):
+        """Reset the view to the axis center"""
         self.ctr.set_zoom(0.1)
         self.ctr.set_lookat([0, 0, 0])
         self.ctr.set_up([1, 0, 0])
     
     def startVisualization(self):
+        """Initializes an open3d visualizer, configures it to use arrow
+        navigation, and open it displaying the first frame of lidar data
+        from the pcap file."""
     
         # Create a simple axis visualization
         axes = o3d.geometry.TriangleMesh.create_coordinate_frame(1.0)
@@ -62,6 +70,7 @@ class LidarVisualizer:
         self._currentFrame = 0
         self._currentGeometry = None
 
+        # Use arrows to navigate to the next/previous frame
         def key_next(vis):
             self._currentFrame += 1
             if not self.setFrame(self._currentFrame):
@@ -86,6 +95,10 @@ class LidarVisualizer:
         self.vis.destroy_window()
 
     def setFrame(self, num:int):
+        """Show the frame with the given index in the visualizer. This function
+        removes the geometry object containing the previous frame, then adds
+        the geometry object containing the current frame. If the current frame is
+        empty (end of file), this function does nothing, and returns False."""
 
         newGeometry = self.readFrameGeometry(num)
         if newGeometry is None:
@@ -104,19 +117,26 @@ class LidarVisualizer:
         return True
 
     def readFrameGeometry(self, num:int):
+        """Retrieves the current frame from an array of read frames. The array is lazily
+        filled with data from the pcap file as new frames are requested. Old frames are
+        never thrown out, so this will case memory issues if the pcap file gets large enough."""
 
+        # If given a negative index, return None.
         if num < 0:
             return None
 
+        # Lazily read frames until the given index is available.
         while len(self.readFrames) < num + 1:
             scan = nth(client.Scans(self.source), 1)
 
             if scan is None:
                 self.readFrames.append(None)
             else:
+                # Prepare the frame for visualization
                 xyz = self.xyzLut(scan)
                 self.readFrames.append(o3d.geometry.PointCloud(o3d.utility.Vector3dVector(xyz.reshape((-1, 3)))))
 
+        # Return the requested frame, which will now be read.
         return self.readFrames[num]
         
 
@@ -126,5 +146,6 @@ if __name__ == "__main__":
     pcapPath = pathBase + ".pcap"
     metaDataPath = pathBase + ".json"
 
+    # Create and start a visualization
     visualizer = LidarVisualizer(pcapPath, metaDataPath)
     visualizer.startVisualization()
