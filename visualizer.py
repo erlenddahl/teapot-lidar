@@ -1,5 +1,5 @@
 from ouster import client, pcap
-from contextlib import closing
+from voxelThinner import VoxelThinner
 from more_itertools import nth
 import open3d as o3d
 import numpy as np
@@ -21,6 +21,8 @@ class LidarVisualizer:
 
         self.source = pcap.Pcap(pcapPath, self.metadata)
         self.readFrames = []
+        self.cloudProcessor = None
+        self._isInitialGeometry = True
 
     def printInfo(self):
         """Print information about all the packets in this file."""
@@ -81,8 +83,17 @@ class LidarVisualizer:
             if not self.setFrame(self._currentFrame):
                 self._currentFrame += 1
 
+        def key_toggle_thinning(vis):
+            if self.cloudProcessor is None:
+                self.cloudProcessor = VoxelThinner()
+            else:
+                self.cloudProcessor = None
+
+            self.setFrame(self._currentFrame)
+
         self.vis.register_key_callback(262, key_next) # Arrow right
         self.vis.register_key_callback(263, key_prev) # Arrow left
+        self.vis.register_key_callback(80, key_toggle_thinning) # P
         # List of key codes can be found here: https://www.glfw.org/docs/latest/group__keys.html
 
         self.setFrame(0)
@@ -107,7 +118,8 @@ class LidarVisualizer:
         if self._currentGeometry is not None:
             self.vis.remove_geometry(self._currentGeometry, False)
 
-        self.vis.add_geometry(newGeometry, num == 0)
+        self.vis.add_geometry(newGeometry, self._isInitialGeometry)
+        self._isInitialGeometry = False
 
         self._currentGeometry = newGeometry
         self._currentFrame = num
@@ -134,10 +146,19 @@ class LidarVisualizer:
             else:
                 # Prepare the frame for visualization
                 xyz = self.xyzLut(scan)
-                self.readFrames.append(o3d.geometry.PointCloud(o3d.utility.Vector3dVector(xyz.reshape((-1, 3)))))
+                xyz = xyz.reshape((-1, 3))
 
-        # Return the requested frame, which will now be read.
-        return self.readFrames[num]
+                self.readFrames.append(xyz)
+
+        # Retrieve the requested frame, which will now be read.
+        frame = self.readFrames[num]
+
+        # If a cloud processor is active, process the cloud (for example by voxel thinning)
+        if self.cloudProcessor is not None:
+            frame = self.cloudProcessor.process(frame)
+
+        # Return it as an open3d geometry
+        return o3d.geometry.PointCloud(o3d.utility.Vector3dVector(frame))
         
 
 if __name__ == "__main__":
