@@ -9,7 +9,6 @@ def voxelize(
         points: np.ndarray,
         voxel_size: np.ndarray,
         grid_range: np.ndarray,
-        max_points_in_voxel: int,
         max_num_voxels: int
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
