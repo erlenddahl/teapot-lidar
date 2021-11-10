@@ -3,3 +3,5 @@ numpy
 matplotlib
 ouster-sdk[examples]
 open3d
+scikit-learn
+rtree
