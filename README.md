@@ -2,7 +2,15 @@
 This repo will contain relevant code for working with LIDAR data in the SINTEF project TEAPOT.
 
 ## Requirements
-The code is implemented and tested with Python 3.6 because of limitations with some of the libraries. Install the Python requirements using pip:
+The code is implemented and tested with Python 3.6 because of limitations with some of the libraries. 
+
+Create a new Anaconda environment (or use an existing, or venv, or whatever):
+```
+conda create -n teapot python=3.6
+conda activate teapot
+```
+
+Install the Python requirements using pip:
 
 ```
 pip install -r requirements.txt
