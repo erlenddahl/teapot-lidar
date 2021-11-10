@@ -30,3 +30,5 @@ python visualizer.py --pcap path\to\pcap-file.pcap
 ```
 
 Note: be wary of spaces in the paths (surround them with quotes).
+
+When the visualization window appears, use the arrow keys to navigate from frame to frame, and P to move through the different cloud processors (None, voxel thinner or ball thinner).
