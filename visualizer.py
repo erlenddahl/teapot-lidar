@@ -1,5 +1,6 @@
 from ouster import client, pcap
 from voxelThinner import VoxelThinner
+from voxelThinnerPyoints import VoxelThinnerPyoints
 from more_itertools import nth
 import open3d as o3d
 import numpy as np
@@ -22,7 +23,8 @@ class LidarVisualizer:
 
         self.source = pcap.Pcap(pcapPath, self.metadata)
         self.readFrames = []
-        self.cloudProcessor = None
+        self.cloudProcessors = [None, VoxelThinner(), VoxelThinnerPyoints()]
+        self.cloudProcessorIndex = 0
         self._isInitialGeometry = True
 
     def printInfo(self):
@@ -85,11 +87,7 @@ class LidarVisualizer:
                 self._currentFrame += 1
 
         def key_toggle_thinning(vis):
-            if self.cloudProcessor is None:
-                self.cloudProcessor = VoxelThinner()
-            else:
-                self.cloudProcessor = None
-
+            self.cloudProcessorIndex = (self.cloudProcessorIndex + 1) % len(self.cloudProcessors)
             self.setFrame(self._currentFrame)
 
         self.vis.register_key_callback(262, key_next) # Arrow right
@@ -155,8 +153,8 @@ class LidarVisualizer:
         frame = self.readFrames[num]
 
         # If a cloud processor is active, process the cloud (for example by voxel thinning)
-        if self.cloudProcessor is not None:
-            frame = self.cloudProcessor.process(frame)
+        if self.cloudProcessors[self.cloudProcessorIndex] is not None:
+            frame = self.cloudProcessors[self.cloudProcessorIndex].process(frame)
 
         # Return it as an open3d geometry
         return o3d.geometry.PointCloud(o3d.utility.Vector3dVector(frame))
