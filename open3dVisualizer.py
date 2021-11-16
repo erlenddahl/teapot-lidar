@@ -46,7 +46,14 @@ class Open3DVisualizer:
         self.vis.run()
         self.vis.destroy_window()
 
-    def showFrame(self, frame, removePrevious):
+    def refresh_non_blocking(self):
+        self.vis.poll_events()
+        self.vis.update_renderer()
+
+    def stop(self):
+        self.vis.destroy_window()
+
+    def showFrame(self, frame, removePrevious = False):
 
         if removePrevious and self._currentGeometry is not None:
             self.vis.remove_geometry(self._currentGeometry, False)
