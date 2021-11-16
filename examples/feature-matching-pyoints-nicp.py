@@ -61,7 +61,10 @@ r = 0.5
 startTime = time.perf_counter()
 A = A[list(filters.ball(indexkd.IndexKD(A), r))]
 B = B[list(filters.ball(indexkd.IndexKD(B), r))]
-print(f"Ball filtering performed in {(time.perf_counter() - startTime)/2.0:0.4f} seconds per cloud.")
+print(f"Ball filtering (r=0.5) performed in {(time.perf_counter() - startTime)/2.0:0.4f} seconds per cloud.")
+
+print(A.shape)
+print(B.shape)
 
 visualizeGeometries([A, B])
 
