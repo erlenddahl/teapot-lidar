@@ -46,9 +46,12 @@ if __name__ == "__main__":
 
     source = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(reader.readFrame(20)))
     target = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(reader.readFrame(25)))
-    threshold = 0.2
+
+
+
+    threshold = 1
     trans_init = np.identity(4)
-    draw_registration_result(source, target, trans_init)
+    #draw_registration_result(source, target, trans_init)
     print("Initial alignment")
     evaluation = o3d.pipelines.registration.evaluate_registration(source, target, threshold, trans_init)
     print(evaluation)
@@ -63,7 +66,7 @@ if __name__ == "__main__":
     print("Transformation is:")
     print(reg_p2p.transformation)
     print("")
-    draw_registration_result(source, target, reg_p2p.transformation)
+    #draw_registration_result(source, target, reg_p2p.transformation)
 
     print("Estimating normals")
     startTime = time.perf_counter()
@@ -76,7 +79,8 @@ if __name__ == "__main__":
     startTime = time.perf_counter()
     reg_p2l = o3d.pipelines.registration.registration_icp(
         source, target, threshold, trans_init,
-        o3d.pipelines.registration.TransformationEstimationPointToPlane())
+        o3d.pipelines.registration.TransformationEstimationPointToPlane(),
+        o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=60))
     print(f"Time usage: {time.perf_counter() - startTime:0.4f} seconds.")
     print(reg_p2l)
     print("Transformation is:")
