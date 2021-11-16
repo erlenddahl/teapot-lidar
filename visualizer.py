@@ -1,10 +1,9 @@
-from ouster import client, pcap
 from voxelThinner import VoxelThinner
 from voxelThinnerPyoints import VoxelThinnerPyoints
-from more_itertools import nth
 import open3d as o3d
 import numpy as np
 import argparse
+from pcapReader import PcapReader
 
 class LidarVisualizer:
 
@@ -13,38 +12,11 @@ class LidarVisualizer:
         up a package source from the pcap file.
         """
 
-        self.pcapPath = pcapPath
-        self.metaDataPath = metaDataPath
+        self.reader = PcapReader(pcapPath, metaDataPath)
 
-        # Read the metadata from the JSON file.
-        with open(metaDataPath, "r") as f:
-            self.metadata = client.SensorInfo(f.read())
-        self.xyzLut = client.XYZLut(self.metadata)            
-
-        self.source = pcap.Pcap(pcapPath, self.metadata)
-        self.readFrames = []
         self.cloudProcessors = [None, VoxelThinner(), VoxelThinnerPyoints()]
         self.cloudProcessorIndex = 0
         self._isInitialGeometry = True
-
-    def printInfo(self):
-        """Print information about all the packets in this file."""
-
-        for packet in self.source:
-            if isinstance(packet, client.LidarPacket):
-                # Now we can process the LidarPacket. In this case, we access
-                # the encoder_counts, timestamps, and ranges
-                encoder_counts = packet.header(client.ColHeader.ENCODER_COUNT)
-                timestamps = packet.header(client.ColHeader.TIMESTAMP)
-                ranges = packet.field(client.ChanField.RANGE)
-                print(f'  encoder counts = {encoder_counts.shape}')
-                print(f'  timestamps = {timestamps.shape}')
-                print(f'  ranges = {ranges.shape}')
-
-            elif isinstance(packet, client.ImuPacket):
-                # and access ImuPacket content
-                print(f'  acceleration = {packet.accel}')
-                print(f'  angular_velocity = {packet.angular_vel}')
 
     def reset_view(self):
         """Reset the view to the axis center"""
@@ -128,29 +100,9 @@ class LidarVisualizer:
         return True
 
     def readFrameGeometry(self, num:int):
-        """Retrieves the current frame from an array of read frames. The array is lazily
-        filled with data from the pcap file as new frames are requested. Old frames are
-        never thrown out, so this will case memory issues if the pcap file gets large enough."""
+        """Retrieves the current frame from the reader object, processes it (if activated), and converts it to an open3d geometry."""
 
-        # If given a negative index, return None.
-        if num < 0:
-            return None
-
-        # Lazily read frames until the given index is available.
-        while len(self.readFrames) < num + 1:
-            scan = nth(client.Scans(self.source), 1)
-
-            if scan is None:
-                self.readFrames.append(None)
-            else:
-                # Prepare the frame for visualization
-                xyz = self.xyzLut(scan)
-                xyz = xyz.reshape((-1, 3))
-
-                self.readFrames.append(xyz)
-
-        # Retrieve the requested frame, which will now be read.
-        frame = self.readFrames[num]
+        frame = self.reader.readFrame(num)
 
         # If a cloud processor is active, process the cloud (for example by voxel thinning)
         if self.cloudProcessors[self.cloudProcessorIndex] is not None:
