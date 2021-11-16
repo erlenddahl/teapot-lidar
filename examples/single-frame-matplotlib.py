@@ -5,12 +5,9 @@ Created on Wed Oct 27 10:30:45 2021
 @author: SCHSAM
 """
 
-import os
 import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
-
-from pathlib import Path
 
 import ouster.pcap as pcap
 import ouster.client as client

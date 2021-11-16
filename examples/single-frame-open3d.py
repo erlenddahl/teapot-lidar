@@ -1,5 +1,4 @@
 from ouster import client, pcap
-from contextlib import closing
 from more_itertools import nth
 import numpy as np
 
