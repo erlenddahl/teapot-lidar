@@ -17,16 +17,18 @@ pip install -r requirements.txt
 ```
 
 ## Running the code
-The main entry point is visualizer.py, which can be run like this:
+
+### PcapBrowser
+The most general entry point is pcapBrowser.py, a simple open3d visualization of the point cloud with arrow navigation and cloud thinning, which can be run like this:
 
 ```
-python visualizer.py --pcap path\to\pcap-file.pcap --json path\to\metadata-file.json
+python pcapBrowser.py --pcap path\to\pcap-file.pcap --json path\to\metadata-file.json
 ```
 
 Or, if the pcap and json files have the same names (123.pcap and 123.json), it is sufficient to use the pcap parameter:
 
 ```
-python visualizer.py --pcap path\to\pcap-file.pcap
+python pcapBrowser.py --pcap path\to\pcap-file.pcap
 ```
 
 Note: be wary of spaces in the paths (surround them with quotes).
