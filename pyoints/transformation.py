@@ -19,6 +19,7 @@
 """Multidimensional transformation matrices and coordinate transformations.
 """
 
+import cv2
 import warnings
 import numpy as np
 import itertools as it
@@ -39,8 +40,10 @@ from .assertion import (
     ensure_tmatrix,
     isnumeric,
 )
+from .misc import print_rounded
 
-def transform(coords, T, inverse=False, precise=True):
+
+def transform(coords, T, inverse=False, precise=False):
     """Performs a linear transformation to coordinates using a transformation
     matrix.
 
@@ -103,7 +106,11 @@ def transform(coords, T, inverse=False, precise=True):
             # tcoords = (homogenious(coords) @ T.T)[:, 0:-1]
             tcoords = np.dot(homogenious(coords), T.T)[:, 0:-1]
         else:
-            raise ValueError("OpenCv2 not installed")
+            # fast, but not very precise
+            tcoords = cv2.transform(
+                np.expand_dims(coords.astype(np.float64), axis=0),
+                T
+            )[0][:, 0:-1]
     else:
         raise ValueError("dimensions do not match")
 

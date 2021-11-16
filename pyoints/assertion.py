@@ -25,6 +25,9 @@ from numbers import Number
 
 from . import nptools
 
+from .misc import print_rounded
+
+
 def ensure_dim(value, dim=None, min_dim=2, max_dim=np.inf):
     """Ensure a dimension value to be in a specific range.
 

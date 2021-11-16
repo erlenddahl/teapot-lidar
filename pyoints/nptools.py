@@ -22,6 +22,8 @@
 import numpy as np
 from numbers import Number
 
+from .misc import print_rounded
+
 NUMERIC_DTYPES = [
     np.uint8,
     np.uint16,

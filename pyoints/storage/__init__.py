@@ -16,44 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with Pyoints. If not, see <https://www.gnu.org/licenses/>.
 # END OF LICENSE NOTE
-"""Pyoints: A Python package for point cloud, voxel and raster processing."""
-
-from .about import *
-from .indexkd import IndexKD
-from .coords import Coords
-from .extent import Extent
-from .projection import Proj
-from .grid import Grid
-from .surface import Surface
-from .georecords import (
-    GeoRecords,
-    LasRecords,
-)
-from . import (
-    assertion,
-    assign,
-    classification,
-    clustering,
-    coords,
-    distance,
-    examples,
-    extent,
-    filters,
-    fit,
-    georecords,
-    grid,
-    indexkd,
-    interpolate,
-    misc,
-    normals,
-    nptools,
-    polar,
-    projection,
-    registration,
-    smoothing,
-    storage,
-    surface,
-    transformation,
-    vector,
-)
-from .misc import print_rounded
+"""Loading and saving of files."""
+from .BaseGeoHandler import *
+from .LasHandler import *
+from .RasterHandler import *
+from .CsvHandler import *
+from .DumpHandler import *
+from .PlyHandler import *
+from .structured import *
+from . import dtype_converters
+from . import misc

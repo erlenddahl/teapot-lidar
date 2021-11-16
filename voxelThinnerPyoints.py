@@ -1,4 +1,4 @@
-from pyoints.ballfilter import ball
+from pyoints import filters
 from pyoints.indexkd import IndexKD
 
 class VoxelThinnerPyoints:
@@ -12,7 +12,7 @@ class VoxelThinnerPyoints:
 
         points = IndexKD(cloudPoints)
         
-        reduced = cloudPoints[list(ball(points, 0.2))]
+        reduced = cloudPoints[list(filters.ball(points, 0.2))]
 
         print(reduced.shape)
 
