@@ -67,6 +67,11 @@ class PcapReader:
         # Retrieve the requested frame, which will now be read.
         return self.readFrames[num]
 
+    def nextFrame(self):
+        """Reads and returns the first unread frame"""
+
+        return self.readFrame(len(self.readFrames))
+
     @staticmethod
     def getPathArgs():
         """ Creates an argument parser that handles --pcap and --json, where the latter is optional.
