@@ -6,13 +6,13 @@ class VoxelThinnerPyoints:
     def __init__(self):
         pass
 
-    def process(self, cloudPoints):
+    def process(self, cloudPoints, radius = 0.2):
         
         print(cloudPoints.shape)
 
         points = IndexKD(cloudPoints)
         
-        reduced = cloudPoints[list(filters.ball(points, 0.2))]
+        reduced = cloudPoints[list(filters.ball(points, radius))]
 
         print(reduced.shape)
 
