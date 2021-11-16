@@ -57,3 +57,19 @@ class Open3DVisualizer:
         self._isInitialGeometry = False
 
         return True
+
+    
+
+    def showFrameFromReader(self, reader:PcapReader, num:int):
+        """Show the frame with the given index in the visualizer. This function
+        removes the geometry object containing the previous frame, then adds
+        the geometry object containing the current frame. If the current frame is
+        empty (end of file), this function does nothing, and returns False."""
+
+        frame = reader.readFrame(num)
+        if frame is None:
+            return False
+        
+        self.showFrame(frame, True)
+
+        return True
