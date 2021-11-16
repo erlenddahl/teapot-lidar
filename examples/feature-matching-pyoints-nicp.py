@@ -48,6 +48,8 @@ reader = PcapReader.fromPathArgs()
 A = reader.readFrame(20)
 B = reader.readFrame(25)
 
+# Remove the vehicle, which is always stationary at the center. We don't want that
+# to interfere with the point cloud alignment.
 vr = 2.5
 A = A[((A[:, 0] > vr) | (A[:, 0] < -vr)) | ((A[:, 1] > vr) | (A[:, 1] < -vr))]
 B = B[((B[:, 0] > vr) | (B[:, 0] < -vr)) | ((B[:, 1] > vr) | (B[:, 1] < -vr))]
@@ -89,10 +91,20 @@ nicp = registration.ICP(
 
 T_dict, pairs_dict, report = nicp(coords_dict, normals_dict)
 
+print(T_dict)
+
 print(f"ICP adjustments performed in {time.perf_counter() - startTime:0.4f} seconds.")
 
 A = transformation.transform(coords_dict["A"], T_dict["A"])
 B = transformation.transform(coords_dict["B"], T_dict["B"])
+
+# Transform centers from before and after
+newCenterA = transformation.transform([[0,0,0]], T_dict["A"])
+newCenterB = transformation.transform([[0,0,0]], T_dict["B"])
+
+# Calculate movement
+moveVector = newCenterB - newCenterA
+print(moveVector)
 
 visualizeGeometries([A, B])
 
