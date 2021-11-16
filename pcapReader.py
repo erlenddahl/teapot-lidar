@@ -66,3 +66,27 @@ class PcapReader:
 
         # Retrieve the requested frame, which will now be read.
         return self.readFrames[num]
+
+    @staticmethod
+    def getPathArgs():
+        """ Creates an argument parser that handles --pcap and --json, where the latter is optional.
+        If --json is not given, it will be replaced with the values of the --pcap parameter with the file
+        extension changed to .json.
+        """
+        
+        import argparse
+
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--pcap', type=str, required=True, help="The path to the PCAP file to visualize, relative or absolute.")
+        parser.add_argument('--json', type=str, required=False, help="The path to the corresponding JSON file with the sensor metadata, relative or absolute. If this is not given, the PCAP location is used (by replacing .pcap with .json).")
+        args = parser.parse_args()
+
+        if args.json is None:
+            args.json = args.pcap.replace(".pcap", ".json")
+
+        return args
+
+    @staticmethod
+    def fromPathArgs():
+        args = PcapReader.getPathArgs()
+        return PcapReader(args.pcap, args.json)

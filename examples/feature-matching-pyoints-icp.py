@@ -15,7 +15,7 @@ from pyoints import (
 )
 
 # Configure PCAP and JSON file paths
-reader = PcapReader("..\\data\\2021-10-05 - Honefoss med parkeringshus\\OS-1-128_992035000186_1024x10_20211005_134603.pcap")
+reader = PcapReader.fromPathArgs()
 
 A = reader.readFrame(20)
 B = reader.readFrame(25)

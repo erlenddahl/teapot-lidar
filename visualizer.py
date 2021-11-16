@@ -2,7 +2,6 @@ from voxelThinner import VoxelThinner
 from voxelThinnerPyoints import VoxelThinnerPyoints
 import open3d as o3d
 import numpy as np
-import argparse
 from pcapReader import PcapReader
 
 class LidarVisualizer:
@@ -114,13 +113,7 @@ class LidarVisualizer:
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--pcap', type=str, required=True, help="The path to the PCAP file to visualize, relative or absolute.")
-    parser.add_argument('--json', type=str, required=False, help="The path to the corresponding JSON file with the sensor metadata, relative or absolute. If this is not given, the PCAP location is used (by replacing .pcap with .json).")
-    args = parser.parse_args()
-
-    if args.json is None:
-        args.json = args.pcap.replace(".pcap", ".json")
+    args = PcapReader.getPathArgs()
 
     # Create and start a visualization
     visualizer = LidarVisualizer(args.pcap, args.json)
