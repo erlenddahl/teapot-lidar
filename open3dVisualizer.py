@@ -1,5 +1,3 @@
-from voxelThinner import VoxelThinner
-from voxelThinnerPyoints import VoxelThinnerPyoints
 import open3d as o3d
 import numpy as np
 from pcapReader import PcapReader
