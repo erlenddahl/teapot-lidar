@@ -20,9 +20,9 @@
 transformations.
 """
 
-import pyproj
+#import pyproj
 import numpy as np
-from osgeo import osr
+#from osgeo import osr
 
 from . import (
     assertion,
@@ -92,16 +92,19 @@ class Proj:
 
     @property
     def wkt(self):
+        raise ValueError("osgeo removed")
         sr = osr.SpatialReference()
         sr.ImportFromProj4(self.proj4)
         return sr.ExportToWkt()
 
     @property
     def pyproj(self):
-        return pyproj.Proj(self.proj4)
+        raise TypeError("pyproj removed; crashes with ouster sdk")
+        #return pyproj.Proj(self.proj4)
 
     @property
     def osr(self):
+        raise ValueError("osgeo removed")
         srs = osr.SpatialReference()
         srs.ImportFromProj4(self.proj4)
         return srs
@@ -131,6 +134,9 @@ class Proj:
             Coordinate projection definition in Well Known Text format.
 
         """
+
+        raise ValueError("osgeo removed")
+
         if not isinstance(wkt, str):
             raise TypeError("'wkt' needs to be a string")
         proj4 = osr.SpatialReference(wkt=wkt).ExportToProj4()
@@ -150,6 +156,7 @@ class Proj:
         """
         if not isinstance(epsg, int):
             raise TypeError("'epsg' needs to be an integer")
+        raise ValueError("osgeo removed")
         sr = osr.SpatialReference()
         sr.ImportFromEPSG(epsg)
         proj4 = sr.ExportToProj4()
@@ -260,6 +267,8 @@ class GeoTransform:
             y = coords[:, 1]
         else:
             raise ValueError('malformed coordinate dimensions')
+
+        raise ValueError('pyproj removed; crashes with ouster sdk')
 
         # coordinate projection
         t_xy = np.array(pyproj.transform(

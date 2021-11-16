@@ -5,3 +5,5 @@ ouster-sdk[examples]
 open3d
 scikit-learn
 rtree
+pandas
+cylinder_fitting
