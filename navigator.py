@@ -17,49 +17,86 @@ class LidarNavigator:
         self.voxel_size = 0.1
 
     def navigateThroughFile(self):
+        """ Runs through each frame in the file. For each pair of frames, use NICP
+        to align the frames, then merge them and downsample the result. The transformation
+        matrix from the NICP operation is used to calculate the movement of the center point
+        (the vehicle) between the frames. Each movement is stored, and drawn as a red line
+        to show the driving route.
+        """
         
+        # Initialize the visualizer
         self.vis = Open3DVisualizer()
         self.vis.refresh_non_blocking()
 
+        # Initialize the list of movements as well as the merged frame, and the first 
+        # source frame.
         self.movements = []
         self.mergedFrame = self.reader.readFrameAsPointCloud(0, True)
         self.previousFrame = self.reader.readFrameAsPointCloud(0, True)
+
+        # Estimate normals for the first source frame in order to speed up the 
+        # alignment operation.
         self.previousFrame.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
         
+        # Show the first frame and reset the view
         self.vis.showFrame(self.mergedFrame)
         self.vis.reset_view()
 
+        # Enumerate all frames until the end of the file and run the merge operation.
         while self.mergeNextFrame():
+
+            # Refresh the non-blocking visualization
             self.vis.refresh_non_blocking()
 
+        # When everything is finished, continue showing the visualization
+        # in a blocking way.
         self.vis.run()
 
     def alignFrame(self, source, target):
-        threshold = 1
+        """ Aligns the target frame with the source frame using NICP.
+        """
+
+        # Initialize an initial transformation. This is meant to be a
+        # rough transformation to align the frames, but as lidar frames
+        # are roughly aligned anyway, we use the identity matrix.
         trans_init = np.identity(4)
 
+        # Estimate normals for the target frame (the source frame will always have
+        # normals from the previous step).
         startTime = time.perf_counter()
         print("Estimating normals")
         target.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
 
+        # Run NICP
         print("Performing point-to-plane registration")
+        threshold = 1
         reg_p2l = o3d.pipelines.registration.registration_icp(
             source, target, threshold, trans_init,
             o3d.pipelines.registration.TransformationEstimationPointToPlane(),
             o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=100))
         print(f"    > Time usage: {time.perf_counter() - startTime:0.4f} seconds.")
 
+        # Calculate how much the center point has moved by transforming [0,0,0] with
+        # the calculated transformation
         movement = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(reg_p2l.transformation).get_center()
 
+        # Return the transformation and the movement
         return reg_p2l.transformation, movement
 
     def mergeNextFrame(self):
+        """ Reads the next frame, aligns it with the previous frame, merges them together
+        to create a 3D model, and tracks the movement between frames.
+        """
 
+        # Fetch the next frame
         frame = self.reader.nextFrameAsPointCloud(True)
 
+        # If it is empty, that (usually) means we have reached the end of
+        # the file. Return False to stop the loop.
         if frame is None:
             return False
 
+        # Run the alignment
         transformation, movement = self.alignFrame(self.previousFrame, frame)
 
         # Transform earlier points so that they follow the ongoing model transformation
@@ -89,16 +126,26 @@ class LidarNavigator:
 
         print("Merging and downsampling full 3D model")
         startTime = time.perf_counter()
+
+        # Transform the merged visualization to fit the next frame
         merged = self.mergedFrame.transform(transformation)
+
+        # Combine the points from the merged visualization with the points from the next frame
         merged += frame
-        merged = merged.voxel_down_sample(voxel_size=self.voxel_size)
+
+        # Downsample the merged visualization to make it faster to work with.
+        # Otherwise it would grow extremely large, as it would contain all points
+        # from all processed point clouds.
+        self.mergedFrame = merged.voxel_down_sample(voxel_size=self.voxel_size)
         print(f"    > Time usage: {time.perf_counter() - startTime:0.4f} seconds.")
 
-        self.mergedFrame = merged
+        # Store this frame so that it can be used as the source frame in the next iteration.
         self.previousFrame = frame
 
+        # Update the visualization
         self.vis.showFrame(self.mergedFrame, True)
 
+        # Return True to let the loop continue to the next frame.
         return True
         
 
