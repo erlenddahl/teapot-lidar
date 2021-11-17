@@ -60,7 +60,9 @@ This section will document experiments investigating the different alternatives.
 | Function          | Time usage | RMSE    | Fitness   | Movement (xyz)    | Aligned frames |
 |-------------------|------------|---------|-----------|-------------------|-------|
 | Simple NICP       | 0.6954 s   | 0.1521  | 0.990773  | 0.68, 0.15, 0.04  |[<img src="./frame-matching-open3d-nicp-0.png" width="200" />](./frame-matching-open3d-nicp-0.png)
-| Downsampled first | 0.78786 s  | 0.1521  | 0.990773  | 0.68, 0.15, 0.04  |[<img src="./pipeline-downsampling-first.png" width="200" />](./pipeline-downsampling-first.png)
+| Downsampled first | 0.6574 s   | 0.1521  | 0.990773  | 0.68, 0.15, 0.04  |[<img src="./pipeline-downsampling-first.png" width="200" />](./pipeline-downsampling-first.png)
+| Global reg. first | 3.2391 s   | 0.1521  | 0.990773  | 0.68, 0.15, 0.04  |[<img src="./pipeline-global-registration-first.png" width="200" />](./pipeline-global-registration-first.png)
+| Fast global reg. first | 7.5359 s   | 0.1521  | 0.990751  | 0.68, 0.15, 0.04  |[<img src="./pipeline-fast-global-registration-first.png" width="200" />](./pipeline-fast-global-registration-first.png)
 
 ## Parameters
 TODO: Test and decide parameters for matching function.

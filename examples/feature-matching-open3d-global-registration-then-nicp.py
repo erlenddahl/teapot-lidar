@@ -40,6 +40,35 @@ def draw_registration_result(source, target, transformation):
     vis.run()
     vis.destroy_window()
 
+def preprocess_point_cloud(pcd, voxel_size):
+
+    radius_normal = voxel_size * 2
+    print(":: Estimate normal with search radius %.3f." % radius_normal)
+    pcd.estimate_normals(o3d.geometry.KDTreeSearchParamHybrid(radius=radius_normal, max_nn=30))
+
+    print(":: Downsample with a voxel size %.3f." % voxel_size)
+    pcd_down = pcd.voxel_down_sample(voxel_size)
+
+    radius_feature = voxel_size * 5
+    print(":: Compute FPFH feature with search radius %.3f." % radius_feature)
+    pcd_fpfh = o3d.pipelines.registration.compute_fpfh_feature(pcd_down,
+        o3d.geometry.KDTreeSearchParamHybrid(radius=radius_feature, max_nn=100))
+    return pcd_down, pcd_fpfh
+
+def execute_global_registration(source_down, target_down, source_fpfh, target_fpfh, voxel_size):
+    distance_threshold = voxel_size * 1.5
+    print(":: RANSAC registration on downsampled point clouds.")
+    print("   Since the downsampling voxel size is %.3f," % voxel_size)
+    print("   we use a liberal distance threshold %.3f." % distance_threshold)
+    result = o3d.pipelines.registration.registration_ransac_based_on_feature_matching(
+        source_down, target_down, source_fpfh, target_fpfh, True,
+        distance_threshold,
+        o3d.pipelines.registration.TransformationEstimationPointToPoint(False), 3, [
+            o3d.pipelines.registration.CorrespondenceCheckerBasedOnEdgeLength(0.9),
+            o3d.pipelines.registration.CorrespondenceCheckerBasedOnDistance(distance_threshold)
+        ], o3d.pipelines.registration.RANSACConvergenceCriteria(100000, 0.999))
+    return result
+
 if __name__ == "__main__":
 
     reader = PcapReader.fromPathArgs()
@@ -55,46 +84,29 @@ if __name__ == "__main__":
 
     source = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(A))
     target = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(B))
-
+    
     accumulatedTime = 0.0
 
-    print("Estimating normals")
+    print("Preparing data (downsampling, generating FPFH vectors)")
     startTime = time.perf_counter()
-    source.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
-    target.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
+    voxel_size = 0.05
+    source_down, source_fpfh = preprocess_point_cloud(source, voxel_size)
+    target_down, target_fpfh = preprocess_point_cloud(target, voxel_size)
     accumulatedTime += time.perf_counter() - startTime
     print(f"Time usage: {time.perf_counter() - startTime:0.4f} seconds.")
     print("")
 
     startTime = time.perf_counter()
-    downsampled_source = source.voxel_down_sample(voxel_size=0.5)
-    downsampled_target = target.voxel_down_sample(voxel_size=0.5)
+    result_ransac = execute_global_registration(source_down, target_down,
+                                            source_fpfh, target_fpfh,
+                                            voxel_size)
     accumulatedTime += time.perf_counter() - startTime
     print(f"Downsampling (0.5) performed in {(time.perf_counter() - startTime)/2.0:0.4f} seconds per cloud.")
+    print(result_ransac)
+    draw_registration_result(source_down, target_down, result_ransac.transformation)
 
     threshold = 1
-    trans_init = np.identity(4)
-
-    draw_registration_result(downsampled_source, downsampled_target, trans_init)
-
-    print("Apply point-to-plane ICP")
-    startTime = time.perf_counter()
-    reg_p2l = o3d.pipelines.registration.registration_icp(
-        downsampled_source, downsampled_target, threshold, trans_init,
-        o3d.pipelines.registration.TransformationEstimationPointToPlane(),
-        o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=100))
-    accumulatedTime += time.perf_counter() - startTime
-    print(f"Time usage: {time.perf_counter() - startTime:0.4f} seconds.")
-    print(reg_p2l)
-    print("Transformation is:")
-    print(reg_p2l.transformation)
-    print("Transformed center:")
-    print(o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(reg_p2l.transformation).get_center())
-    print("")
-
-    trans_init = reg_p2l.transformation
-
-    draw_registration_result(downsampled_source, downsampled_target, trans_init)
+    trans_init = result_ransac.transformation
 
     print("Apply point-to-plane ICP")
     startTime = time.perf_counter()
@@ -110,6 +122,7 @@ if __name__ == "__main__":
     print("Transformed center:")
     print(o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(reg_p2l.transformation).get_center())
     print("")
-    draw_registration_result(source, target, reg_p2l.transformation)
+
+    draw_registration_result(source_down, target_down, result_ransac.transformation)
 
     print(f"Accumulated time: {accumulatedTime:0.4f} seconds.")
