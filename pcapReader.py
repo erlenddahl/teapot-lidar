@@ -80,6 +80,8 @@ class PcapReader:
     def readFrameAsPointCloud(self, num:int, removeVehicle:bool = False):
         
         frame = self.readFrame(num, removeVehicle)
+        if frame is None:
+            return None
 
         return open3d.geometry.PointCloud(open3d.utility.Vector3dVector(frame))
 
@@ -89,7 +91,10 @@ class PcapReader:
         return self.readFrame(len(self.readFrames), removeVehicle)
 
     def nextFrameAsPointCloud(self, removeVehicle:bool = False):
-        return open3d.geometry.PointCloud(open3d.utility.Vector3dVector(self.nextFrame(removeVehicle)))
+        frame = self.nextFrame(removeVehicle)
+        if frame is None:
+            return None
+        return open3d.geometry.PointCloud(open3d.utility.Vector3dVector(frame))
 
     @staticmethod
     def getPathArgs():

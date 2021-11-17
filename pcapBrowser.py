@@ -43,6 +43,7 @@ class PcapBrowser:
 
         self.setFrame(0)
 
+        self.vis.reset_view()
         self.vis.run()
 
     def setFrame(self, num:int):

@@ -17,12 +17,14 @@ class Open3DVisualizer:
 
         ropt = self.vis.get_render_option()
         ropt.point_size = 1.0
+        ropt.line_width = 50
         ropt.background_color = np.asarray([0, 0, 0])
 
         # initialize camera settings
         self.ctr = self.vis.get_view_control()
 
         self._currentGeometry = None
+        self._isNonBlocking = False
 
     def reset_view(self):
         """Reset the view to the axis center"""
@@ -36,8 +38,6 @@ class Open3DVisualizer:
     def run(self):
         """Initializes an open3d visualizer"""
 
-        self.reset_view()
-
         # run visualizer main loop
         print("Press Q or Excape to exit")
 
@@ -47,6 +47,7 @@ class Open3DVisualizer:
     def refresh_non_blocking(self):
         self.vis.poll_events()
         self.vis.update_renderer()
+        self._isNonBlocking = True
 
     def stop(self):
         self.vis.destroy_window()
@@ -68,9 +69,19 @@ class Open3DVisualizer:
         self.vis.add_geometry(geometry, self._isInitialGeometry)
         self._isInitialGeometry = False
 
+        if self._isNonBlocking:
+            self.vis.update_geometry(geometry)
+
         return True
 
-    
+    def add_geometry(self, geometry):
+        self.vis.add_geometry(geometry, False)
+
+    def update_geometry(self, geometry):
+        self.vis.update_geometry(geometry)
+
+    def remove_geometry(self, geometry):
+        self.vis.remove_geometry(geometry, False)
 
     def showFrameFromReader(self, reader:PcapReader, num:int):
         """Show the frame with the given index in the visualizer. This function
