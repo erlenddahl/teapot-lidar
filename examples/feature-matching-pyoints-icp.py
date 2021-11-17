@@ -23,6 +23,12 @@ B = reader.readFrame(25)
 print(A.shape)
 print(B.shape)
 
+# Remove the vehicle, which is always stationary at the center. We don't want that
+# to interfere with the point cloud alignment.
+vr = 2.5
+A = A[((A[:, 0] > vr) | (A[:, 0] < -vr)) | ((A[:, 1] > vr) | (A[:, 1] < -vr))]
+B = B[((B[:, 0] > vr) | (B[:, 0] < -vr)) | ((B[:, 1] > vr) | (B[:, 1] < -vr))]
+
 r = 0.2
 startTime = time.perf_counter()
 A = A[list(filters.ball(indexkd.IndexKD(A), r))]
@@ -49,7 +55,7 @@ def visualizeGeometries(geometries):
     ctr = vis.get_view_control()
     ctr.set_zoom(0.1)
     ctr.set_lookat([0, 0, 0])
-    ctr.set_up([1, 0, 0])
+    ctr.set_up([0.85, 0.12, 0.52])
 
     # run visualizer main loop
     print("Press Q or Excape to exit")
@@ -71,7 +77,7 @@ startTime = time.perf_counter()
 icp = registration.ICP(
     radii,
     max_iter=100,
-    max_change_ratio=0.00001,
+    max_change_ratio=0.001,
     k=1
 )
 
@@ -81,6 +87,15 @@ print(f"ICP adjustments performed in {time.perf_counter() - startTime:0.4f} seco
 
 A = transformation.transform(coords_dict["A"], T_dict["A"])
 B = transformation.transform(coords_dict["B"], T_dict["B"])
+
+# Transform centers from before and after
+newCenterA = transformation.transform([[0,0,0]], T_dict["A"])
+newCenterB = transformation.transform([[0,0,0]], T_dict["B"])
+
+# Calculate movement
+moveVector = newCenterB - newCenterA
+print(moveVector)
+print(report['RMSE'])
 
 visualizeGeometries([A, B])
 

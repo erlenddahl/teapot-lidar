@@ -35,7 +35,7 @@ def visualizeGeometries(geometries):
     ctr = vis.get_view_control()
     ctr.set_zoom(0.1)
     ctr.set_lookat([0, 0, 0])
-    ctr.set_up([1, 0, 0])
+    ctr.set_up([0.85, 0.12, 0.52])
 
     # run visualizer main loop
     print("Press Q or Excape to exit")
@@ -86,7 +86,7 @@ startTime = time.perf_counter()
 
 nicp = registration.ICP(
     radii,
-    max_iter=60,
+    max_iter=100,
     max_change_ratio=0.001,
     update_normals=True,
     k=1
@@ -108,6 +108,7 @@ newCenterB = transformation.transform([[0,0,0]], T_dict["B"])
 # Calculate movement
 moveVector = newCenterB - newCenterA
 print(moveVector)
+print(report['RMSE'])
 
 visualizeGeometries([A, B])
 

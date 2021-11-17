@@ -32,7 +32,7 @@ def draw_registration_result(source, target, transformation):
     ctr = vis.get_view_control()
     ctr.set_zoom(0.1)
     ctr.set_lookat([0, 0, 0])
-    ctr.set_up([1, 0, 0])
+    ctr.set_up([0.85, 0.12, 0.52])
 
     # run visualizer main loop
     print("Press Q or Excape to exit")
@@ -44,10 +44,17 @@ if __name__ == "__main__":
 
     reader = PcapReader.fromPathArgs()
 
-    source = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(reader.readFrame(20)))
-    target = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(reader.readFrame(25)))
+    A = reader.readFrame(20)
+    B = reader.readFrame(25)
+    
+    # Remove the vehicle, which is always stationary at the center. We don't want that
+    # to interfere with the point cloud alignment.
+    vr = 2.5
+    A = A[((A[:, 0] > vr) | (A[:, 0] < -vr)) | ((A[:, 1] > vr) | (A[:, 1] < -vr))]
+    B = B[((B[:, 0] > vr) | (B[:, 0] < -vr)) | ((B[:, 1] > vr) | (B[:, 1] < -vr))]
 
-
+    source = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(A))
+    target = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(B))
 
     threshold = 1
     trans_init = np.identity(4)
@@ -66,6 +73,8 @@ if __name__ == "__main__":
     print("Transformation is:")
     print(reg_p2p.transformation)
     print("")
+    print("Transformed center:")
+    print(o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(reg_p2p.transformation).get_center())
     #draw_registration_result(source, target, reg_p2p.transformation)
 
     print("Estimating normals")
@@ -85,5 +94,7 @@ if __name__ == "__main__":
     print(reg_p2l)
     print("Transformation is:")
     print(reg_p2l.transformation)
+    print("Transformed center:")
+    print(o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(reg_p2l.transformation).get_center())
     print("")
-    draw_registration_result(source, target, reg_p2l.transformation)
+    #draw_registration_result(source, target, reg_p2l.transformation)
