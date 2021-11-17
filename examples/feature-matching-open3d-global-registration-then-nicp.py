@@ -73,17 +73,8 @@ if __name__ == "__main__":
 
     reader = PcapReader.fromPathArgs()
 
-    A = reader.readFrame(20)
-    B = reader.readFrame(25)
-    
-    # Remove the vehicle, which is always stationary at the center. We don't want that
-    # to interfere with the point cloud alignment.
-    vr = 2.5
-    A = A[((A[:, 0] > vr) | (A[:, 0] < -vr)) | ((A[:, 1] > vr) | (A[:, 1] < -vr))]
-    B = B[((B[:, 0] > vr) | (B[:, 0] < -vr)) | ((B[:, 1] > vr) | (B[:, 1] < -vr))]
-
-    source = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(A))
-    target = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(B))
+    source = reader.readFrameAsPointCloud(20, True)
+    target = reader.readFrameAsPointCloud(25, True)
     
     accumulatedTime = 0.0
 

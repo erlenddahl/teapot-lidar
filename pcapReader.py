@@ -1,5 +1,6 @@
 from ouster import client, pcap
 from more_itertools import nth
+import open3d
 
 class PcapReader:
 
@@ -42,7 +43,13 @@ class PcapReader:
                 print(f'  acceleration = {packet.accel}')
                 print(f'  angular_velocity = {packet.angular_vel}')
 
-    def readFrame(self, num:int):
+    def removeVehicle(self, frame):
+        # Remove the vehicle, which is always stationary at the center. We don't want that
+        # to interfere with the point cloud alignment.
+        vr = 2.5
+        return frame[((frame[:, 0] > vr) | (frame[:, 0] < -vr)) | ((frame[:, 1] > vr) | (frame[:, 1] < -vr))]
+
+    def readFrame(self, num:int, removeVehicle:bool = False):
         """Retrieves the current frame from an array of read frames. The array is lazily
         filled with data from the pcap file as new frames are requested. Old frames are
         never thrown out, so this will case memory issues if the pcap file gets large enough."""
@@ -62,15 +69,27 @@ class PcapReader:
                 xyz = self.xyzLut(scan)
                 xyz = xyz.reshape((-1, 3))
 
+                if removeVehicle:
+                    xyz = self.removeVehicle(xyz)
+
                 self.readFrames.append(xyz)
 
         # Retrieve the requested frame, which will now be read.
         return self.readFrames[num]
 
-    def nextFrame(self):
+    def readFrameAsPointCloud(self, num:int, removeVehicle:bool = False):
+        
+        frame = self.readFrame(num, removeVehicle)
+
+        return open3d.geometry.PointCloud(open3d.utility.Vector3dVector(frame))
+
+    def nextFrame(self, removeVehicle:bool = False):
         """Reads and returns the first unread frame"""
 
-        return self.readFrame(len(self.readFrames))
+        return self.readFrame(len(self.readFrames), removeVehicle)
+
+    def nextFrameAsPointCloud(self, removeVehicle:bool = False):
+        return open3d.geometry.PointCloud(open3d.utility.Vector3dVector(self.nextFrame(removeVehicle)))
 
     @staticmethod
     def getPathArgs():
