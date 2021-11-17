@@ -24,14 +24,29 @@ Screenshots of original frames as well as matched frames for all rows in the tab
 | Pyoints NICP   | No           | 46         | 173.5 s    | 0.0019  | -       | 0.65, 0.19, 0.02  |
 | Pyoints ICP    | 0.5          | 85         | 65.4 s     | 0.0025  | -       | 0.69, 0.20, 0.04  |
 | Pyoints NICP   | 0.5          | 48         | 9.7 s      | 0.0026  | -       | 0.70, 0.17, 0.04  |
-| Open3d p2point | No           | ?          | 1.1 s      | 0.1554  | 0.9914  | 0.64, 0.12, 0.04  |
-| Open3d p2plane | No           | ?          | 0.8 s      | 0.1521  | 0.9908  | 0.68, 0.15, 0.04  |
+| Open3d p2point | No           | -          | 1.1 s      | 0.1554  | 0.9914  | 0.64, 0.12, 0.04  |
+| Open3d p2plane | No           | -          | 0.8 s      | 0.1521  | 0.9908  | 0.68, 0.15, 0.04  |
+| Open3d p2point | 0.5          | -          | 0.07 s     | 0.3106  | 0.9486  | 0.70, 0.16, 0.02  |
+| Open3d p2plane | 0.5          | -          | 0.04 s     | 0.4903  | 0.5726  | 0.00, 0.00, 0.03  |
 
-| Library | Radius | Time usage |
-|---------|--------|------------|
-| Pyoints | 0.5    | 0.389 s    |
+The table below shows a single downsampling test per library (performed on the source cloud from the matching test above).
+
+| Library | Radius | Time usage  |
+|---------|--------|-------------|
+| Pyoints | 0.5    | 0.3892 s    |
+| Open3d  | 0.5    | 0.0067 s    |
 
 As open3d was faster, easier to work with, and still regularly updated, it was an easy choice.
+
+# Problems
+
+## Pyoints
+Pyoints had some dependencies that were hard to install, including GDAL and Pyproj (which made issues for ouster-sdk). Therefore, the version that was in the repo was a stripped down version of the Pyoints source, with references to GDAL, OpenCV and Pyproj removed.
+
+As open3d was chosen over Pyoints, all Pyoints source code was eventually removed from the repository.
+
+## Pyproj
+When installing Pyproj in the environment, the ouster-sdk stops working. It has therefore been avoided.
 
 # Future work
 Test [multiway registration](http://www.open3d.org/docs/latest/tutorial/pipelines/multiway_registration.html).

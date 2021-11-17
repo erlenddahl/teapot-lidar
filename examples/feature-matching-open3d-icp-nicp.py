@@ -56,6 +56,11 @@ if __name__ == "__main__":
     source = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(A))
     target = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(B))
 
+    startTime = time.perf_counter()
+    source = source.voxel_down_sample(voxel_size=0.5)
+    target = target.voxel_down_sample(voxel_size=0.5)
+    print(f"Downsampling (0.5) performed in {(time.perf_counter() - startTime)/2.0:0.4f} seconds per cloud.")
+
     threshold = 1
     trans_init = np.identity(4)
     #draw_registration_result(source, target, trans_init)
@@ -67,7 +72,8 @@ if __name__ == "__main__":
     startTime = time.perf_counter()
     reg_p2p = o3d.pipelines.registration.registration_icp(
         source, target, threshold, trans_init,
-        o3d.pipelines.registration.TransformationEstimationPointToPoint())
+        o3d.pipelines.registration.TransformationEstimationPointToPoint(),
+        o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=100))
     print(f"Time usage: {time.perf_counter() - startTime:0.4f} seconds.")
     print(reg_p2p)
     print("Transformation is:")
@@ -75,7 +81,7 @@ if __name__ == "__main__":
     print("")
     print("Transformed center:")
     print(o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(reg_p2p.transformation).get_center())
-    #draw_registration_result(source, target, reg_p2p.transformation)
+    draw_registration_result(source, target, reg_p2p.transformation)
 
     print("Estimating normals")
     startTime = time.perf_counter()
@@ -89,7 +95,7 @@ if __name__ == "__main__":
     reg_p2l = o3d.pipelines.registration.registration_icp(
         source, target, threshold, trans_init,
         o3d.pipelines.registration.TransformationEstimationPointToPlane(),
-        o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=60))
+        o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=100))
     print(f"Time usage: {time.perf_counter() - startTime:0.4f} seconds.")
     print(reg_p2l)
     print("Transformation is:")
@@ -97,4 +103,4 @@ if __name__ == "__main__":
     print("Transformed center:")
     print(o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(reg_p2l.transformation).get_center())
     print("")
-    #draw_registration_result(source, target, reg_p2l.transformation)
+    draw_registration_result(source, target, reg_p2l.transformation)
