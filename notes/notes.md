@@ -18,25 +18,26 @@ During experimentation, we tested both [pyoints](https://github.com/laempy/pyoin
 
 The table below shows some test results for ICP and NICP from Pyoints and Open3d. Note that Open3d's "point-to-point" corresponds to Pyoints' ICP, while "point-to-plane" corresponds to NICP. The maximum number of iterations was 100, and the convergence threshold was 0.001. Only Open3d reported fitness values. Open3d reported "inlier_rmse", while Pyoints reported "RMSE" -- they may not be comparable (according to visual comparisons of the matched frames, they are not). Open3d did not report the number of iterations used. The time usage for Open3d point-to-plane includes normal calculations, which seems to take well below 0.1 seconds per cloud (presumably depending on point count).
 
-Screenshots of original frames as well as matched frames for all rows in the table below can be found in the notes folder, prefixed with "frame-matching".
+Original frames, which are misaligned with a few degrees:
+[![img](./frame-matching-test-frames.png)](./frame-matching-test-frames.png)
 
-| Function       | Downsampling | Iterations | Time usage | RMSE    | Fitness | Movement distance (xyz) |
-|----------------|--------------|------------|------------|---------|---------|-------------------|
-| Pyoints ICP    | No           | 60         | 200.6 s    | 0.0025  | -       | 0.68, 0.19, 0.03  |
-| Pyoints NICP   | No           | 46         | 173.5 s    | 0.0019  | -       | 0.65, 0.19, 0.02  |
-| Pyoints ICP    | 0.5          | 85         | 65.4 s     | 0.0025  | -       | 0.69, 0.20, 0.04  |
-| Pyoints NICP   | 0.5          | 48         | 9.7 s      | 0.0026  | -       | 0.70, 0.17, 0.04  |
-| Open3d p2point | No           | -          | 1.1 s      | 0.1554  | 0.9914  | 0.64, 0.12, 0.04  |
-| Open3d p2plane | No           | -          | 0.8 s      | 0.1521  | 0.9908  | 0.68, 0.15, 0.04  |
-| Open3d p2point | 0.5          | -          | 0.07 s     | 0.3106  | 0.9486  | 0.70, 0.16, 0.02  |
-| Open3d p2plane | 0.5          | -          | 0.04 s     | 0.4903  | 0.5726  | 0.00, 0.00, 0.03  |
+| Function       | Downsampling | Iterations | Time usage | RMSE    | Fitness | Movement (xyz)    | Aligned frames |
+|----------------|--------------|------------|------------|---------|---------|-------------------|-------|
+| Pyoints ICP    | No           | 60         | 200.6 s    | 0.0025  | -       | 0.68, 0.19, 0.03  |[<img src="./frame-matching-pyoints-icp-0.png" width="200" />](./frame-matching-pyoints-icp-0.png)
+| Pyoints NICP   | No           | 46         | 173.5 s    | 0.0019  | -       | 0.65, 0.19, 0.02  |[<img src="./frame-matching-pyoints-nicp-0.png" width="200" />](./frame-matching-pyoints-nicp-0.png)
+| Pyoints ICP    | 0.5          | 85         | 65.4 s     | 0.0025  | -       | 0.69, 0.20, 0.04  |[<img src="./frame-matching-pyoints-icp-0,5.png" width="200" />](./frame-matching-pyoints-icp-0,5.png)
+| Pyoints NICP   | 0.5          | 48         | 9.7 s      | 0.0026  | -       | 0.70, 0.17, 0.04  |[<img src="./frame-matching-pyoints-nicp-0,5.png" width="200" />](./frame-matching-pyoints-nicp-0,5.png)
+| Open3d p2point | No           | -          | 1.1 s      | 0.1554  | 0.9914  | 0.64, 0.12, 0.04  |[<img src="./frame-matching-open3d-icp-0.png" width="200" />](./frame-matching-open3d-icp-0.png)
+| Open3d p2plane | No           | -          | 0.8 s      | 0.1521  | 0.9908  | 0.68, 0.15, 0.04  |[<img src="./frame-matching-open3d-nicp-0.png" width="200" />](./frame-matching-open3d-nicp-0.png)
+| Open3d p2point | 0.5          | -          | 0.07 s     | 0.3106  | 0.9486  | 0.70, 0.16, 0.02  |[<img src="./frame-matching-open3d-icp-0,5.png" width="200" />](./frame-matching-open3d-icp-0,5.png)
+| Open3d p2plane | 0.5          | -          | 0.04 s     | 0.4903  | 0.5726  | 0.00, 0.00, 0.03  |[<img src="./frame-matching-open3d-nicp-0,5.png" width="200" />](./frame-matching-open3d-nicp-0,5.png)
 
 The table below shows a single downsampling test per library (performed on the source cloud from the matching test above).
 
-| Library | Radius | Time usage  |
-|---------|--------|-------------|
-| Pyoints | 0.5    | 0.3892 s    |
-| Open3d  | 0.5    | 0.0067 s    |
+| Library | Radius | Time usage  | Downsampled cloud |
+|---------|--------|-------------|-------------------|
+| Pyoints | 0.5    | 0.3892 s    | [<img src="./downsampling-pyoints-0,5.png" width="200" />](./downsampling-pyoints-0,5.png)
+| Open3d  | 0.5    | 0.0067 s    | [<img src="./downsampling-open3d-0,5.png" width="200" />](./downsampling-open3d-0,5.png)
 
 As open3d was faster, easier to work with, and still regularly updated, it was an easy choice.
 

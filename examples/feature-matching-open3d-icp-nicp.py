@@ -12,6 +12,7 @@ def draw_registration_result(source, target, transformation):
     target_temp = copy.deepcopy(target)
     source_temp.paint_uniform_color([1, 0.706, 0])
     target_temp.paint_uniform_color([0, 0.651, 0.929])
+
     source_temp.transform(transformation)
     
     # create point cloud and coordinate axes geometries
@@ -39,7 +40,6 @@ def draw_registration_result(source, target, transformation):
     vis.run()
     vis.destroy_window()
 
-
 if __name__ == "__main__":
 
     reader = PcapReader.fromPathArgs()
@@ -63,7 +63,7 @@ if __name__ == "__main__":
 
     threshold = 1
     trans_init = np.identity(4)
-    #draw_registration_result(source, target, trans_init)
+    draw_registration_result(source, target, trans_init)
     print("Initial alignment")
     evaluation = o3d.pipelines.registration.evaluate_registration(source, target, threshold, trans_init)
     print(evaluation)
