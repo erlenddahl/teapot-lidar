@@ -21,6 +21,12 @@ The table below shows some test results for ICP and NICP from Pyoints and Open3d
 Original frames, which are misaligned with a few degrees:
 [![img](./frame-matching-test-frames.png)](./frame-matching-test-frames.png)
 
+Before lidar frames are used, the vehicle is removed from the center of the frame, to avoid a always present stationary object messing with the registration algorithms.
+```
+vr = 2.5 # Vehicle radius
+frame = frame[((frame[:, 0] > vr) | (frame[:, 0] < -vr)) | ((frame[:, 1] > vr) | (frame[:, 1] < -vr))]
+```
+
 | Function       | Downsampling | Iterations | Time usage | RMSE    | Fitness | Movement (xyz)    | Aligned frames |
 |----------------|--------------|------------|------------|---------|---------|-------------------|-------|
 | Pyoints ICP    | No           | 60         | 200.6 s    | 0.0025  | -       | 0.68, 0.19, 0.03  |[<img src="./frame-matching-pyoints-icp-0.png" width="200" />](./frame-matching-pyoints-icp-0.png)
@@ -39,7 +45,22 @@ The table below shows a single downsampling test per library (performed on the s
 | Pyoints | 0.5    | 0.3892 s    | [<img src="./downsampling-pyoints-0,5.png" width="200" />](./downsampling-pyoints-0,5.png)
 | Open3d  | 0.5    | 0.0067 s    | [<img src="./downsampling-open3d-0,5.png" width="200" />](./downsampling-open3d-0,5.png)
 
-As open3d was faster, easier to work with, and still regularly updated, it was an easy choice.
+As Open3d was faster, easier to work with, and regularly maintained, it was chosen over Pyoints in this project.
+
+## Pipeline
+There are multiple alternatives on how to perform movement tracking between two frames.
+
+* Simple NICP between two sequential frames, then calculate movement using the transformation.
+* Downsampled NICP to generate initial transformation, then a faster NICP run for more exact transformation.
+* [Global registration](http://www.open3d.org/docs/release/tutorial/pipelines/global_registration.html) to generate initial transformation, then a faster NICP run for more exact transformation.
+* Using [multiway registration](http://www.open3d.org/docs/latest/tutorial/pipelines/multiway_registration.html) to do all the work.
+
+This section will document experiments investigating the different alternatives.
+
+| Function          | Time usage | RMSE    | Fitness   | Movement (xyz)    | Aligned frames |
+|-------------------|------------|---------|-----------|-------------------|-------|
+| Simple NICP       | 0.6954 s   | 0.1521  | 0.990773  | 0.68, 0.15, 0.04  |[<img src="./frame-matching-open3d-nicp-0.png" width="200" />](./frame-matching-open3d-nicp-0.png)
+| Downsampled first | 0.78786 s  | 0.1521  | 0.990773  | 0.68, 0.15, 0.04  |[<img src="./pipeline-downsampling-first.png" width="200" />](./pipeline-downsampling-first.png)
 
 ## Parameters
 TODO: Test and decide parameters for matching function.
@@ -58,14 +79,3 @@ As open3d was chosen over Pyoints, all Pyoints source code was eventually remove
 
 ## Pyproj
 When installing Pyproj in the environment, the ouster-sdk stops working. It has therefore been avoided.
-
-# Future work
-Test [multiway registration](http://www.open3d.org/docs/latest/tutorial/pipelines/multiway_registration.html).
-
-And/or: combine open3d-icp with [global registration](http://www.open3d.org/docs/release/tutorial/pipelines/global_registration.html) for speed-up.
-
-Remove vehicle from point cloud:
-```
-vr = 2.5
-A = A[((A[:, 0] > vr) | (A[:, 0] < -vr)) | ((A[:, 1] > vr) | (A[:, 1] < -vr))]
-```

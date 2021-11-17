@@ -56,39 +56,48 @@ if __name__ == "__main__":
     source = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(A))
     target = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(B))
 
-    startTime = time.perf_counter()
-    #source = source.voxel_down_sample(voxel_size=0.5)
-    #target = target.voxel_down_sample(voxel_size=0.5)
-    #print(f"Downsampling (0.5) performed in {(time.perf_counter() - startTime)/2.0:0.4f} seconds per cloud.")
-
-    threshold = 1
-    trans_init = np.identity(4)
-    draw_registration_result(source, target, trans_init)
-    print("Initial alignment")
-    evaluation = o3d.pipelines.registration.evaluate_registration(source, target, threshold, trans_init)
-    print(evaluation)
-
-    print("Apply point-to-point ICP")
-    startTime = time.perf_counter()
-    reg_p2p = o3d.pipelines.registration.registration_icp(
-        source, target, threshold, trans_init,
-        o3d.pipelines.registration.TransformationEstimationPointToPoint(),
-        o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=100))
-    print(f"Time usage: {time.perf_counter() - startTime:0.4f} seconds.")
-    print(reg_p2p)
-    print("Transformation is:")
-    print(reg_p2p.transformation)
-    print("")
-    print("Transformed center:")
-    print(o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(reg_p2p.transformation).get_center())
-    draw_registration_result(source, target, reg_p2p.transformation)
+    accumulatedTime = 0.0
 
     print("Estimating normals")
     startTime = time.perf_counter()
     source.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
     target.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
+    accumulatedTime += time.perf_counter() - startTime
     print(f"Time usage: {time.perf_counter() - startTime:0.4f} seconds.")
     print("")
+
+    startTime = time.perf_counter()
+    downsampled_source = source.voxel_down_sample(voxel_size=0.5)
+    downsampled_target = target.voxel_down_sample(voxel_size=0.5)
+    accumulatedTime += time.perf_counter() - startTime
+    print(f"Downsampling (0.5) performed in {(time.perf_counter() - startTime)/2.0:0.4f} seconds per cloud.")
+
+    threshold = 1
+    trans_init = np.identity(4)
+
+    draw_registration_result(downsampled_source, downsampled_target, trans_init)
+
+    print("Apply point-to-plane ICP")
+    startTime = time.perf_counter()
+    reg_p2l = o3d.pipelines.registration.registration_icp(
+        downsampled_source, downsampled_target, threshold, trans_init,
+        o3d.pipelines.registration.TransformationEstimationPointToPlane(),
+        o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=100))
+    accumulatedTime += time.perf_counter() - startTime
+    print(f"Time usage: {time.perf_counter() - startTime:0.4f} seconds.")
+    print(reg_p2l)
+    print("Transformation is:")
+    print(reg_p2l.transformation)
+    print("Transformed center:")
+    print(o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(reg_p2l.transformation).get_center())
+    print("")
+
+    trans_init = reg_p2l.transformation
+
+    draw_registration_result(downsampled_source, downsampled_target, trans_init)
+    print("Initial alignment")
+    evaluation = o3d.pipelines.registration.evaluate_registration(downsampled_source, downsampled_target, threshold, trans_init)
+    print(evaluation)
 
     print("Apply point-to-plane ICP")
     startTime = time.perf_counter()
@@ -96,6 +105,7 @@ if __name__ == "__main__":
         source, target, threshold, trans_init,
         o3d.pipelines.registration.TransformationEstimationPointToPlane(),
         o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=100))
+    accumulatedTime += time.perf_counter() - startTime
     print(f"Time usage: {time.perf_counter() - startTime:0.4f} seconds.")
     print(reg_p2l)
     print("Transformation is:")
@@ -104,3 +114,5 @@ if __name__ == "__main__":
     print(o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(reg_p2l.transformation).get_center())
     print("")
     draw_registration_result(source, target, reg_p2l.transformation)
+
+    print(f"Accumulated time: {accumulatedTime:0.4f} seconds.")
