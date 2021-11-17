@@ -4,6 +4,12 @@ Contains informal notes made during experimentation and development, as well as 
 # Reading LIDAR data
 The data used in the project are recorded using an Ouster lidar, which stores data as .pcap files with corresponding .json files containing sensor metadata. These files can be read using the [Ouster SDK](https://static.ouster.dev/sdk-docs/quickstart.html). This is done in `pcapReader.py`, whose `readFrame()` and `nextFrame()` functions returns a numpy array of points (which are numpy arrays of length 3; x, y and z).
 
+Before lidar frames are used for point cloud registration, the vehicle is removed from the center of the frame, to avoid a always present stationary object messing with the registration algorithms.
+```
+vr = 2.5 # Vehicle radius
+frame = frame[((frame[:, 0] > vr) | (frame[:, 0] < -vr)) | ((frame[:, 1] > vr) | (frame[:, 1] < -vr))]
+```
+
 # Reducing the number of points (downsampling)
 As point clouds are rather large (usually at least a 100 000 points per frame), doing work on them can be time consuming. By reducing the number of points, we can speed up most calculations.
 
@@ -20,12 +26,6 @@ The table below shows some test results for ICP and NICP from Pyoints and Open3d
 
 Original frames, which are misaligned with a few degrees:
 [![img](./frame-matching-test-frames.png)](./frame-matching-test-frames.png)
-
-Before lidar frames are used, the vehicle is removed from the center of the frame, to avoid a always present stationary object messing with the registration algorithms.
-```
-vr = 2.5 # Vehicle radius
-frame = frame[((frame[:, 0] > vr) | (frame[:, 0] < -vr)) | ((frame[:, 1] > vr) | (frame[:, 1] < -vr))]
-```
 
 | Function       | Downsampling | Iterations | Time usage | RMSE    | Fitness | Movement (xyz)    | Aligned frames |
 |----------------|--------------|------------|------------|---------|---------|-------------------|-------|
@@ -63,6 +63,8 @@ This section will document experiments investigating the different alternatives.
 | Downsampled first | 0.6574 s   | 0.1521  | 0.990773  | 0.68, 0.15, 0.04  |[<img src="./pipeline-downsampling-first.png" width="200" />](./pipeline-downsampling-first.png)
 | Global reg. first | 3.2391 s   | 0.1521  | 0.990773  | 0.68, 0.15, 0.04  |[<img src="./pipeline-global-registration-first.png" width="200" />](./pipeline-global-registration-first.png)
 | Fast global reg. first | 7.5359 s   | 0.1521  | 0.990751  | 0.68, 0.15, 0.04  |[<img src="./pipeline-fast-global-registration-first.png" width="200" />](./pipeline-fast-global-registration-first.png)
+
+Both using downsampled NICP registration and global registration to generate initial transformation seems to be very unneccessary with these frames. Probably because the point clouds change so little from frame to frame.
 
 ## Parameters
 TODO: Test and decide parameters for matching function.

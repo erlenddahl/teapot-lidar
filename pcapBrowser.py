@@ -1,5 +1,3 @@
-from voxelThinner import VoxelThinner
-from voxelThinnerPyoints import VoxelThinnerPyoints
 from pcapReader import PcapReader
 from open3dVisualizer import Open3DVisualizer
 
@@ -13,7 +11,7 @@ class PcapBrowser:
         self.reader = PcapReader(pcapPath, metaDataPath)
         self.vis = Open3DVisualizer()
 
-        self.cloudProcessors = [None, VoxelThinner(), VoxelThinnerPyoints()]
+        self.cloudProcessors = [None]
         self.cloudProcessorIndex = 0
     
     def startVisualization(self):

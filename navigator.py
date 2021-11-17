@@ -1,4 +1,3 @@
-from voxelThinnerPyoints import VoxelThinnerPyoints
 from pcapReader import PcapReader
 from open3dVisualizer import Open3DVisualizer
 import numpy as np
@@ -14,7 +13,6 @@ class LidarNavigator:
 
         # Fetch the first frame and use it as a base for the generated visualization
         self.ball_radius = 0.5
-        self.thinner = VoxelThinnerPyoints()
         self.mergedFrame = self.thinner.process(self.reader.readFrame(0), self.ball_radius)
 
         self.vis = Open3DVisualizer()
