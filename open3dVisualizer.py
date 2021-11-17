@@ -52,11 +52,18 @@ class Open3DVisualizer:
         self.vis.destroy_window()
 
     def showFrame(self, frame, removePrevious = False):
+        """ Shows the given frame by adding it as a geometry.
+        If this is a numpy array, it will be converted to a point cloud.
+        """
 
         if removePrevious and self._currentGeometry is not None:
             self.vis.remove_geometry(self._currentGeometry, False)
 
-        geometry = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(frame))
+        if type(frame) is np.ndarray:
+            geometry = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(frame))
+        else:
+            geometry = frame
+
         self._currentGeometry = geometry
         self.vis.add_geometry(geometry, self._isInitialGeometry)
         self._isInitialGeometry = False
