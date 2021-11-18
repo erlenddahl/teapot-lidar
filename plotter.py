@@ -1,4 +1,7 @@
 import matplotlib.pyplot as plt
+from tabulate import tabulate
+import math
+import statistics
 
 class Plotter:
 
@@ -42,3 +45,24 @@ class Plotter:
         handles2, labels2 = ax2.get_legend_handles_labels()
         handles3, labels3 = ax3.get_legend_handles_labels()
         self.fig.legend(handles1+handles2+handles3, labels1+labels2+labels3, loc='center right')
+
+    def print_summary(self):
+
+        print(tabulate([
+            ["Number of frames:", len(self.plot_x)],
+            ["Total movement distance:", sum(self.distances)],
+            ["Max distance: ", max(self.distances)],
+            ["Avg distance: ", statistics.mean(self.distances)],
+            ["Min distance: ", min(self.distances)],
+            ["Total time usage: ", sum(self.timeUsages)],
+            ["Max time: ", max(self.timeUsages)],
+            ["Avg time: ", statistics.mean(self.timeUsages)],
+            ["Min time: ", min(self.timeUsages)],
+            ["Max fitness: ", max(self.fitnesses)],
+            ["Avg fitness: ", statistics.mean(self.fitnesses)],
+            ["Avg non-perfect fitness: ", statistics.mean([x for x in self.fitnesses if x <= 0.95])],
+            ["Min fitness: ", min(self.fitnesses)],
+            ["Max rmse: ", max(self.rmses)],
+            ["Avg rmse: ", statistics.mean(self.rmses)],
+            ["Min rmse: ", min(self.rmses)]
+        ]))

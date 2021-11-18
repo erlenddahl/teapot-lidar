@@ -53,8 +53,9 @@ class LidarNavigator:
 
             plot.update()
 
-        # When everything is finished, continue showing the visualization
-        # in a blocking way.
+        # When everything is finished, print a summary, and continue showing the
+        # visualization in a blocking way until the user stops it.
+        plot.print_summary()
         self.vis.run()
 
     def alignFrame(self, source, target):

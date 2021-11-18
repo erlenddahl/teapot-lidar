@@ -3,3 +3,4 @@ numpy
 matplotlib
 ouster-sdk[examples]
 open3d
+tabulate
