@@ -5,6 +5,8 @@ import numpy as np
 import time
 import open3d as o3d
 
+from matchers.nicp import NicpMatcher
+
 class LidarNavigator:
 
     def __init__(self, pcapPath, metaDataPath):
@@ -16,6 +18,8 @@ class LidarNavigator:
 
         # Fetch the first frame and use it as a base for the generated visualization
         self.voxel_size = 0.1
+
+        self.matcher = NicpMatcher()
 
     def navigateThroughFile(self):
         """ Runs through each frame in the file. For each pair of frames, use NICP
@@ -59,33 +63,23 @@ class LidarNavigator:
         self.vis.run()
 
     def alignFrame(self, source, target):
-        """ Aligns the target frame with the source frame using NICP.
+        """ Aligns the target frame with the source frame using the selected algorithm.
         """
-
-        # Initialize an initial transformation. This is meant to be a
-        # rough transformation to align the frames, but as lidar frames
-        # are roughly aligned anyway, we use the identity matrix.
-        trans_init = np.identity(4)
 
         # Estimate normals for the target frame (the source frame will always have
         # normals from the previous step).
         print("Estimating normals")
         target.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
 
-        # Run NICP
-        print("Performing point-to-plane registration")
-        threshold = 1
-        reg_p2l = o3d.pipelines.registration.registration_icp(
-            source, target, threshold, trans_init,
-            o3d.pipelines.registration.TransformationEstimationPointToPlane(),
-            o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=100))
+        # Run the selected registration algorithm
+        reg = self.matcher.match(source, target)
 
         # Calculate how much the center point has moved by transforming [0,0,0] with
         # the calculated transformation
-        movement = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(reg_p2l.transformation).get_center()
+        movement = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(reg.transformation).get_center()
         
         # Return the transformation and the movement
-        return reg_p2l.transformation, movement, reg_p2l
+        return reg.transformation, movement, reg
 
     def mergeNextFrame(self, plot):
         """ Reads the next frame, aligns it with the previous frame, merges them together
