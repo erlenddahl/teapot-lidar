@@ -70,6 +70,32 @@ Recall that the table above is based on a single registration between two very s
 
 All full file tests below are run on the file OS-1-128_992035000186_1024x10_20211005_134108.pcap, which is challenging as the vehicle drives through a roundabout at a speed that is high enough to make the frames much more different than in the above example.
 
+### Baseline
+As a baseline, the following table shows results from a very simple file (OS-1-128_992035000186_1024x10_20211005_134603.pcap), where the vehicle drives slowly into a parking house:
+
+![](pipeline-baseline-plot.png)
+
+```
+Number of frames:         97
+Total movement distance:  28.6779
+Max distance:              0.684275
+Avg distance:              0.295649
+Min distance:              0.000274826
+Total time usage:         26.227
+Max time:                  1.21472
+Avg time:                  0.270382
+Min time:                  0.121465
+Max fitness:               0.998802
+Avg fitness:               0.994665
+Avg non-perfect fitness:   0.944652
+Min fitness:               0.943838
+Max rmse:                  0.190572
+Avg rmse:                  0.118085
+Min rmse:                  0.0658746
+```
+
+Fitness values are generally very high, probably due to small differences between sequential frames.
+
 ### Simple NICP
 
 ![](pipeline-simple-nicp-plot.png)
