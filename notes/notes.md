@@ -125,6 +125,75 @@ As the plot shows, there are two large problem areas (around frame 50 and 75), w
 
 This indicates that a simple NICP may not be enough for frame sequences with larger differences.
 
+### Downsampled first
+
+![](pipeline-downsample-first-plot.png)
+
+```
+Number of frames:          97
+Total movement distance:  295.15
+Max distance:              23.9721
+Avg distance:               3.04278
+Min distance:               0.0798747
+Total time usage:          84.6971
+Max time:                   2.1688
+Avg time:                   0.873166
+Min time:                   0.251571
+Max fitness:                0.98783
+Avg fitness:                0.910281
+Avg non-perfect fitness:    0.797561
+Min fitness:                0.521067
+Max rmse:                   0.533298
+Avg rmse:                   0.263508
+Min rmse:                   0.194037
+```
+
+### Global registration first
+
+![](pipeline-global-first-plot.png)
+
+```
+Number of frames:          97
+Total movement distance:  250.84
+Max distance:              21.044
+Avg distance:               2.58598
+Min distance:               0.0854177
+Total time usage:         298.831
+Max time:                   5.95509
+Avg time:                   3.08074
+Min time:                   2.23277
+Max fitness:                0.98783
+Avg fitness:                0.918571
+Avg non-perfect fitness:    0.789421
+Min fitness:                0.466683
+Max rmse:                   0.496163
+Avg rmse:                   0.25713
+Min rmse:                   0.19402
+```
+
+### Fast global registration first
+
+![](pipeline-fast-global-first-plot.png)
+
+```
+Number of frames:          97
+Total movement distance:  135.799
+Max distance:               2.21431
+Avg distance:               1.39999
+Min distance:               0.38669
+Total time usage:         631.784
+Max time:                  13.3869
+Avg time:                   6.51324
+Min time:                   4.79481
+Max fitness:                0.987845
+Avg fitness:                0.965865
+Avg non-perfect fitness:    0.926993
+Min fitness:                0.850504
+Max rmse:                   0.351993
+Avg rmse:                   0.238573
+Min rmse:                   0.194065
+```
+
 ## Parameters
 TODO: Test and decide parameters for matching function.
 

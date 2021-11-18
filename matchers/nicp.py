@@ -11,7 +11,6 @@ class NicpMatcher:
         trans_init = np.identity(4)
 
         # Run NICP
-        print("Performing point-to-plane registration")
         threshold = 1
         reg_p2l = o3d.pipelines.registration.registration_icp(
             source, target, threshold, trans_init,

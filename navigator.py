@@ -6,6 +6,9 @@ import time
 import open3d as o3d
 
 from matchers.nicp import NicpMatcher
+from matchers.downsamplefirst import DownsampleFirstNicpMatcher
+from matchers.globalregistrationfirst import GlobalFirstNicpMatcher
+from matchers.fastglobalregistrationfirst import FastGlobalFirstNicpMatcher
 
 class LidarNavigator:
 
@@ -19,7 +22,7 @@ class LidarNavigator:
         # Fetch the first frame and use it as a base for the generated visualization
         self.voxel_size = 0.1
 
-        self.matcher = NicpMatcher()
+        self.matcher = FastGlobalFirstNicpMatcher()
 
     def navigateThroughFile(self):
         """ Runs through each frame in the file. For each pair of frames, use NICP
