@@ -1,10 +1,8 @@
 from pcapReader import PcapReader
 from open3dVisualizer import Open3DVisualizer
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+from plotter import Plotter
 import numpy as np
 import time
-import math
 import open3d as o3d
 
 class LidarNavigator:
@@ -34,10 +32,6 @@ class LidarNavigator:
         # Initialize the list of movements as well as the merged frame, and the first 
         # source frame.
         self.movements = []
-        self.distances = []
-        self.timeUsages = []
-        self.rmses = []
-        self.fitnesses = []
         self.mergedFrame = self.reader.readFrameAsPointCloud(0, True)
         self.previousFrame = self.reader.readFrameAsPointCloud(0, True)
 
@@ -49,41 +43,15 @@ class LidarNavigator:
         self.vis.showFrame(self.mergedFrame)
         self.vis.reset_view()
 
-        # Enable interactive mode, which redraws plot on change
-        plt.ion()
-
-        # Initialize plot
-        plot_x = []
-
-        # Show the plot without blocking
-        plt.show(block=False)
-        fig, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, sharey=False)
+        plot = Plotter()
 
         # Enumerate all frames until the end of the file and run the merge operation.
-        while self.mergeNextFrame():
+        while self.mergeNextFrame(plot):
 
             # Refresh the non-blocking visualization
             self.vis.refresh_non_blocking()
 
-            plot_x.append(len(self.movements) - 1)
-
-            ax1.clear()
-            ax2.clear()
-            ax3.clear()
-
-            ax1.plot(plot_x, self.timeUsages, color="blue", label="calculation time")
-            ax2.plot(plot_x, self.distances, color="red", label="distance")
-            ax3.plot(plot_x, self.rmses, color="purple", label="rmse")
-            ax3.plot(plot_x, self.fitnesses, color="green", label="fitness")
-            
-            ax1.set_ylabel("Seconds")
-            ax2.set_ylabel("Meters")
-            ax3.set_xlabel("Frame index")
-
-            handles1, labels1 = ax1.get_legend_handles_labels()
-            handles2, labels2 = ax2.get_legend_handles_labels()
-            handles3, labels3 = ax3.get_legend_handles_labels()
-            fig.legend(handles1+handles2+handles3, labels1+labels2+labels3, loc='center right')
+            plot.update()
 
         # When everything is finished, continue showing the visualization
         # in a blocking way.
@@ -118,7 +86,7 @@ class LidarNavigator:
         # Return the transformation and the movement
         return reg_p2l.transformation, movement, reg_p2l
 
-    def mergeNextFrame(self):
+    def mergeNextFrame(self, plot):
         """ Reads the next frame, aligns it with the previous frame, merges them together
         to create a 3D model, and tracks the movement between frames.
         """
@@ -136,12 +104,10 @@ class LidarNavigator:
         
         transformation, movement, reg = self.alignFrame(self.previousFrame, frame)
         
-        self.timeUsages.append(time.perf_counter() - startTime)
-        self.rmses.append(reg.inlier_rmse)
-        self.fitnesses.append(reg.fitness)
-        self.distances.append(np.sqrt(np.dot(movement,movement)))
-
-        print(f"    > Time usage: {self.timeUsages[-1]:0.4f} seconds.")
+        plot.timeUsages.append(time.perf_counter() - startTime)
+        plot.rmses.append(reg.inlier_rmse)
+        plot.fitnesses.append(reg.fitness)
+        plot.distances.append(np.sqrt(np.dot(movement,movement)))
 
         # Transform earlier points so that they follow the ongoing model transformation
         for i,m in enumerate(self.movements):
