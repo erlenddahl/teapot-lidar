@@ -96,6 +96,19 @@ class PcapReader:
             return None
         return open3d.geometry.PointCloud(open3d.utility.Vector3dVector(frame))
 
+    def readAllFrames(self, removeVehicle:bool = False):
+
+        frames = []
+        while True:
+            frame = self.nextFrame(removeVehicle)
+            if frame is None:
+                return frames
+            frames.append(frame)
+
+    def readAllFramesAsPointClouds(self, removeVehicle:bool = False):
+
+        return [open3d.geometry.PointCloud(open3d.utility.Vector3dVector(x)) for x in self.readAllFrames(removeVehicle)]
+
     @staticmethod
     def getPathArgs():
         """ Creates an argument parser that handles --pcap and --json, where the latter is optional.
