@@ -66,6 +66,39 @@ This section will document experiments investigating the different alternatives.
 
 Both using downsampled NICP registration and global registration to generate initial transformation seems to be very unneccessary with these frames. Probably because the point clouds change so little from frame to frame.
 
+Recall that the table above is based on a single registration between two very similar frames. Below follows a more thorough test of an entire pcap file.
+
+All full file tests below are run on the file OS-1-128_992035000186_1024x10_20211005_134108.pcap, which is challenging as the vehicle drives through a roundabout at a speed that is high enough to make the frames much more different than in the above example.
+
+### Simple NICP
+
+![](pipeline-simple-nicp-plot.png)
+
+```
+Number of frames:          97
+Total movement distance:  166.931
+Max distance:              16.1764
+Avg distance:               1.72094
+Min distance:               0.0304613
+Total time usage:          76.5949
+Max time:                   1.9045
+Avg time:                   0.789638
+Min time:                   0.242814
+Max fitness:                0.98783
+Avg fitness:                0.936683
+Avg non-perfect fitness:    0.861167
+Min fitness:                0.639967
+Max rmse:                   0.4209
+Avg rmse:                   0.249725
+Min rmse:                   0.194038
+```
+
+As the plot shows, there are two large problem areas (around frame 50 and 75), with a hard part between them. Visually inspecting the combined cloud shows that it is severely misaligned multiple places, giving a poor driving route.
+
+<img src="./pipeline-simple-nicp-misalignment.png" width="500" />
+
+This indicates that a simple NICP may not be enough for frame sequences with larger differences.
+
 ## Parameters
 TODO: Test and decide parameters for matching function.
 
