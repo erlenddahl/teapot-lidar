@@ -119,19 +119,17 @@ class LidarNavigator:
         # Append the newest movement
         self.movements.append(movement)
 
-        # Remove the old line (if any)
-        if len(self.movements) > 2:
-            self.vis.remove_geometry(self.movementPath)
-
         # Append the new movement to the path
         self.movementPath.points.append([0,0,0])
         self.movementPath = self.movementPath.transform(transformation)
 
         # Add the new line
+        if len(self.movements) == 2:
+            self.vis.add_geometry(self.movementPath)
         if len(self.movements) >= 2:
             self.movementPath.lines.append([len(self.movements) - 2, len(self.movements) - 1])
             self.movementPath.paint_uniform_color([1, 0, 0])
-            self.vis.add_geometry(self.movementPath)
+            self.vis.update_geometry(self.movementPath)
 
         print("Merging and downsampling full 3D model")
         startTime = time.perf_counter()
