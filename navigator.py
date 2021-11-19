@@ -22,7 +22,7 @@ class LidarNavigator:
         # Fetch the first frame and use it as a base for the generated visualization
         self.voxel_size = 0.1
 
-        self.matcher = FastGlobalFirstNicpMatcher()
+        self.matcher = NicpMatcher()
 
     def navigateThroughFile(self):
         """ Runs through each frame in the file. For each pair of frames, use NICP
@@ -39,6 +39,11 @@ class LidarNavigator:
         # Initialize the list of movements as well as the merged frame, and the first 
         # source frame.
         self.movements = []
+
+        self.movementPath = o3d.geometry.LineSet(
+            points = o3d.utility.Vector3dVector([]), lines=o3d.utility.Vector2iVector([])
+        )
+
         self.mergedFrame = self.reader.readFrameAsPointCloud(0, True)
         self.previousFrame = self.reader.readFrameAsPointCloud(0, True)
 
@@ -118,17 +123,13 @@ class LidarNavigator:
         if len(self.movements) > 2:
             self.vis.remove_geometry(self.movementPath)
 
-        # Generate a new line
-        points = o3d.utility.Vector3dVector(self.movements)
-        lines = o3d.utility.Vector2iVector([[i, i + 1] for i in range(len(points) - 1)])
-
-        self.movementPath = o3d.geometry.LineSet(
-            points=points, lines=lines
-        )
-        self.movementPath.colors = o3d.utility.Vector3dVector([[1, 0, 0] for _ in range(len(points))])
+        # Append the new movement to the path
+        self.movementPath.points.append([0,0,0])
+        self.movementPath = self.movementPath.transform(transformation)
 
         # Add the new line
         if len(self.movements) >= 2:
+            self.movementPath.lines.append([len(self.movements) - 2, len(self.movements) - 1])
             self.movementPath.paint_uniform_color([1, 0, 0])
             self.vis.add_geometry(self.movementPath)
 

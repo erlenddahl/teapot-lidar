@@ -78,7 +78,7 @@ Recall that the table above is based on a single registration between two very s
 | Multiway registration | 8145.9 s   | -  | Poor     | -    | -         |
 | Multiway registration (shortened) | 982.1 s   | -  | Poor     | -    | -         |
 
-The two multiway registration runs both resulted in a very circular combined point cloud with [large misalignments](./pipeline-multiway-registration.png).
+The two multiway registration runs both resulted in a very circular combined point cloud with [large misalignments](./pipeline-multiway-registration.png). The original took a very long time, and the shortened (only 10 uncertain edges per node) was still very time consuming. No visible difference in the results. The method does not return RMSE and fitness information, and due to the poor matches we did not use it to calculate driven distance.
 
 [See the full details here.](./full-file-matching.md)
 
@@ -99,3 +99,7 @@ As open3d was chosen over Pyoints, all Pyoints source code was eventually remove
 
 ## Pyproj
 When installing Pyproj in the environment, the ouster-sdk stops working. It has therefore been avoided.
+
+# Future work
+Test limiting point clouds; max 15 meters from origo?
+Test probreg: https://github.com/neka-nat/probreg
