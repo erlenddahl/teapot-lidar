@@ -75,6 +75,10 @@ Recall that the table above is based on a single registration between two very s
 | Downsampled first | 84.697 s   | 0.263508  | 0.910281     | 0.521067    | 295.15         |
 | Global reg. first | 298.83 s   | 0.25713  | 0.918571     | 0.466683    | 250.84         |
 | Fast global reg. first | 631.78 s   | 0.238573  | 0.965865     | 0.850504    | 135.799         |
+| Multiway registration | 8145.9 s   | -  | Poor     | -    | -         |
+| Multiway registration (shortened) | 982.1 s   | -  | Poor     | -    | -         |
+
+The two multiway registration runs both resulted in a very circular combined point cloud with [large misalignments](./pipeline-multiway-registration.png).
 
 [See the full details here.](./full-file-matching.md)
 
