@@ -16,7 +16,7 @@ from matchers.fastglobalregistrationfirst import FastGlobalFirstNicpMatcher
 
 class LidarNavigator:
 
-    def __init__(self, pcapPath, metaDataPath, frames = -1):
+    def __init__(self, pcapPath, metaDataPath, frames = -1, preview = True):
         """Initialize a LidarNavigator by reading metadata and setting
         up a package source from the pcap file.
         """
@@ -28,6 +28,7 @@ class LidarNavigator:
 
         self.matcher = NicpMatcher()
         self.frame_limit = frames
+        self.preview = preview
 
     def navigateThroughFile(self):
         """ Runs through each frame in the file. For each pair of frames, use NICP
@@ -37,10 +38,6 @@ class LidarNavigator:
         to show the driving route.
         """
         
-        # Initialize the visualizer
-        self.vis = Open3DVisualizer()
-        self.vis.refresh_non_blocking()
-
         # Initialize the list of movements as well as the merged frame, and the first 
         # source frame.
         self.movements = []
@@ -56,24 +53,33 @@ class LidarNavigator:
         # alignment operation.
         self.previousFrame.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
         
-        # Show the first frame and reset the view
-        self.vis.showFrame(self.mergedFrame)
-        self.vis.reset_view()
+        # Initialize the visualizer
+        self.vis = Open3DVisualizer()
 
-        plot = Plotter()
+        if self.preview:
+            # Initiate non-blocking visualizer window
+            self.vis.refresh_non_blocking()
+
+            # Show the first frame and reset the view
+            self.vis.showFrame(self.mergedFrame)
+            self.vis.reset_view()
+
+        plot = Plotter(self.preview)
 
         # Enumerate all frames until the end of the file and run the merge operation.
         while self.mergeNextFrame(plot):
 
             # Refresh the non-blocking visualization
-            self.vis.refresh_non_blocking()
+            if self.preview:
+                self.vis.refresh_non_blocking()
 
-            plot.update()
+            plot.step(self.preview)
 
             if self.frame_limit > 1 and len(self.reader.preparedClouds) >= self.frame_limit:
                 break
 
         # When everything is finished, print a summary, and save the point cloud and debug data.
+        plot.update()
         plot.print_summary()
 
         filenameBase = datetime.now().strftime('%Y-%m-%dT%H-%M-%S-%f%z')
@@ -82,6 +88,10 @@ class LidarNavigator:
         self.save_cloud(filenameBase + "_cloud.laz", self.mergedFrame)
 
         # Then continue showing the visualization in a blocking way until the user stops it.
+        if not self.preview:
+            self.vis.showFrame(self.mergedFrame)
+            self.vis.reset_view()
+
         self.vis.run()
 
     def save_data(self, path, plot):
@@ -191,7 +201,8 @@ class LidarNavigator:
         self.previousFrame = frame
 
         # Update the visualization
-        self.vis.showFrame(self.mergedFrame, True)
+        if self.preview:
+            self.vis.showFrame(self.mergedFrame, True)
 
         # Return True to let the loop continue to the next frame.
         return True
@@ -202,9 +213,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     PcapReader.add_path_arguments(parser)
     parser.add_argument('--frames', type=int, default=-1, required=False, help="If given a positive number larger than 1, only this many frames will be read from the PCAP file.")
+    parser.add_argument('--preview', dest='preview', action='store_true', help="Show constantly updated point cloud and data plot previews.")
+    parser.add_argument('--no-preview', dest='preview', action='store_false', help="Don't show constantly updated point cloud and data plot previews.")
+    parser.set_defaults(preview=True)
     
     args = parser.parse_args()
 
+    print(args)
+
     # Create and start a visualization
-    navigator = LidarNavigator(args.pcap, args.json, args.frames)
+    navigator = LidarNavigator(args.pcap, args.json, args.frames, args.preview)
     navigator.navigateThroughFile()
