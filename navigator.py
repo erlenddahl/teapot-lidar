@@ -4,6 +4,7 @@ from plotter import Plotter
 import numpy as np
 import time
 import open3d as o3d
+import laspy
 from datetime import datetime
 import json
 import argparse
@@ -78,6 +79,7 @@ class LidarNavigator:
         filenameBase = datetime.now().strftime('%Y-%m-%dT%H-%M-%S-%f%z')
         self.save_data(filenameBase + "_data.json", plot)
         plot.save_plot(filenameBase + "_plot.png")
+        self.save_cloud(filenameBase + "_cloud.laz", self.mergedFrame)
 
         # Then continue showing the visualization in a blocking way until the user stops it.
         self.vis.run()
@@ -88,7 +90,26 @@ class LidarNavigator:
 
         data["movement"] = np.asarray(self.movementPath.points).tolist()
 
-        json.dump(data, path, indent=4)
+        with open(path, 'w') as f:
+            json.dump(data, f, indent=4)
+
+    def save_cloud(self, path, cloud):
+
+        xyz = np.asarray(cloud.points)
+
+        las = laspy.create(point_format=3, file_version="1.4")
+        
+        xmin = np.floor(np.min(xyz[:,0]))
+        ymin = np.floor(np.min(xyz[:,1]))
+        zmin = np.floor(np.min(xyz[:,2]))
+
+        las.header.offset = [xmin, ymin, zmin]
+        las.header.scale = [0.001, 0.001, 0.001]
+        las.x = xyz[:,0]
+        las.y = xyz[:,1]
+        las.z = xyz[:,2]
+
+        las.write(path)
 
     def alignFrame(self, source, target):
         """ Aligns the target frame with the source frame using the selected algorithm.
@@ -180,7 +201,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     PcapReader.add_path_arguments(parser)
-    parser.add_argument('--frames', type=int, required=False, help="If given a positive number larger than 1, only this many frames will be read from the PCAP file.")
+    parser.add_argument('--frames', type=int, default=-1, required=False, help="If given a positive number larger than 1, only this many frames will be read from the PCAP file.")
     
     args = parser.parse_args()
 
