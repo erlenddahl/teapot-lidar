@@ -48,7 +48,11 @@ class Plotter:
 
     def print_summary(self):
 
-        print(tabulate([
+        print(tabulate(self.get_summary()))
+
+    def get_summary(self):
+
+        return [
             ["Number of frames:", len(self.plot_x)],
             ["Total movement distance:", sum(self.distances)],
             ["Max distance: ", max(self.distances)],
@@ -65,4 +69,18 @@ class Plotter:
             ["Max rmse: ", max(self.rmses)],
             ["Avg rmse: ", statistics.mean(self.rmses)],
             ["Min rmse: ", min(self.rmses)]
-        ]))
+        ]
+
+    def get_json(self):
+
+        return {
+            "summary": self.get_summary(),
+            "distances": self.distances,
+            "timeUsages": self.timeUsages,
+            "rmses": self.rmses,
+            "fitnesses": self.fitnesses
+        }
+
+    def save_plot(self, path):
+
+        self.fig.savefig(path)

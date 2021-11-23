@@ -4,6 +4,8 @@ from plotter import Plotter
 import numpy as np
 import time
 import open3d as o3d
+from datetime import datetime
+import json
 
 from matchers.nicp import NicpMatcher
 from matchers.downsamplefirst import DownsampleFirstNicpMatcher
@@ -65,10 +67,23 @@ class LidarNavigator:
 
             plot.update()
 
-        # When everything is finished, print a summary, and continue showing the
-        # visualization in a blocking way until the user stops it.
+        # When everything is finished, print a summary, and save the point cloud and debug data.
         plot.print_summary()
+
+        filenameBase = datetime.now().strftime('%Y-%m-%dT%H-%M-%S-%f%z')
+        self.save_data(filenameBase + "_data.json", plot)
+        plot.save_plot(filenameBase + "_plot.png")
+
+        # Then continue showing the visualization in a blocking way until the user stops it.
         self.vis.run()
+
+    def save_data(self, path, plot):
+
+        data = plot.get_json()
+
+        data["movement"] = np.asarray(self.movementPath.points).tolist()
+
+        json.dump(data, path, indent=4)
 
     def alignFrame(self, source, target):
         """ Aligns the target frame with the source frame using the selected algorithm.
