@@ -18,7 +18,7 @@ from matchers.fastglobalregistrationfirst import FastGlobalFirstNicpMatcher
 
 class LidarNavigator:
 
-    def __init__(self, pcapPath, metaDataPath, frames = -1, preview = "always", save_results = True, save_path = "[pcap]_[time]"):
+    def __init__(self, pcapPath, metaDataPath, frames = -1, preview = "always", save_path = None):
         """Initialize a LidarNavigator by reading metadata and setting
         up a package source from the pcap file.
         """
@@ -32,7 +32,6 @@ class LidarNavigator:
         self.frame_limit = frames
         self.previewAlways = preview == "always"
         self.previewAtEnd = preview == "always" or preview =="end"
-        self.save_results = save_results
         self.save_path = save_path
 
         if self.frame_limit <= 1:
@@ -90,7 +89,7 @@ class LidarNavigator:
             plot.update()
         plot.print_summary()
 
-        if self.save_results:
+        if self.save_path is not None:
             filenameBase = self.save_path.replace("[time]", datetime.now().strftime('%Y-%m-%d_%H-%M-%S_%f%z'))
             filenameBase = filenameBase.replace("[pcap]", self.reader.pcapPath.replace(".pcap", ""))
             self.ensure_dir(filenameBase)
@@ -227,14 +226,10 @@ if __name__ == "__main__":
     
     parser.add_argument('--preview', type=str, default="always", choices=['always', 'end', 'never'], help="Show constantly updated point cloud and data plot previews while processing ('always'), show them only at the end ('end'), or don't show them at all ('never').")
     
-    parser.add_argument('--save', dest='save', action='store_true', help="Store results (data, plot, cloud) to disk.")
-    parser.add_argument('--no-save', dest='save', action='store_false', help="Do not store any results to disk.")
-    parser.set_defaults(save=True)
-
-    parser.add_argument('--save-path', type=str, default="[pcap]_[time]", required=False, help="The path where results should be stored. This path will be used for all types of results, with appendices depending on file type (_data.json, _plot.png, _cloud.laz). The path can include \"[pcap]\" and/or \"[time]\" which will be replaced with the name of the parsed PCAP file and the time of completion respectively.")
+    parser.add_argument('--save-to', type=str, default=None, required=False, help="The path where results should be stored. This path will be used for all types of results, with appendices depending on file type (_data.json, _plot.png, _cloud.laz). The path can include \"[pcap]\" and/or \"[time]\" which will be replaced with the name of the parsed PCAP file and the time of completion respectively.")
     
     args = parser.parse_args()
 
     # Create and start a visualization
-    navigator = LidarNavigator(args.pcap, args.json, args.frames, args.preview, args.save, args.save_path)
+    navigator = LidarNavigator(args.pcap, args.json, args.frames, args.preview, args.save_to)
     navigator.navigateThroughFile()
