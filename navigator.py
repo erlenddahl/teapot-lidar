@@ -17,7 +17,7 @@ from matchers.fastglobalregistrationfirst import FastGlobalFirstNicpMatcher
 
 class LidarNavigator:
 
-    def __init__(self, pcapPath, metaDataPath, frames = -1, preview = True, save_results = True, save_path = "[pcap]_[time]"):
+    def __init__(self, pcapPath, metaDataPath, frames = -1, preview = "always", save_results = True, save_path = "[pcap]_[time]"):
         """Initialize a LidarNavigator by reading metadata and setting
         up a package source from the pcap file.
         """
@@ -29,7 +29,8 @@ class LidarNavigator:
 
         self.matcher = NicpMatcher()
         self.frame_limit = frames
-        self.preview = preview
+        self.previewAlways = preview == "always"
+        self.previewAtEnd = preview == "always" or preview =="end"
         self.save_results = save_results
         self.save_path = save_path
 
@@ -59,7 +60,7 @@ class LidarNavigator:
         # Initialize the visualizer
         self.vis = Open3DVisualizer()
 
-        if self.preview:
+        if self.previewAlways:
             # Initiate non-blocking visualizer window
             self.vis.refresh_non_blocking()
 
@@ -67,22 +68,23 @@ class LidarNavigator:
             self.vis.showFrame(self.mergedFrame)
             self.vis.reset_view()
 
-        plot = Plotter(self.preview)
+        plot = Plotter(self.previewAlways)
 
         # Enumerate all frames until the end of the file and run the merge operation.
         while self.mergeNextFrame(plot):
 
             # Refresh the non-blocking visualization
-            if self.preview:
+            if self.previewAlways:
                 self.vis.refresh_non_blocking()
 
-            plot.step(self.preview)
+            plot.step(self.previewAlways)
 
             if self.frame_limit > 1 and len(self.reader.preparedClouds) >= self.frame_limit:
                 break
 
         # When everything is finished, print a summary, and save the point cloud and debug data.
-        plot.update()
+        if self.previewAtEnd:
+            plot.update()
         plot.print_summary()
 
         if self.save_results:
@@ -94,11 +96,11 @@ class LidarNavigator:
             self.save_cloud(filenameBase + "_cloud.laz", self.mergedFrame)
 
         # Then continue showing the visualization in a blocking way until the user stops it.
-        if not self.preview:
+        if self.previewAtEnd:
             self.vis.showFrame(self.mergedFrame)
             self.vis.reset_view()
 
-        self.vis.run()
+            self.vis.run()
 
     def ensure_dir(self, file_path):
         directory = os.path.dirname(file_path)
@@ -214,7 +216,7 @@ class LidarNavigator:
         self.previousFrame = frame
 
         # Update the visualization
-        if self.preview:
+        if self.previewAlways:
             self.vis.showFrame(self.mergedFrame, True)
 
         # Return True to let the loop continue to the next frame.
@@ -227,9 +229,7 @@ if __name__ == "__main__":
     PcapReader.add_path_arguments(parser)
     parser.add_argument('--frames', type=int, default=-1, required=False, help="If given a positive number larger than 1, only this many frames will be read from the PCAP file.")
     
-    parser.add_argument('--preview', dest='preview', action='store_true', help="Show constantly updated point cloud and data plot previews.")
-    parser.add_argument('--no-preview', dest='preview', action='store_false', help="Don't show constantly updated point cloud and data plot previews.")
-    parser.set_defaults(preview=True)
+    parser.add_argument('--preview', type=str, default="always", choices=['always', 'end', 'never'], help="Show constantly updated point cloud and data plot previews while processing ('always'), show them only at the end ('end'), or don't show them at all ('never').")
     
     parser.add_argument('--save', dest='save', action='store_true', help="Store results (data, plot, cloud) to disk.")
     parser.add_argument('--no-save', dest='save', action='store_false', help="Do not store any results to disk.")
