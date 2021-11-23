@@ -5,15 +5,11 @@ import statistics
 
 class Plotter:
 
-    def __init__(self):
-        # Enable interactive mode, which redraws plot on change
-        plt.ion()
+    def __init__(self, showPlot = True):
 
         # Initialize plot
         self.plot_x = []
 
-        # Show the plot without blocking
-        plt.show(block=False)
         self.fig, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, sharey=False)
         self.axes = [ax1, ax2, ax3]
 
@@ -23,8 +19,18 @@ class Plotter:
         self.rmses = []
         self.fitnesses = []
 
-    def update(self):
+    def step(self, updatePlot = True):
         self.plot_x.append(len(self.distances) - 1)
+
+        if updatePlot:
+            self.update()
+
+    def update(self):
+        
+        # Enable interactive mode, which redraws plot on change
+        plt.ion()
+        # Show the plot without blocking
+        plt.show(block=False)
 
         (ax1, ax2, ax3) = self.axes
 
