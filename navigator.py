@@ -2,6 +2,7 @@ from pcapReader import PcapReader
 from open3dVisualizer import Open3DVisualizer
 from plotter import Plotter
 import numpy as np
+import os
 import time
 import open3d as o3d
 import laspy
@@ -16,7 +17,7 @@ from matchers.fastglobalregistrationfirst import FastGlobalFirstNicpMatcher
 
 class LidarNavigator:
 
-    def __init__(self, pcapPath, metaDataPath, frames = -1, preview = True):
+    def __init__(self, pcapPath, metaDataPath, frames = -1, preview = True, save_results = True, save_path = "[pcap]_[time]"):
         """Initialize a LidarNavigator by reading metadata and setting
         up a package source from the pcap file.
         """
@@ -29,6 +30,8 @@ class LidarNavigator:
         self.matcher = NicpMatcher()
         self.frame_limit = frames
         self.preview = preview
+        self.save_results = save_results
+        self.save_path = save_path
 
     def navigateThroughFile(self):
         """ Runs through each frame in the file. For each pair of frames, use NICP
@@ -82,10 +85,13 @@ class LidarNavigator:
         plot.update()
         plot.print_summary()
 
-        filenameBase = datetime.now().strftime('%Y-%m-%dT%H-%M-%S-%f%z')
-        self.save_data(filenameBase + "_data.json", plot)
-        plot.save_plot(filenameBase + "_plot.png")
-        self.save_cloud(filenameBase + "_cloud.laz", self.mergedFrame)
+        if self.save_results:
+            filenameBase = self.save_path.replace("[time]", datetime.now().strftime('%Y-%m-%d_%H-%M-%S_%f%z'))
+            filenameBase = filenameBase.replace("[pcap]", self.reader.pcapPath.replace(".pcap", ""))
+            self.ensure_dir(filenameBase)
+            self.save_data(filenameBase + "_data.json", plot)
+            plot.save_plot(filenameBase + "_plot.png")
+            self.save_cloud(filenameBase + "_cloud.laz", self.mergedFrame)
 
         # Then continue showing the visualization in a blocking way until the user stops it.
         if not self.preview:
@@ -93,6 +99,13 @@ class LidarNavigator:
             self.vis.reset_view()
 
         self.vis.run()
+
+    def ensure_dir(self, file_path):
+        directory = os.path.dirname(file_path)
+        if len(directory) < 1: 
+            return
+        if not os.path.exists(directory):
+            os.makedirs(directory)
 
     def save_data(self, path, plot):
 
@@ -213,14 +226,21 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     PcapReader.add_path_arguments(parser)
     parser.add_argument('--frames', type=int, default=-1, required=False, help="If given a positive number larger than 1, only this many frames will be read from the PCAP file.")
+    
     parser.add_argument('--preview', dest='preview', action='store_true', help="Show constantly updated point cloud and data plot previews.")
     parser.add_argument('--no-preview', dest='preview', action='store_false', help="Don't show constantly updated point cloud and data plot previews.")
     parser.set_defaults(preview=True)
+    
+    parser.add_argument('--save', dest='save', action='store_true', help="Store results (data, plot, cloud) to disk.")
+    parser.add_argument('--no-save', dest='save', action='store_false', help="Do not store any results to disk.")
+    parser.set_defaults(save=True)
+
+    parser.add_argument('--save-path', type=str, default="[pcap]_[time]", required=False, help="The path where results should be stored. This path will be used for all types of results, with appendices depending on file type (_data.json, _plot.png, _cloud.laz). The path can include \"[pcap]\" and/or \"[time]\" which will be replaced with the name of the parsed PCAP file and the time of completion respectively.")
     
     args = parser.parse_args()
 
     print(args)
 
     # Create and start a visualization
-    navigator = LidarNavigator(args.pcap, args.json, args.frames, args.preview)
+    navigator = LidarNavigator(args.pcap, args.json, args.frames, args.preview, args.save, args.save_path)
     navigator.navigateThroughFile()
