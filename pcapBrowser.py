@@ -10,9 +10,6 @@ class PcapBrowser:
 
         self.reader = PcapReader(pcapPath, metaDataPath)
         self.vis = Open3DVisualizer()
-
-        self.cloudProcessors = [None]
-        self.cloudProcessorIndex = 0
     
     def startVisualization(self):
         """Initializes an open3d visualizer, configures it to use arrow
@@ -32,13 +29,8 @@ class PcapBrowser:
             if not self.setFrame(self._currentFrame):
                 self._currentFrame += 1
 
-        def key_toggle_thinning(vis):
-            self.cloudProcessorIndex = (self.cloudProcessorIndex + 1) % len(self.cloudProcessors)
-            self.setFrame(self._currentFrame)
-
         self.vis.register_key_callback(262, key_next) # Arrow right
         self.vis.register_key_callback(263, key_prev) # Arrow left
-        self.vis.register_key_callback(80, key_toggle_thinning) # P
         # List of key codes can be found here: https://www.glfw.org/docs/latest/group__keys.html
 
         self.setFrame(0)
@@ -52,7 +44,7 @@ class PcapBrowser:
         the geometry object containing the current frame. If the current frame is
         empty (end of file), this function does nothing, and returns False."""
 
-        frame = self.readFrame(num)
+        frame = self.reader.readFrame(num)
         if frame is None:
             return False
         
@@ -63,17 +55,6 @@ class PcapBrowser:
         print("Showing frame ", num)
 
         return True
-
-    def readFrame(self, num:int):
-        """Retrieves the current frame from the reader object, processes it (if activated), and converts it to an open3d geometry."""
-
-        frame = self.reader.readFrame(num)
-
-        # If a cloud processor is active, process the cloud (for example by voxel thinning)
-        if self.cloudProcessors[self.cloudProcessorIndex] is not None:
-            frame = self.cloudProcessors[self.cloudProcessorIndex].process(frame)
-
-        return frame
         
 
 if __name__ == "__main__":
