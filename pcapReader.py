@@ -2,6 +2,7 @@ from ouster import client, pcap
 from more_itertools import nth
 import open3d as o3d
 from colormaps import colorize, normalize
+import argparse
 
 class PcapReader:
 
@@ -111,18 +112,16 @@ class PcapReader:
             frames.append(frame)
 
     @staticmethod
-    def getPathArgs():
+    def getPathArgs(args = None):
         """ Creates an argument parser that handles --pcap and --json, where the latter is optional.
         If --json is not given, it will be replaced with the values of the --pcap parameter with the file
         extension changed to .json.
         """
-        
-        import argparse
 
-        parser = argparse.ArgumentParser()
-        parser.add_argument('--pcap', type=str, required=True, help="The path to the PCAP file to visualize, relative or absolute.")
-        parser.add_argument('--json', type=str, required=False, help="The path to the corresponding JSON file with the sensor metadata, relative or absolute. If this is not given, the PCAP location is used (by replacing .pcap with .json).")
-        args = parser.parse_args()
+        if args is None:
+            parser = argparse.ArgumentParser()
+            PcapReader.add_path_arguments(parser)
+            args = parser.parse_args()
 
         if args.json is None:
             args.json = args.pcap.replace(".pcap", ".json")
@@ -130,6 +129,14 @@ class PcapReader:
         return args
 
     @staticmethod
-    def fromPathArgs():
-        args = PcapReader.getPathArgs()
+    def add_path_arguments(parser):
+        parser.add_argument('--pcap', type=str, required=True, help="The path to the PCAP file to visualize, relative or absolute.")
+        parser.add_argument('--json', type=str, required=False, help="The path to the corresponding JSON file with the sensor metadata, relative or absolute. If this is not given, the PCAP location is used (by replacing .pcap with .json).")
+
+    @staticmethod
+    def fromPathArgs(args = None):
+
+        if args is None:
+            args = PcapReader.getPathArgs()
+            
         return PcapReader(args.pcap, args.json)
