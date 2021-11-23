@@ -61,7 +61,7 @@ class Plotter:
         nonPerfect = [x for x in self.fitnesses if x <= 0.95]
 
         return [
-            ["Number of frames:", len(self.plot_x)],
+            ["Number of frames:", len(self.plot_x) + 1],
             ["Total movement distance:", sum(self.distances)],
             ["Max distance: ", max(self.distances)],
             ["Avg distance: ", statistics.mean(self.distances)],
