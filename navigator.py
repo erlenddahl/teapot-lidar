@@ -6,6 +6,7 @@ import time
 import open3d as o3d
 from datetime import datetime
 import json
+import argparse
 
 from matchers.nicp import NicpMatcher
 from matchers.downsamplefirst import DownsampleFirstNicpMatcher
@@ -14,7 +15,7 @@ from matchers.fastglobalregistrationfirst import FastGlobalFirstNicpMatcher
 
 class LidarNavigator:
 
-    def __init__(self, pcapPath, metaDataPath):
+    def __init__(self, pcapPath, metaDataPath, frames = -1):
         """Initialize a LidarNavigator by reading metadata and setting
         up a package source from the pcap file.
         """
@@ -25,6 +26,7 @@ class LidarNavigator:
         self.voxel_size = 0.1
 
         self.matcher = NicpMatcher()
+        self.frame_limit = frames
 
     def navigateThroughFile(self):
         """ Runs through each frame in the file. For each pair of frames, use NICP
@@ -66,6 +68,9 @@ class LidarNavigator:
             self.vis.refresh_non_blocking()
 
             plot.update()
+
+            if self.frame_limit > 1 and len(self.reader.preparedClouds) >= self.frame_limit:
+                break
 
         # When everything is finished, print a summary, and save the point cloud and debug data.
         plot.print_summary()
@@ -173,8 +178,12 @@ class LidarNavigator:
 
 if __name__ == "__main__":
 
-    args = PcapReader.getPathArgs()
+    parser = argparse.ArgumentParser()
+    PcapReader.add_path_arguments(parser)
+    parser.add_argument('--frames', type=int, required=False, help="If given a positive number larger than 1, only this many frames will be read from the PCAP file.")
+    
+    args = parser.parse_args()
 
     # Create and start a visualization
-    navigator = LidarNavigator(args.pcap, args.json)
+    navigator = LidarNavigator(args.pcap, args.json, args.frames)
     navigator.navigateThroughFile()
