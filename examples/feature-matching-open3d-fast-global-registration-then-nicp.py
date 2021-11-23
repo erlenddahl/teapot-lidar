@@ -70,8 +70,8 @@ if __name__ == "__main__":
 
     reader = PcapReader.fromPathArgs()
 
-    source = reader.readFrameAsPointCloud(20, True)
-    target = reader.readFrameAsPointCloud(25, True)
+    source = reader.readFrame(20, True)
+    target = reader.readFrame(25, True)
     
     accumulatedTime = 0.0
 

@@ -58,7 +58,7 @@ print("Read all frames")
 startTime = time.perf_counter()
 voxel_size = 0.02
 reader = PcapReader.fromPathArgs()
-pcds = reader.readAllFramesAsPointClouds(True)
+pcds = reader.readAllFrames(True)
 print(f"    > Time usage: {time.perf_counter() - startTime:0.4f} seconds.")
 
 print("Downsample frames")
@@ -106,7 +106,7 @@ print(f"    > Time usage: {time.perf_counter() - startTime:0.4f} seconds.")
 print("Combine point cloud")
 startTime = time.perf_counter()
 reader = PcapReader.fromPathArgs()
-pcds = reader.readAllFramesAsPointClouds(True)
+pcds = reader.readAllFrames(True)
 pcd_combined = o3d.geometry.PointCloud()
 for point_id in range(len(pcds)):
     pcds[point_id].transform(pose_graph.nodes[point_id].pose)

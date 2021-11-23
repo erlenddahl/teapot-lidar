@@ -1,6 +1,7 @@
 from ouster import client, pcap
 from more_itertools import nth
-import open3d
+import open3d as o3d
+from colormaps import colorize, normalize
 
 class PcapReader:
 
@@ -22,7 +23,9 @@ class PcapReader:
         self.xyzLut = client.XYZLut(self.metadata)            
 
         self.source = pcap.Pcap(pcapPath, self.metadata)
-        self.readFrames = []
+        self.preparedClouds = []
+
+        self.channels = [c for c in client.ChanField]
 
     def printInfo(self):
         """Print information about all the packets in this file."""
@@ -59,11 +62,12 @@ class PcapReader:
             return None
 
         # Lazily read frames until the given index is available.
-        while len(self.readFrames) < num + 1:
+        while len(self.preparedClouds) < num + 1:
+
             scan = nth(client.Scans(self.source), 1)
 
             if scan is None:
-                self.readFrames.append(None)
+                self.preparedClouds.append(None)
             else:
                 # Prepare the frame for visualization
                 xyz = self.xyzLut(scan)
@@ -72,29 +76,24 @@ class PcapReader:
                 if removeVehicle:
                     xyz = self.removeVehicle(xyz)
 
-                self.readFrames.append(xyz)
+                key = scan.field(self.channels[1])
+
+                # apply colormap to field values
+                key_img = normalize(key)
+                color_img = colorize(key_img)
+
+                cloud = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(xyz))
+                cloud.colors = o3d.utility.Vector3dVector(color_img.reshape((-1, 3)))
+
+                self.preparedClouds.append(cloud)
 
         # Retrieve the requested frame, which will now be read.
-        return self.readFrames[num]
-
-    def readFrameAsPointCloud(self, num:int, removeVehicle:bool = False):
-        
-        frame = self.readFrame(num, removeVehicle)
-        if frame is None:
-            return None
-
-        return open3d.geometry.PointCloud(open3d.utility.Vector3dVector(frame))
+        return self.preparedClouds[num]
 
     def nextFrame(self, removeVehicle:bool = False):
         """Reads and returns the first unread frame"""
 
-        return self.readFrame(len(self.readFrames), removeVehicle)
-
-    def nextFrameAsPointCloud(self, removeVehicle:bool = False):
-        frame = self.nextFrame(removeVehicle)
-        if frame is None:
-            return None
-        return open3d.geometry.PointCloud(open3d.utility.Vector3dVector(frame))
+        return self.readFrame(len(self.preparedClouds), removeVehicle)
 
     def readAllFrames(self, removeVehicle:bool = False):
 
@@ -104,10 +103,6 @@ class PcapReader:
             if frame is None:
                 return frames
             frames.append(frame)
-
-    def readAllFramesAsPointClouds(self, removeVehicle:bool = False):
-
-        return [open3d.geometry.PointCloud(open3d.utility.Vector3dVector(x)) for x in self.readAllFrames(removeVehicle)]
 
     @staticmethod
     def getPathArgs():

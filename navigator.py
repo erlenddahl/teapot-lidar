@@ -44,8 +44,8 @@ class LidarNavigator:
             points = o3d.utility.Vector3dVector([]), lines=o3d.utility.Vector2iVector([])
         )
 
-        self.mergedFrame = self.reader.readFrameAsPointCloud(0, True)
-        self.previousFrame = self.reader.readFrameAsPointCloud(0, True)
+        self.mergedFrame = self.reader.readFrame(0, True)
+        self.previousFrame = self.reader.readFrame(0, True)
 
         # Estimate normals for the first source frame in order to speed up the 
         # alignment operation.
@@ -95,7 +95,7 @@ class LidarNavigator:
         """
 
         # Fetch the next frame
-        frame = self.reader.nextFrameAsPointCloud(True)
+        frame = self.reader.nextFrame(True)
 
         # If it is empty, that (usually) means we have reached the end of
         # the file. Return False to stop the loop.
