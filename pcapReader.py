@@ -46,11 +46,15 @@ class PcapReader:
                 print(f'  acceleration = {packet.accel}')
                 print(f'  angular_velocity = {packet.angular_vel}')
 
-    def removeVehicle(self, frame):
+    def removeVehicle(self, frame, cloud = None):
         # Remove the vehicle, which is always stationary at the center. We don't want that
         # to interfere with the point cloud alignment.
+
+        if cloud is None:
+            cloud = frame
+
         vr = 2.5
-        return frame[((frame[:, 0] > vr) | (frame[:, 0] < -vr)) | ((frame[:, 1] > vr) | (frame[:, 1] < -vr))]
+        return cloud[((frame[:, 0] > vr) | (frame[:, 0] < -vr)) | ((frame[:, 1] > vr) | (frame[:, 1] < -vr))]
 
     def readFrame(self, num:int, removeVehicle:bool = False):
         """Retrieves the current frame from an array of read frames. The array is lazily
@@ -73,17 +77,19 @@ class PcapReader:
                 xyz = self.xyzLut(scan)
                 xyz = xyz.reshape((-1, 3))
 
-                if removeVehicle:
-                    xyz = self.removeVehicle(xyz)
-
                 key = scan.field(self.channels[1])
 
                 # apply colormap to field values
                 key_img = normalize(key)
                 color_img = colorize(key_img)
+                color_img = color_img.reshape((-1, 3))
+
+                if removeVehicle:
+                    color_img = self.removeVehicle(xyz, color_img)
+                    xyz = self.removeVehicle(xyz)
 
                 cloud = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(xyz))
-                cloud.colors = o3d.utility.Vector3dVector(color_img.reshape((-1, 3)))
+                cloud.colors = o3d.utility.Vector3dVector(color_img)
 
                 self.preparedClouds.append(cloud)
 
