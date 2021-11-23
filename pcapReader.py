@@ -1,5 +1,4 @@
 from ouster import client, pcap
-from more_itertools import nth
 import open3d as o3d
 from colormaps import colorize, normalize
 import argparse
@@ -27,6 +26,7 @@ class PcapReader:
         self.preparedClouds = []
 
         self.channels = [c for c in client.ChanField]
+        self.scans = iter(client.Scans(self.source))
 
     def count_frames(self):
         count = len([i for (i, _) in enumerate(iter(client.Scans(self.source)))])
@@ -74,7 +74,7 @@ class PcapReader:
         # Lazily read frames until the given index is available.
         while len(self.preparedClouds) < num + 1:
 
-            scan = nth(client.Scans(self.source), 1)
+            scan = next(self.scans)
 
             if scan is None:
                 self.preparedClouds.append(None)
@@ -143,5 +143,5 @@ class PcapReader:
 
         if args is None:
             args = PcapReader.getPathArgs()
-            
+
         return PcapReader(args.pcap, args.json)
