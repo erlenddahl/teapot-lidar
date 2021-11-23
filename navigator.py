@@ -181,10 +181,6 @@ class LidarNavigator:
         plot.fitnesses.append(reg.fitness)
         plot.distances.append(np.sqrt(np.dot(movement,movement)))
 
-        # Transform earlier points so that they follow the ongoing model transformation
-        for i,m in enumerate(self.movements):
-            self.movements[i] = m + movement
-
         # Append the newest movement
         self.movements.append(movement)
 
