@@ -226,7 +226,7 @@ if __name__ == "__main__":
     
     parser.add_argument('--preview', type=str, default="always", choices=['always', 'end', 'never'], help="Show constantly updated point cloud and data plot previews while processing ('always'), show them only at the end ('end'), or don't show them at all ('never').")
     
-    parser.add_argument('--save-to', type=str, default=None, required=False, help="The path where results should be stored. This path will be used for all types of results, with appendices depending on file type (_data.json, _plot.png, _cloud.laz). The path can include \"[pcap]\" and/or \"[time]\" which will be replaced with the name of the parsed PCAP file and the time of completion respectively.")
+    parser.add_argument('--save-to', type=str, default=None, required=False, help="If given, final results will be stored at this path. The path will be used for all types of results, with appendices depending on file type ('_data.json', '_plot.png', '_cloud.laz'). The path can include \"[pcap]\" and/or \"[time]\" which will be replaced with the name of the parsed PCAP file and the time of completion respectively.")
     
     args = parser.parse_args()
 
