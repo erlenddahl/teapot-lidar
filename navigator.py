@@ -145,7 +145,6 @@ class LidarNavigator:
 
         # Estimate normals for the target frame (the source frame will always have
         # normals from the previous step).
-        print("Estimating normals")
         target.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
 
         # Run the selected registration algorithm
@@ -196,7 +195,6 @@ class LidarNavigator:
             self.movementPath.paint_uniform_color([1, 0, 0])
             self.vis.update_geometry(self.movementPath)
 
-        print("Merging and downsampling full 3D model")
         startTime = time.perf_counter()
 
         # Transform the merged visualization to fit the next frame
@@ -209,7 +207,6 @@ class LidarNavigator:
         # Otherwise it would grow extremely large, as it would contain all points
         # from all processed point clouds.
         self.mergedFrame = merged.voxel_down_sample(voxel_size=self.voxel_size)
-        print(f"    > Time usage: {time.perf_counter() - startTime:0.4f} seconds.")
 
         # Store this frame so that it can be used as the source frame in the next iteration.
         self.previousFrame = frame
@@ -237,8 +234,6 @@ if __name__ == "__main__":
     parser.add_argument('--save-path', type=str, default="[pcap]_[time]", required=False, help="The path where results should be stored. This path will be used for all types of results, with appendices depending on file type (_data.json, _plot.png, _cloud.laz). The path can include \"[pcap]\" and/or \"[time]\" which will be replaced with the name of the parsed PCAP file and the time of completion respectively.")
     
     args = parser.parse_args()
-
-    print(args)
 
     # Create and start a visualization
     navigator = LidarNavigator(args.pcap, args.json, args.frames, args.preview, args.save, args.save_path)
