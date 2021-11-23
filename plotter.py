@@ -52,6 +52,8 @@ class Plotter:
 
     def get_summary(self):
 
+        nonPerfect = [x for x in self.fitnesses if x <= 0.95]
+
         return [
             ["Number of frames:", len(self.plot_x)],
             ["Total movement distance:", sum(self.distances)],
@@ -64,7 +66,7 @@ class Plotter:
             ["Min time: ", min(self.timeUsages)],
             ["Max fitness: ", max(self.fitnesses)],
             ["Avg fitness: ", statistics.mean(self.fitnesses)],
-            ["Avg non-perfect fitness: ", statistics.mean([x for x in self.fitnesses if x <= 0.95])],
+            ["Avg non-perfect fitness: ", statistics.mean(nonPerfect) if len(nonPerfect) > 0 else "-"],
             ["Min fitness: ", min(self.fitnesses)],
             ["Max rmse: ", max(self.rmses)],
             ["Avg rmse: ", statistics.mean(self.rmses)],
