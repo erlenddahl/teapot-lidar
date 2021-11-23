@@ -7,11 +7,22 @@ class Open3DVisualizer:
     def __init__(self):
         self._isInitialGeometry = True
 
+        self.vis = o3d.visualization.VisualizerWithKeyCallback()
+
+        self._currentGeometry = None
+        self._isNonBlocking = False
+
+        self.hasBeenInitialized = False
+
+    def _initialize(self):
+
+        if self.hasBeenInitialized:
+            return
+
         # Create a simple axis visualization
         axes = o3d.geometry.TriangleMesh.create_coordinate_frame(1.0)
 
         # initialize visualizer and rendering options
-        self.vis = o3d.visualization.VisualizerWithKeyCallback()
         self.vis.create_window()
         self.vis.add_geometry(axes)
 
@@ -23,10 +34,12 @@ class Open3DVisualizer:
         # initialize camera settings
         self.ctr = self.vis.get_view_control()
 
-        self._currentGeometry = None
-        self._isNonBlocking = False
+        self.hasBeenInitialized = True
 
     def reset_view(self):
+        
+        self._initialize()
+
         """Reset the view to the axis center"""
         self.ctr.set_zoom(0.1)
         self.ctr.set_lookat([0, 0, 0])
@@ -38,6 +51,8 @@ class Open3DVisualizer:
     def run(self):
         """Initializes an open3d visualizer"""
 
+        self._initialize()
+
         # run visualizer main loop
         print("Press Q or Excape to exit")
 
@@ -45,6 +60,9 @@ class Open3DVisualizer:
         self.vis.destroy_window()
 
     def refresh_non_blocking(self):
+        
+        self._initialize()
+
         self.vis.poll_events()
         self.vis.update_renderer()
         self._isNonBlocking = True
@@ -56,6 +74,8 @@ class Open3DVisualizer:
         """ Shows the given frame by adding it as a geometry.
         If this is a numpy array, it will be converted to a point cloud.
         """
+
+        self._initialize()
 
         if removePrevious and self._currentGeometry is not None:
             self.vis.remove_geometry(self._currentGeometry, False)
