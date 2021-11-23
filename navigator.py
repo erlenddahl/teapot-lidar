@@ -4,6 +4,7 @@ from plotter import Plotter
 import numpy as np
 import os
 import time
+from tqdm import tqdm
 import open3d as o3d
 import laspy
 from datetime import datetime
@@ -33,6 +34,9 @@ class LidarNavigator:
         self.previewAtEnd = preview == "always" or preview =="end"
         self.save_results = save_results
         self.save_path = save_path
+
+        if self.frame_limit <= 1:
+            self.frame_limit = self.reader.count_frames()
 
     def navigateThroughFile(self):
         """ Runs through each frame in the file. For each pair of frames, use NICP
@@ -71,16 +75,15 @@ class LidarNavigator:
         plot = Plotter(self.previewAlways)
 
         # Enumerate all frames until the end of the file and run the merge operation.
-        while self.mergeNextFrame(plot):
+        for _ in tqdm(range(1, self.frame_limit), total=self.frame_limit, ascii=True, initial=1):
+            
+            if self.mergeNextFrame(plot): 
 
-            # Refresh the non-blocking visualization
-            if self.previewAlways:
-                self.vis.refresh_non_blocking()
+                # Refresh the non-blocking visualization
+                if self.previewAlways:
+                    self.vis.refresh_non_blocking()
 
-            plot.step(self.previewAlways)
-
-            if self.frame_limit > 1 and len(self.reader.preparedClouds) >= self.frame_limit:
-                break
+                plot.step(self.previewAlways)
 
         # When everything is finished, print a summary, and save the point cloud and debug data.
         if self.previewAtEnd:

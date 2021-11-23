@@ -28,6 +28,11 @@ class PcapReader:
 
         self.channels = [c for c in client.ChanField]
 
+    def count_frames(self):
+        count = len([i for (i, _) in enumerate(iter(client.Scans(self.source)))])
+        self.source.reset()
+        return count
+
     def printInfo(self):
         """Print information about all the packets in this file."""
 
