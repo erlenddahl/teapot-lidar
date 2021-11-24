@@ -3,7 +3,6 @@ from open3dVisualizer import Open3DVisualizer
 from plotter import Plotter
 import numpy as np
 import os
-import time
 from tqdm import tqdm
 import open3d as o3d
 import laspy
@@ -128,11 +127,12 @@ class LidarNavigator:
 
         if self.save_path is not None:
             filenameBase = self.save_path.replace("[time]", datetime.now().strftime('%Y-%m-%d_%H-%M-%S_%f%z'))
-            filenameBase = filenameBase.replace("[pcap]", self.reader.pcapPath.replace(".pcap", ""))
+            filenameBase = filenameBase.replace("[pcap]", os.path.basename(self.reader.pcapPath).replace(".pcap", ""))
             self.ensure_dir(filenameBase)
             self.save_data(filenameBase + "_data.json", plot)
             plot.save_plot(filenameBase + "_plot.png")
-            self.save_cloud(filenameBase + "_cloud.laz", self.merged_frame)
+            self.save_cloud_as_las(filenameBase + "_cloud.laz", self.merged_frame)
+            o3d.io.write_point_cloud(filenameBase + "_cloud.pcd", self.merged_frame, compressed=True)
 
             self.time("results saving")
 
@@ -173,7 +173,7 @@ class LidarNavigator:
         with open(path, 'w') as f:
             json.dump(data, f, indent=4)
 
-    def save_cloud(self, path, cloud):
+    def save_cloud_as_las(self, path, cloud):
 
         xyz = np.asarray(cloud.points)
 
