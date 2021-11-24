@@ -40,6 +40,7 @@ class LidarNavigator:
         self.save_path = save_path
         self.downsample_timer = downsample_cloud_after_frames
         self.downsample_cloud_after_frames = downsample_cloud_after_frames
+        self.merged_frame_is_dirty = True
         
         self.time("setup")
 
@@ -110,6 +111,9 @@ class LidarNavigator:
                 plot.print_summary(self.timer)
                 raise
 
+        # Ensure the final cloud has been downsampled
+        self.ensure_merged_frame_is_downsampled()
+
         # When everything is finished, print a summary, and save the point cloud and debug data.
         if self.preview_at_end:
             plot.update()
@@ -131,6 +135,15 @@ class LidarNavigator:
             self.vis.reset_view()
 
             self.vis.run()
+
+    def ensure_merged_frame_is_downsampled(self):
+
+        if not self.merged_frame_is_dirty:
+            return
+
+        self.merged_frame = self.merged_frame.voxel_down_sample(voxel_size=self.voxel_size)
+        self.merged_frame_is_dirty = False
+        self.time("cloud downsampling")
 
     def ensure_dir(self, file_path):
         directory = os.path.dirname(file_path)
@@ -246,13 +259,13 @@ class LidarNavigator:
         # Otherwise it would grow extremely large, as it would contain all points
         # from all processed point clouds.
         # Don't do this on every frame, as it takes a lot of time.
+        self.merged_frame = merged
         self.downsample_timer -= 1
         if self.downsample_timer <= 0:
-            merged = merged.voxel_down_sample(voxel_size=self.voxel_size)
-            self.time("cloud downsampling")
+            self.ensure_merged_frame_is_downsampled()
             self.downsample_timer = self.downsample_cloud_after_frames
-        
-        self.merged_frame = merged
+        else:
+            self.merged_frame_is_dirty = True
 
         # Store this frame so that it can be used as the source frame in the next iteration.
         self.previous_frame = frame
@@ -273,7 +286,7 @@ if __name__ == "__main__":
     PcapReader.add_path_arguments(parser)
     parser.add_argument('--frames', type=int, default=-1, required=False, help="If given a number larger than 1, only this many frames will be read from the PCAP file.")
     parser.add_argument('--skip-frames', type=int, default=0, required=False, help="If given a positive number larger than 0, this many frames will be skipped between every frame read from the PCAP file.")
-    parser.add_argument('--downsample-after', type=int, default=10, required=False, help="The cloud will be downsampled after this many frames (which is an expensive operation for large clouds, so don't do it too often).")
+    parser.add_argument('--downsample-after', type=int, default=25, required=False, help="The cloud will be downsampled after this many frames (which is an expensive operation for large clouds, so don't do it too often). If this number is higher than the number of frames being read, it will be downsampled once at the end of the process (unless downsampling is disabled, see --voxel-size).")
     parser.add_argument('--preview', type=str, default="always", choices=['always', 'end', 'never'], help="Show constantly updated point cloud and data plot previews while processing ('always'), show them only at the end ('end'), or don't show them at all ('never').")
     parser.add_argument('--save-to', type=str, default=None, required=False, help="If given, final results will be stored at this path. The path will be used for all types of results, with appendices depending on file type ('_data.json', '_plot.png', '_cloud.laz'). The path can include \"[pcap]\" and/or \"[time]\" which will be replaced with the name of the parsed PCAP file and the time of completion respectively.")
     
