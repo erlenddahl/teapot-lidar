@@ -21,17 +21,17 @@ pip install -r requirements.txt
 ### Navigator
 navigator.py runs through all frames the given PCAP file, and uses the selected registration algorithm to place all frames in the same coordinate system. The vehicle's movements between frames are calculated and visualized as a red line in the final point cloud. Data can be previewed using the --preview argument, and/or saved using the --save-to argument. For debugging, the --frames argument sets a maximum number of frames to be read before finishing, and the --skip-frames argument allows for simulating lower frequencies.
 
-Example with default preview and no saving:
+**Example with default preview and no saving:**
 ```
 python pcapBrowser.py --pcap path\to\pcap-file.pcap --json path\to\metadata-file.json
 ```
 
-Example with no preview, save results:
+**Example with default metadata file, no preview, and results saved to the results folder:**
 ```
-python pcapBrowser.py --pcap path\to\pcap-file.pcap --json path\to\metadata-file.json --preview never --save-to results\[pcap]_[time]
+python pcapBrowser.py --pcap path\to\pcap-file.pcap --preview never --save-to results\[pcap]_[time]
 ```
 
-Full argument description:
+**Full argument description:**
 ```
 usage: navigator.py [-h] --pcap PCAP [--json JSON] [--frames FRAMES]
                     [--skip-frames SKIP_FRAMES] [--preview {always,end,never}]
