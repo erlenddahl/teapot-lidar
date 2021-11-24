@@ -18,7 +18,7 @@ from matchers.fastglobalregistrationfirst import FastGlobalFirstNicpMatcher
 
 class LidarNavigator:
 
-    def __init__(self, pcapPath, metaDataPath, frames = -1, nth_frame = 0, preview = "always", save_path = None):
+    def __init__(self, pcapPath, metaDataPath, frames = -1, nth_frame = 0, downsample_cloud_after_frames = 10, preview = "always", save_path = None):
         """Initialize a LidarNavigator by reading metadata and setting
         up a package source from the pcap file.
         """
@@ -35,6 +35,8 @@ class LidarNavigator:
         self.previewAlways = preview == "always"
         self.previewAtEnd = preview == "always" or preview =="end"
         self.save_path = save_path
+        self.downsample_timer = downsample_cloud_after_frames
+        self.downsample_cloud_after_frames = downsample_cloud_after_frames
 
         if self.frame_limit <= 1:
             self.frame_limit = self.reader.count_frames()
@@ -214,7 +216,14 @@ class LidarNavigator:
         # Downsample the merged visualization to make it faster to work with.
         # Otherwise it would grow extremely large, as it would contain all points
         # from all processed point clouds.
-        self.mergedFrame = merged.voxel_down_sample(voxel_size=self.voxel_size)
+        # Don't do this on every frame, as it takes a lot of time.
+        self.downsample_timer -= 1
+        if self.downsample_timer <= 0:
+            merged = merged.voxel_down_sample(voxel_size=self.voxel_size)
+            self.time("cloud downsampling")
+            self.downsample_timer = self.downsample_cloud_after_frames
+        
+        self.mergedFrame = merged
 
         # Store this frame so that it can be used as the source frame in the next iteration.
         self.previousFrame = frame
