@@ -78,13 +78,20 @@ class LidarNavigator:
         # Enumerate all frames until the end of the file and run the merge operation.
         for _ in tqdm(range(1, self.frame_limit), total=self.frame_limit, ascii=True, initial=1):
             
-            if self.mergeNextFrame(plot): 
+            try:
 
-                # Refresh the non-blocking visualization
-                if self.previewAlways:
-                    self.vis.refresh_non_blocking()
+                if self.mergeNextFrame(plot): 
 
-                plot.step(self.previewAlways)
+                    # Refresh the non-blocking visualization
+                    if self.previewAlways:
+                        self.vis.refresh_non_blocking()
+
+                    plot.step(self.previewAlways)
+
+            except KeyboardInterrupt:
+                print("Process aborted. Results so far:")
+                plot.print_summary(self.timer)
+                raise
 
         # When everything is finished, print a summary, and save the point cloud and debug data.
         if self.previewAtEnd:
