@@ -19,7 +19,7 @@ from matchers.fastglobalregistrationfirst import FastGlobalFirstNicpMatcher
 
 class LidarNavigator:
 
-    def __init__(self, pcap_path, meta_data_path, frames = -1, skip_frames = 0, downsample_cloud_after_frames = 10, preview = "always", save_path = None):
+    def __init__(self, pcap_path, meta_data_path, frames = -1, skip_frames = 0, voxel_size = 0.1, downsample_cloud_after_frames = 10, preview = "always", save_path = None):
         """Initialize a LidarNavigator by reading metadata and setting
         up a package source from the pcap file.
         """
@@ -31,7 +31,7 @@ class LidarNavigator:
         self.reader = PcapReader(pcap_path, meta_data_path, skip_frames)
 
         # Fetch the first frame and use it as a base for the generated visualization
-        self.voxel_size = 0.1
+        self.voxel_size = voxel_size
 
         self.matcher = NicpMatcher()
         self.frame_limit = frames
@@ -137,6 +137,9 @@ class LidarNavigator:
             self.vis.run()
 
     def ensure_merged_frame_is_downsampled(self):
+
+        if self.voxel_size <= 0:
+            return
 
         if not self.merged_frame_is_dirty:
             return
@@ -247,11 +250,7 @@ class LidarNavigator:
         self.time("frame transformation")
 
         # Combine the points from the merged visualization with the points from the next frame
-        downsampled_frame = frame#.voxel_down_sample(voxel_size=self.voxel_size)
-
-        self.time("frame downsampling")
-
-        merged += downsampled_frame
+        merged += frame
 
         self.time("cloud merging")
 
@@ -286,6 +285,7 @@ if __name__ == "__main__":
     PcapReader.add_path_arguments(parser)
     parser.add_argument('--frames', type=int, default=-1, required=False, help="If given a number larger than 1, only this many frames will be read from the PCAP file.")
     parser.add_argument('--skip-frames', type=int, default=0, required=False, help="If given a positive number larger than 0, this many frames will be skipped between every frame read from the PCAP file.")
+    parser.add_argument('--voxel-size', type=float, default=0.1, required=False, help="The voxel size used for cloud downsampling. If less than or equal to zero, downsampling will be disabled.")
     parser.add_argument('--downsample-after', type=int, default=25, required=False, help="The cloud will be downsampled after this many frames (which is an expensive operation for large clouds, so don't do it too often). If this number is higher than the number of frames being read, it will be downsampled once at the end of the process (unless downsampling is disabled, see --voxel-size).")
     parser.add_argument('--preview', type=str, default="always", choices=['always', 'end', 'never'], help="Show constantly updated point cloud and data plot previews while processing ('always'), show them only at the end ('end'), or don't show them at all ('never').")
     parser.add_argument('--save-to', type=str, default=None, required=False, help="If given, final results will be stored at this path. The path will be used for all types of results, with appendices depending on file type ('_data.json', '_plot.png', '_cloud.laz'). The path can include \"[pcap]\" and/or \"[time]\" which will be replaced with the name of the parsed PCAP file and the time of completion respectively.")
@@ -293,5 +293,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Create and start a visualization
-    navigator = LidarNavigator(args.pcap, args.json, args.frames, args.skip_frames, args.downsample_after, args.preview, args.save_to)
+    navigator = LidarNavigator(args.pcap, args.json, args.frames, args.skip_frames, args.voxel_size, args.downsample_after, args.preview, args.save_to)
     navigator.navigate_through_file()
