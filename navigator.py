@@ -248,6 +248,7 @@ class LidarNavigator:
 
         # Combine the points from the merged visualization with the points from the next frame
         self.merged_frame += frame
+        self.merged_frame_is_dirty = True
 
         self.time("cloud merging")
 
@@ -259,8 +260,6 @@ class LidarNavigator:
         if self.downsample_timer <= 0:
             self.ensure_merged_frame_is_downsampled()
             self.downsample_timer = self.downsample_cloud_after_frames
-        else:
-            self.merged_frame_is_dirty = True
 
         # Store this frame so that it can be used as the source frame in the next iteration.
         self.previous_frame = frame

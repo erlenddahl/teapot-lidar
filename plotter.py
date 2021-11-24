@@ -66,7 +66,6 @@ class Plotter:
             ["Max distance: ", max(self.distances)],
             ["Avg distance: ", statistics.mean(self.distances)],
             ["Min distance: ", min(self.distances)],
-            ["Total registration time usage: ", sum(self.timeUsages)],
             ["Max time: ", max(self.timeUsages)],
             ["Avg time: ", statistics.mean(self.timeUsages)],
             ["Min time: ", min(self.timeUsages)],
