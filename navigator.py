@@ -45,8 +45,7 @@ class LidarNavigator:
 
         if self.frame_limit <= 1:
             self.frame_limit = self.reader.count_frames()
-
-        self.time("frame counting")
+            self.time("frame counting")
 
     def time(self, key):
         self.timer.time(key)
@@ -69,8 +68,8 @@ class LidarNavigator:
             points = o3d.utility.Vector3dVector([]), lines=o3d.utility.Vector2iVector([])
         )
 
-        self.mergedFrame = self.reader.readFrame(0, True)
-        self.previousFrame = self.reader.readFrame(0, True)
+        self.mergedFrame = self.reader.nextFrame(True, self.timer)
+        self.previousFrame = self.mergedFrame
 
         # Estimate normals for the first source frame in order to speed up the 
         # alignment operation.
@@ -101,8 +100,10 @@ class LidarNavigator:
                     # Refresh the non-blocking visualization
                     if self.previewAlways:
                         self.vis.refresh_non_blocking()
+                        self.time("visualization refresh")
 
                     plot.step(self.previewAlways)
+                    self.time("plot step")
 
             except KeyboardInterrupt:
                 print("Process aborted. Results so far:")
@@ -193,14 +194,13 @@ class LidarNavigator:
         """
 
         # Fetch the next frame
-        frame = self.reader.nextFrame(True)
+        frame = self.reader.nextFrame(True, self.timer)
 
         # If it is empty, that (usually) means we have reached the end of
         # the file. Return False to stop the loop.
         if frame is None:
             return False
 
-        self.time("frame retrieval")
         startTime = time.perf_counter()
         
         # Run the alignment
