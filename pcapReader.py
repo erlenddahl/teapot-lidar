@@ -1,12 +1,11 @@
 from ouster import client, pcap
-from more_itertools import nth
 import open3d as o3d
 from colormaps import colorize, normalize
 import argparse
 
 class PcapReader:
 
-    def __init__(self, pcapPath, metaDataPath = None, nth_frame = 0):
+    def __init__(self, pcapPath, metaDataPath = None, skip_frames = 0):
         """Initialize a LidarVisualizer by reading metadata and setting
         up a package source from the pcap file.
         """
@@ -24,24 +23,33 @@ class PcapReader:
         self.xyzLut = client.XYZLut(self.metadata)            
 
         self.source = pcap.Pcap(pcapPath, self.metadata)
-        self.preparedClouds = []
 
         self.channels = [c for c in client.ChanField]
-        self.scans = iter(client.Scans(self.source))
 
         # If 0, every frame will be read. If 1, every second frame, etc.
-        self.nth_frame = nth_frame
+        self.skip_frames = skip_frames
+
+        self.reset()
 
     def count_frames(self):
         count = 0
         i = iter(client.Scans(self.source))
         while True:
-            frame = nth(i, self.nth_frame)
+            frame = self.skip_and_get(i)
             if frame is None:
                 break
             count += 1
-        self.source.reset()
+        self.reset()
         return count
+
+    def reset(self):
+        self.source.reset()
+        self.scans = iter(client.Scans(self.source))
+
+    def skip_and_get(self, iterator):
+        for _ in range(self.skip_frames):
+            next(iterator)
+        return next(iterator)
 
     def printInfo(self):
         """Print information about all the packets in this file."""
@@ -72,50 +80,44 @@ class PcapReader:
         vr = 2.5
         return cloud[((frame[:, 0] > vr) | (frame[:, 0] < -vr)) | ((frame[:, 1] > vr) | (frame[:, 1] < -vr))]
 
-    def readFrame(self, num:int, removeVehicle:bool = False):
-        """Retrieves the current frame from an array of read frames. The array is lazily
-        filled with data from the pcap file as new frames are requested. Old frames are
-        never thrown out, so this will case memory issues if the pcap file gets large enough."""
+    def nextFrame(self, removeVehicle:bool = False, timer = None):
+        """Retrieves the next frame"""
 
-        # If given a negative index, return None.
-        if num < 0:
+        if timer is not None: timer.reset()
+
+        scan = self.skip_and_get(self.scans)
+
+        if timer is not None: timer.time("frame retrieval")
+
+        if scan is None:
             return None
+            
+        # Prepare the frame for visualization
+        xyz = self.xyzLut(scan)
+        xyz = xyz.reshape((-1, 3))
 
-        # Lazily read frames until the given index is available.
-        while len(self.preparedClouds) < num + 1:
+        if timer is not None: timer.time("frame reshaping")
 
-            scan = nth(self.scans, self.nth_frame)
+        key = scan.field(self.channels[1])
 
-            if scan is None:
-                self.preparedClouds.append(None)
-            else:
-                # Prepare the frame for visualization
-                xyz = self.xyzLut(scan)
-                xyz = xyz.reshape((-1, 3))
+        # apply colormap to field values
+        key_img = normalize(key)
+        color_img = colorize(key_img)
+        color_img = color_img.reshape((-1, 3))
 
-                key = scan.field(self.channels[1])
+        if timer is not None: timer.time("frame colorization")
 
-                # apply colormap to field values
-                key_img = normalize(key)
-                color_img = colorize(key_img)
-                color_img = color_img.reshape((-1, 3))
+        if removeVehicle:
+            color_img = self.removeVehicle(xyz, color_img)
+            xyz = self.removeVehicle(xyz)
+            if timer is not None: timer.time("frame vehicle removal")
 
-                if removeVehicle:
-                    color_img = self.removeVehicle(xyz, color_img)
-                    xyz = self.removeVehicle(xyz)
+        cloud = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(xyz))
+        cloud.colors = o3d.utility.Vector3dVector(color_img)
 
-                cloud = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(xyz))
-                cloud.colors = o3d.utility.Vector3dVector(color_img)
+        if timer is not None: timer.time("frame cloud generation")
 
-                self.preparedClouds.append(cloud)
-
-        # Retrieve the requested frame, which will now be read.
-        return self.preparedClouds[num]
-
-    def nextFrame(self, removeVehicle:bool = False):
-        """Reads and returns the first unread frame"""
-
-        return self.readFrame(len(self.preparedClouds), removeVehicle)
+        return cloud
 
     def readAllFrames(self, removeVehicle:bool = False):
 

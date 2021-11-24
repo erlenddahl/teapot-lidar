@@ -1,4 +1,4 @@
-from pcapReader import PcapReader
+from bufferedPcapReader import BufferedPcapReader
 from open3dVisualizer import Open3DVisualizer
 
 class PcapBrowser:
@@ -8,7 +8,7 @@ class PcapBrowser:
         up a package source from the pcap file.
         """
 
-        self.reader = PcapReader(pcapPath, metaDataPath)
+        self.reader = BufferedPcapReader(pcapPath, metaDataPath)
         self.vis = Open3DVisualizer()
     
     def startVisualization(self):
@@ -59,7 +59,7 @@ class PcapBrowser:
 
 if __name__ == "__main__":
 
-    args = PcapReader.getPathArgs()
+    args = BufferedPcapReader.getPathArgs()
 
     # Create and start a visualization
     visualizer = PcapBrowser(args.pcap, args.json)
