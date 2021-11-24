@@ -122,7 +122,7 @@ class PcapReader:
 
         return cloud
 
-    def readAllFrames(self, remove_vehicle:bool = False):
+    def read_all_frames(self, remove_vehicle:bool = False):
 
         frames = []
         while True:
@@ -154,7 +154,7 @@ class PcapReader:
         parser.add_argument('--json', type=str, required=False, help="The path to the corresponding JSON file with the sensor metadata, relative or absolute. If this is not given, the PCAP location is used (by replacing .pcap with .json).")
 
     @staticmethod
-    def fromPathArgs(args = None):
+    def from_path_args(args = None):
 
         if args is None:
             args = PcapReader.get_path_args()
