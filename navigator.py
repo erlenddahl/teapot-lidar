@@ -139,6 +139,8 @@ class LidarNavigator:
         # Then continue showing the visualization in a blocking way until the user stops it.
         if self.preview_at_end:
             self.vis.show_frame(self.merged_frame)
+            self.vis.remove_geometry(self.movement_path)
+            self.vis.add_geometry(self.movement_path)
             self.vis.reset_view()
 
             self.vis.run()
