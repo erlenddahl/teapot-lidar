@@ -1,11 +1,12 @@
 from ouster import client, pcap
+from more_itertools import nth
 import open3d as o3d
 from colormaps import colorize, normalize
 import argparse
 
 class PcapReader:
 
-    def __init__(self, pcapPath, metaDataPath = None):
+    def __init__(self, pcapPath, metaDataPath = None, nth_frame = 0):
         """Initialize a LidarVisualizer by reading metadata and setting
         up a package source from the pcap file.
         """
@@ -28,8 +29,17 @@ class PcapReader:
         self.channels = [c for c in client.ChanField]
         self.scans = iter(client.Scans(self.source))
 
+        # If 0, every frame will be read. If 1, every second frame, etc.
+        self.nth_frame = nth_frame
+
     def count_frames(self):
-        count = len([i for (i, _) in enumerate(iter(client.Scans(self.source)))])
+        count = 0
+        i = iter(client.Scans(self.source))
+        while True:
+            frame = nth(i, self.nth_frame)
+            if frame is None:
+                break
+            count += 1
         self.source.reset()
         return count
 
@@ -74,7 +84,7 @@ class PcapReader:
         # Lazily read frames until the given index is available.
         while len(self.preparedClouds) < num + 1:
 
-            scan = next(self.scans)
+            scan = nth(self.scans, self.nth_frame)
 
             if scan is None:
                 self.preparedClouds.append(None)

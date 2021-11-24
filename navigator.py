@@ -18,12 +18,14 @@ from matchers.fastglobalregistrationfirst import FastGlobalFirstNicpMatcher
 
 class LidarNavigator:
 
-    def __init__(self, pcapPath, metaDataPath, frames = -1, preview = "always", save_path = None):
+    def __init__(self, pcapPath, metaDataPath, frames = -1, nth_frame = 0, preview = "always", save_path = None):
         """Initialize a LidarNavigator by reading metadata and setting
         up a package source from the pcap file.
         """
 
-        self.reader = PcapReader(pcapPath, metaDataPath)
+        print("Preparing ...")
+
+        self.reader = PcapReader(pcapPath, metaDataPath, nth_frame)
 
         # Fetch the first frame and use it as a base for the generated visualization
         self.voxel_size = 0.1
@@ -222,14 +224,13 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     PcapReader.add_path_arguments(parser)
-    parser.add_argument('--frames', type=int, default=-1, required=False, help="If given a positive number larger than 1, only this many frames will be read from the PCAP file.")
-    
+    parser.add_argument('--frames', type=int, default=-1, required=False, help="If given a number larger than 1, only this many frames will be read from the PCAP file.")
+    parser.add_argument('--skip-frames', type=int, default=0, required=False, help="If given a positive number larger than 0, this many frames will be skipped between every frame read from the PCAP file.")
     parser.add_argument('--preview', type=str, default="always", choices=['always', 'end', 'never'], help="Show constantly updated point cloud and data plot previews while processing ('always'), show them only at the end ('end'), or don't show them at all ('never').")
-    
     parser.add_argument('--save-to', type=str, default=None, required=False, help="If given, final results will be stored at this path. The path will be used for all types of results, with appendices depending on file type ('_data.json', '_plot.png', '_cloud.laz'). The path can include \"[pcap]\" and/or \"[time]\" which will be replaced with the name of the parsed PCAP file and the time of completion respectively.")
     
     args = parser.parse_args()
 
     # Create and start a visualization
-    navigator = LidarNavigator(args.pcap, args.json, args.frames, args.preview, args.save_to)
+    navigator = LidarNavigator(args.pcap, args.json, args.frames, args.skip_frames, args.preview, args.save_to)
     navigator.navigateThroughFile()
