@@ -123,18 +123,20 @@ class LidarNavigator:
         # When everything is finished, print a summary, and save the point cloud and debug data.
         if self.preview_at_end:
             plot.update()
-        plot.print_summary(self.timer)
 
         if self.save_path is not None:
             filenameBase = self.save_path.replace("[time]", datetime.now().strftime('%Y-%m-%d_%H-%M-%S_%f%z'))
             filenameBase = filenameBase.replace("[pcap]", os.path.basename(self.reader.pcapPath).replace(".pcap", ""))
             self.ensure_dir(filenameBase)
-            self.save_data(filenameBase + "_data.json", plot)
             plot.save_plot(filenameBase + "_plot.png")
             self.save_cloud_as_las(filenameBase + "_cloud.laz", self.merged_frame)
             o3d.io.write_point_cloud(filenameBase + "_cloud.pcd", self.merged_frame, compressed=True)
 
             self.time("results saving")
+            
+            self.save_data(filenameBase + "_data.json", plot)
+        
+        plot.print_summary(self.timer)
 
         # Then continue showing the visualization in a blocking way until the user stops it.
         if self.preview_at_end:
