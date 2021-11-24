@@ -42,10 +42,10 @@ def draw_registration_result(source, target, transformation):
 
 if __name__ == "__main__":
 
-    reader = PcapReader.fromPathArgs()
+    reader = PcapReader.from_path_args()
 
-    source = reader.readFrame(20, True)
-    target = reader.readFrame(25, True)
+    source = reader.read_frame(20, True)
+    target = reader.read_frame(25, True)
 
     startTime = time.perf_counter()
     #source = source.voxel_down_sample(voxel_size=0.5)

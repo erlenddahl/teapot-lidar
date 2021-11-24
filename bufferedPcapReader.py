@@ -7,16 +7,16 @@ from pcapReader import PcapReader
 
 class BufferedPcapReader(PcapReader):
 
-    def __init__(self, pcapPath, metaDataPath = None, skip_frames = 0):
+    def __init__(self, pcap_path, metadata_path = None, skip_frames = 0):
         """Initialize a LidarVisualizer by reading metadata and setting
         up a package source from the pcap file.
         """
 
-        PcapReader.__init__(self, pcapPath, metaDataPath, skip_frames)
+        PcapReader.__init__(self, pcap_path, metadata_path, skip_frames)
 
-        self.preparedClouds = []
+        self.prepared_clouds = []
 
-    def readFrame(self, num:int, removeVehicle:bool = False):
+    def read_frame(self, num:int, remove_vehicle:bool = False):
         """Retrieves the current frame from an array of read frames. The array is lazily
         filled with data from the pcap file as new frames are requested. Old frames are
         never thrown out, so this will case memory issues if the pcap file gets large enough."""
@@ -26,8 +26,8 @@ class BufferedPcapReader(PcapReader):
             return None
 
         # Lazily read frames until the given index is available.
-        while len(self.preparedClouds) < num + 1:
-            self.preparedClouds.append(self.nextFrame())
+        while len(self.prepared_clouds) < num + 1:
+            self.prepared_clouds.append(self.next_frame(remove_vehicle))
 
         # Retrieve the requested frame, which will now be read.
-        return self.preparedClouds[num]
+        return self.prepared_clouds[num]

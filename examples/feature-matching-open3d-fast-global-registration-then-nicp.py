@@ -68,10 +68,10 @@ def execute_fast_global_registration(source_down, target_down, source_fpfh,
 
 if __name__ == "__main__":
 
-    reader = PcapReader.fromPathArgs()
+    reader = PcapReader.from_path_args()
 
-    source = reader.readFrame(20, True)
-    target = reader.readFrame(25, True)
+    source = reader.read_frame(20, True)
+    target = reader.read_frame(25, True)
     
     accumulatedTime = 0.0
 

@@ -2,7 +2,7 @@
 Contains informal notes made during experimentation and development, as well as some plans for future work.
 
 # Reading LIDAR data
-The data used in the project are recorded using an Ouster lidar, which stores data as .pcap files with corresponding .json files containing sensor metadata. These files can be read using the [Ouster SDK](https://static.ouster.dev/sdk-docs/quickstart.html). This is done in `pcapReader.py`, whose `readFrame()` and `nextFrame()` functions returns a numpy array of points (which are numpy arrays of length 3; x, y and z).
+The data used in the project are recorded using an Ouster lidar, which stores data as .pcap files with corresponding .json files containing sensor metadata. These files can be read using the [Ouster SDK](https://static.ouster.dev/sdk-docs/quickstart.html). This is done in `pcapReader.py`, whose `read_frame()` and `next_frame()` functions returns a numpy array of points (which are numpy arrays of length 3; x, y and z).
 
 Before lidar frames are used for point cloud registration, the vehicle is removed from the center of the frame, to avoid a always present stationary object messing with the registration algorithms.
 ```

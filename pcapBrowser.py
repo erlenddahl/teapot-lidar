@@ -11,7 +11,7 @@ class PcapBrowser:
         self.reader = BufferedPcapReader(pcapPath, metaDataPath)
         self.vis = Open3DVisualizer()
     
-    def startVisualization(self):
+    def start_visualization(self):
         """Initializes an open3d visualizer, configures it to use arrow
         navigation, and open it displaying the first frame of lidar data
         from the pcap file."""
@@ -21,34 +21,34 @@ class PcapBrowser:
         # Use arrows to navigate to the next/previous frame
         def key_next(vis):
             self._currentFrame += 1
-            if not self.setFrame(self._currentFrame):
+            if not self.set_frame(self._currentFrame):
                 self._currentFrame -= 1
 
         def key_prev(vis):
             self._currentFrame -= 1
-            if not self.setFrame(self._currentFrame):
+            if not self.set_frame(self._currentFrame):
                 self._currentFrame += 1
 
         self.vis.register_key_callback(262, key_next) # Arrow right
         self.vis.register_key_callback(263, key_prev) # Arrow left
         # List of key codes can be found here: https://www.glfw.org/docs/latest/group__keys.html
 
-        self.setFrame(0)
+        self.set_frame(0)
 
         self.vis.reset_view()
         self.vis.run()
 
-    def setFrame(self, num:int):
+    def set_frame(self, num:int):
         """Show the frame with the given index in the visualizer. This function
         removes the geometry object containing the previous frame, then adds
         the geometry object containing the current frame. If the current frame is
         empty (end of file), this function does nothing, and returns False."""
 
-        frame = self.reader.readFrame(num)
+        frame = self.reader.read_frame(num)
         if frame is None:
             return False
         
-        self.vis.showFrame(frame, True)
+        self.vis.show_frame(frame, True)
 
         self._currentFrame = num
 
@@ -63,4 +63,4 @@ if __name__ == "__main__":
 
     # Create and start a visualization
     visualizer = PcapBrowser(args.pcap, args.json)
-    visualizer.startVisualization()
+    visualizer.start_visualization()

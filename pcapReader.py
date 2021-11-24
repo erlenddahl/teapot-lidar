@@ -47,11 +47,14 @@ class PcapReader:
         self.scans = iter(client.Scans(self.source))
 
     def skip_and_get(self, iterator):
-        for _ in range(self.skip_frames):
-            next(iterator)
-        return next(iterator)
+        try:
+            for _ in range(self.skip_frames):
+                next(iterator)
+            return next(iterator)
+        except StopIteration:
+            return None
 
-    def printInfo(self):
+    def print_info(self):
         """Print information about all the packets in this file."""
 
         for packet in self.source:
@@ -70,7 +73,7 @@ class PcapReader:
                 print(f'  acceleration = {packet.accel}')
                 print(f'  angular_velocity = {packet.angular_vel}')
 
-    def removeVehicle(self, frame, cloud = None):
+    def remove_vehicle(self, frame, cloud = None):
         # Remove the vehicle, which is always stationary at the center. We don't want that
         # to interfere with the point cloud alignment.
 
@@ -80,7 +83,7 @@ class PcapReader:
         vr = 2.5
         return cloud[((frame[:, 0] > vr) | (frame[:, 0] < -vr)) | ((frame[:, 1] > vr) | (frame[:, 1] < -vr))]
 
-    def nextFrame(self, removeVehicle:bool = False, timer = None):
+    def next_frame(self, remove_vehicle:bool = False, timer = None):
         """Retrieves the next frame"""
 
         if timer is not None: timer.reset()
@@ -107,9 +110,9 @@ class PcapReader:
 
         if timer is not None: timer.time("frame colorization")
 
-        if removeVehicle:
-            color_img = self.removeVehicle(xyz, color_img)
-            xyz = self.removeVehicle(xyz)
+        if remove_vehicle:
+            color_img = self.remove_vehicle(xyz, color_img)
+            xyz = self.remove_vehicle(xyz)
             if timer is not None: timer.time("frame vehicle removal")
 
         cloud = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(xyz))
@@ -119,17 +122,17 @@ class PcapReader:
 
         return cloud
 
-    def readAllFrames(self, removeVehicle:bool = False):
+    def readAllFrames(self, remove_vehicle:bool = False):
 
         frames = []
         while True:
-            frame = self.nextFrame(removeVehicle)
+            frame = self.next_frame(remove_vehicle)
             if frame is None:
                 return frames
             frames.append(frame)
 
     @staticmethod
-    def getPathArgs(args = None):
+    def get_path_args(args = None):
         """ Creates an argument parser that handles --pcap and --json, where the latter is optional.
         If --json is not given, it will be replaced with the values of the --pcap parameter with the file
         extension changed to .json.
@@ -154,6 +157,6 @@ class PcapReader:
     def fromPathArgs(args = None):
 
         if args is None:
-            args = PcapReader.getPathArgs()
+            args = PcapReader.get_path_args()
 
         return PcapReader(args.pcap, args.json)

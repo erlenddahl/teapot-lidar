@@ -70,7 +70,7 @@ class Open3DVisualizer:
     def stop(self):
         self.vis.destroy_window()
 
-    def showFrame(self, frame, removePrevious = False):
+    def show_frame(self, frame, removePrevious = False):
         """ Shows the given frame by adding it as a geometry.
         If this is a numpy array, it will be converted to a point cloud.
         """
@@ -103,16 +103,16 @@ class Open3DVisualizer:
     def remove_geometry(self, geometry):
         self.vis.remove_geometry(geometry, False)
 
-    def showFrameFromReader(self, reader:PcapReader, num:int):
+    def show_frame_from_reader(self, reader:PcapReader, num:int):
         """Show the frame with the given index in the visualizer. This function
         removes the geometry object containing the previous frame, then adds
         the geometry object containing the current frame. If the current frame is
         empty (end of file), this function does nothing, and returns False."""
 
-        frame = reader.readFrame(num)
+        frame = reader.read_frame(num)
         if frame is None:
             return False
         
-        self.showFrame(frame, True)
+        self.show_frame(frame, True)
 
         return True
