@@ -10,6 +10,7 @@ import laspy
 from datetime import datetime
 import json
 import argparse
+from taskTimer import TaskTimer
 
 from matchers.nicp import NicpMatcher
 from matchers.downsamplefirst import DownsampleFirstNicpMatcher
@@ -22,6 +23,8 @@ class LidarNavigator:
         """Initialize a LidarNavigator by reading metadata and setting
         up a package source from the pcap file.
         """
+
+        self.timer = TaskTimer()
 
         print("Preparing ...")
 
@@ -37,9 +40,16 @@ class LidarNavigator:
         self.save_path = save_path
         self.downsample_timer = downsample_cloud_after_frames
         self.downsample_cloud_after_frames = downsample_cloud_after_frames
+        
+        self.time("setup")
 
         if self.frame_limit <= 1:
             self.frame_limit = self.reader.count_frames()
+
+        self.time("frame counting")
+
+    def time(self, key):
+        self.timer.time(key)
 
     def navigateThroughFile(self):
         """ Runs through each frame in the file. For each pair of frames, use NICP
@@ -49,6 +59,8 @@ class LidarNavigator:
         to show the driving route.
         """
         
+        self.timer.reset()
+
         # Initialize the list of movements as well as the merged frame, and the first 
         # source frame.
         self.movements = []
@@ -77,6 +89,8 @@ class LidarNavigator:
 
         plot = Plotter(self.previewAlways)
 
+        self.time("navigation preparations")
+
         # Enumerate all frames until the end of the file and run the merge operation.
         for _ in tqdm(range(1, self.frame_limit), total=self.frame_limit, ascii=True, initial=1):
             
@@ -98,7 +112,7 @@ class LidarNavigator:
         # When everything is finished, print a summary, and save the point cloud and debug data.
         if self.previewAtEnd:
             plot.update()
-        plot.print_summary()
+        plot.print_summary(self.timer)
 
         if self.save_path is not None:
             filenameBase = self.save_path.replace("[time]", datetime.now().strftime('%Y-%m-%d_%H-%M-%S_%f%z'))
@@ -107,6 +121,8 @@ class LidarNavigator:
             self.save_data(filenameBase + "_data.json", plot)
             plot.save_plot(filenameBase + "_plot.png")
             self.save_cloud(filenameBase + "_cloud.laz", self.mergedFrame)
+
+            self.time("results saving")
 
         # Then continue showing the visualization in a blocking way until the user stops it.
         if self.previewAtEnd:
@@ -124,7 +140,7 @@ class LidarNavigator:
 
     def save_data(self, path, plot):
 
-        data = plot.get_json()
+        data = plot.get_json(self.timer)
 
         data["movement"] = np.asarray(self.movementPath.points).tolist()
 
@@ -157,8 +173,12 @@ class LidarNavigator:
         # normals from the previous step).
         target.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
 
+        self.time("normal estimation")
+
         # Run the selected registration algorithm
         reg = self.matcher.match(source, target)
+
+        self.time("registration")
 
         # Calculate how much the center point has moved by transforming [0,0,0] with
         # the calculated transformation
@@ -180,9 +200,10 @@ class LidarNavigator:
         if frame is None:
             return False
 
-        # Run the alignment
+        self.time("frame retrieval")
         startTime = time.perf_counter()
         
+        # Run the alignment
         transformation, movement, reg = self.alignFrame(self.previousFrame, frame)
         
         plot.timeUsages.append(time.perf_counter() - startTime)
@@ -205,13 +226,21 @@ class LidarNavigator:
             self.movementPath.paint_uniform_color([1, 0, 0])
             self.vis.update_geometry(self.movementPath)
 
-        startTime = time.perf_counter()
+        self.time("book keeping")
 
         # Transform the merged visualization to fit the next frame
         merged = self.mergedFrame.transform(transformation)
 
+        self.time("frame transformation")
+
         # Combine the points from the merged visualization with the points from the next frame
-        merged += frame
+        downsampled_frame = frame.voxel_down_sample(voxel_size=self.voxel_size)
+
+        self.time("frame downsampling")
+
+        merged += downsampled_frame
+
+        self.time("cloud merging")
 
         # Downsample the merged visualization to make it faster to work with.
         # Otherwise it would grow extremely large, as it would contain all points
@@ -231,6 +260,8 @@ class LidarNavigator:
         # Update the visualization
         if self.previewAlways:
             self.vis.showFrame(self.mergedFrame, True)
+
+            self.time("visualization")
 
         # Return True to let the loop continue to the next frame.
         return True

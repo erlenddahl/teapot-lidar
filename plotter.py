@@ -52,21 +52,21 @@ class Plotter:
         handles3, labels3 = ax3.get_legend_handles_labels()
         self.fig.legend(handles1+handles2+handles3, labels1+labels2+labels3, loc='center right')
 
-    def print_summary(self):
+    def print_summary(self, timer = None):
 
-        print(tabulate(self.get_summary()))
+        print(tabulate(self.get_summary(timer)))
 
-    def get_summary(self):
+    def get_summary(self, timer = None):
 
         nonPerfect = [x for x in self.fitnesses if x <= 0.95]
 
-        return [
+        lines = [
             ["Number of frames:", len(self.plot_x) + 1],
             ["Total movement distance:", sum(self.distances)],
             ["Max distance: ", max(self.distances)],
             ["Avg distance: ", statistics.mean(self.distances)],
             ["Min distance: ", min(self.distances)],
-            ["Total time usage: ", sum(self.timeUsages)],
+            ["Total registration time usage: ", sum(self.timeUsages)],
             ["Max time: ", max(self.timeUsages)],
             ["Avg time: ", statistics.mean(self.timeUsages)],
             ["Min time: ", min(self.timeUsages)],
@@ -79,10 +79,17 @@ class Plotter:
             ["Min rmse: ", min(self.rmses)]
         ]
 
-    def get_json(self):
+        if timer is not None:
+            for key in timer.timings:
+                lines.append(["Time usage " + key, timer.timings[key]])
+
+        return lines
+
+    def get_json(self, timer = None):
 
         return {
             "summary": self.get_summary(),
+            "timings": timer.timings if timer is not None else None,
             "distances": self.distances,
             "timeUsages": self.timeUsages,
             "rmses": self.rmses,
