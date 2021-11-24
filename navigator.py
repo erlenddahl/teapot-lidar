@@ -107,8 +107,15 @@ class LidarNavigator:
                     self.time("plot step")
 
             except KeyboardInterrupt:
+                
+                print("")
+                print("********************************")
                 print("Process aborted. Results so far:")
+                print("********************************")
                 plot.print_summary(self.timer)
+                print("")
+                print("")
+
                 raise
 
         # Ensure the final cloud has been downsampled
