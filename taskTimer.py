@@ -14,5 +14,8 @@ class TaskTimer:
             self.timings[key] = 0
 
         new_time = time.perf_counter()
-        self.timings[key] += new_time - self.last
+        passed = new_time - self.last
+        self.timings[key] += passed
         self.last = new_time
+        
+        return passed

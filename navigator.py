@@ -49,7 +49,7 @@ class LidarNavigator:
             self.time("frame counting")
 
     def time(self, key):
-        self.timer.time(key)
+        return self.timer.time(key)
 
     def navigate_through_file(self):
         """ Runs through each frame in the file. For each pair of frames, use NICP
@@ -189,28 +189,6 @@ class LidarNavigator:
 
         las.write(path)
 
-    def align_frame(self, source, target):
-        """ Aligns the target frame with the source frame using the selected algorithm.
-        """
-
-        # Estimate normals for the target frame (the source frame will always have
-        # normals from the previous step).
-        target.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
-
-        self.time("normal estimation")
-
-        # Run the selected registration algorithm
-        reg = self.matcher.match(source, target)
-
-        self.time("registration")
-
-        # Calculate how much the center point has moved by transforming [0,0,0] with
-        # the calculated transformation
-        movement = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(reg.transformation).get_center()
-        
-        # Return the transformation and the movement
-        return reg.transformation, movement, reg
-
     def merge_next_frame(self, plot):
         """ Reads the next frame, aligns it with the previous frame, merges them together
         to create a 3D model, and tracks the movement between frames.
@@ -224,12 +202,22 @@ class LidarNavigator:
         if frame is None:
             return False
 
-        startTime = time.perf_counter()
-        
+        # Estimate normals for the target frame (the source frame will always have
+        # normals from the previous step).
+        frame.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
+
+        self.time("normal estimation")
+
         # Run the alignment
-        transformation, movement, reg = self.align_frame(self.previous_frame, frame)
+        reg = self.matcher.match(self.previous_frame, frame)
+
+        registration_time = self.time("registration")
+
+        # Calculate how much the center point has moved by transforming [0,0,0] with
+        # the calculated transformation
+        movement = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(reg.transformation).get_center()
         
-        plot.timeUsages.append(time.perf_counter() - startTime)
+        plot.timeUsages.append(registration_time)
         plot.rmses.append(reg.inlier_rmse)
         plot.fitnesses.append(reg.fitness)
         plot.distances.append(np.sqrt(np.dot(movement, movement)))
@@ -239,7 +227,7 @@ class LidarNavigator:
 
         # Append the new movement to the path
         self.movement_path.points.append([0,0,0])
-        self.movement_path = self.movement_path.transform(transformation)
+        self.movement_path = self.movement_path.transform(reg.transformation)
 
         # Add the new line
         if len(self.movements) == 2:
@@ -251,13 +239,13 @@ class LidarNavigator:
 
         self.time("book keeping")
 
-        # Transform the merged visualization to fit the next frame
-        merged = self.merged_frame.transform(transformation)
+        # Transform the frame to fit the merged point cloud
+        self.merged_frame = self.merged_frame.transform(reg.transformation)
 
         self.time("frame transformation")
 
         # Combine the points from the merged visualization with the points from the next frame
-        merged += frame
+        self.merged_frame += frame
 
         self.time("cloud merging")
 
@@ -265,7 +253,6 @@ class LidarNavigator:
         # Otherwise it would grow extremely large, as it would contain all points
         # from all processed point clouds.
         # Don't do this on every frame, as it takes a lot of time.
-        self.merged_frame = merged
         self.downsample_timer -= 1
         if self.downsample_timer <= 0:
             self.ensure_merged_frame_is_downsampled()
