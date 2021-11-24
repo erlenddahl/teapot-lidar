@@ -23,19 +23,20 @@ navigator.py runs through all frames the given PCAP file, and uses the selected 
 
 **Example with default preview and no saving:**
 ```
-python pcapBrowser.py --pcap path\to\pcap-file.pcap --json path\to\metadata-file.json
+python navigator.py --pcap path\to\pcap-file.pcap --json path\to\metadata-file.json
 ```
 
 **Example with default metadata file, no preview, and results saved to the results folder:**
 ```
-python pcapBrowser.py --pcap path\to\pcap-file.pcap --preview never --save-to results\[pcap]_[time]
+python navigator.py --pcap path\to\pcap-file.pcap --preview never --save-to results\[pcap]_[time]
 ```
 
 **Full argument description:**
 ```
 usage: navigator.py [-h] --pcap PCAP [--json JSON] [--frames FRAMES]
-                    [--skip-frames SKIP_FRAMES] [--preview {always,end,never}]
-                    [--save-to SAVE_TO]
+                    [--skip-frames SKIP_FRAMES]
+                    [--downsample-after DOWNSAMPLE_AFTER]
+                    [--preview {always,end,never}] [--save-to SAVE_TO]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -51,6 +52,10 @@ optional arguments:
                         If given a positive number larger than 0, this many
                         frames will be skipped between every frame read from
                         the PCAP file.
+  --downsample-after DOWNSAMPLE_AFTER
+                        The cloud will be downsampled after this many frames
+                        (which is an expensive operation for large clouds, so
+                        don't do it too often).
   --preview {always,end,never}
                         Show constantly updated point cloud and data plot
                         previews while processing ('always'), show them only
