@@ -48,9 +48,10 @@ python navigator.py --pcap path\to\pcap-file.pcap --preview never --save-to resu
 **Full argument description:**
 ```
 usage: navigator.py [-h] --pcap PCAP [--json JSON] [--frames FRAMES]
-                    [--skip-frames SKIP_FRAMES]
+                    [--skip-frames SKIP_FRAMES] [--voxel-size VOXEL_SIZE]
                     [--downsample-after DOWNSAMPLE_AFTER]
                     [--preview {always,end,never}] [--save-to SAVE_TO]
+                    [--save-screenshots-to SAVE_SCREENSHOTS_TO]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -66,10 +67,16 @@ optional arguments:
                         If given a positive number larger than 0, this many
                         frames will be skipped between every frame read from
                         the PCAP file.
+  --voxel-size VOXEL_SIZE
+                        The voxel size used for cloud downsampling. If less
+                        than or equal to zero, downsampling will be disabled.
   --downsample-after DOWNSAMPLE_AFTER
                         The cloud will be downsampled after this many frames
                         (which is an expensive operation for large clouds, so
-                        don't do it too often).
+                        don't do it too often). If this number is higher than
+                        the number of frames being read, it will be
+                        downsampled once at the end of the process (unless
+                        downsampling is disabled, see --voxel-size).
   --preview {always,end,never}
                         Show constantly updated point cloud and data plot
                         previews while processing ('always'), show them only
@@ -78,10 +85,15 @@ optional arguments:
   --save-to SAVE_TO     If given, final results will be stored at this path.
                         The path will be used for all types of results, with
                         appendices depending on file type ('_data.json',
-                        '_plot.png', '_cloud.laz'). The path can include
-                        "[pcap]" and/or "[time]" which will be replaced with
-                        the name of the parsed PCAP file and the time of
-                        completion respectively.
+                        '_plot.png', '_cloud.laz', '_cloud.pcd'). The path can
+                        include "[pcap]" and/or "[time]" which will be
+                        replaced with the name of the parsed PCAP file and the
+                        time of completion respectively.
+  --save-screenshots-to SAVE_SCREENSHOTS_TO
+                        If given, point cloud screenshots will be saved in
+                        this directory with their indices as filenames (0.png,
+                        1.png, 2.png, etc). Only works if --preview is set to
+                        'always'.
 ```
 
 ### PcapBrowser
