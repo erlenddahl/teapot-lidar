@@ -103,6 +103,9 @@ class Open3DVisualizer:
     def remove_geometry(self, geometry):
         self.vis.remove_geometry(geometry, False)
 
+    def capture_screen_image(self, path):
+        self.vis.capture_screen_image(path)
+
     def show_frame_from_reader(self, reader:PcapReader, num:int):
         """Show the frame with the given index in the visualizer. This function
         removes the geometry object containing the previous frame, then adds

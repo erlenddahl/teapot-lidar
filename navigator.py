@@ -18,7 +18,7 @@ from matchers.fastglobalregistrationfirst import FastGlobalFirstNicpMatcher
 
 class LidarNavigator:
 
-    def __init__(self, pcap_path, meta_data_path, frames = -1, skip_frames = 0, voxel_size = 0.1, downsample_cloud_after_frames = 10, preview = "always", save_path = None):
+    def __init__(self, pcap_path, meta_data_path, frames = -1, skip_frames = 0, voxel_size = 0.1, downsample_cloud_after_frames = 10, preview = "always", save_path = None, save_screenshots_to = None):
         """Initialize a LidarNavigator by reading metadata and setting
         up a package source from the pcap file.
         """
@@ -40,6 +40,7 @@ class LidarNavigator:
         self.downsample_timer = downsample_cloud_after_frames
         self.downsample_cloud_after_frames = downsample_cloud_after_frames
         self.merged_frame_is_dirty = True
+        self.save_screenshots_to = save_screenshots_to
         
         self.time("setup")
 
@@ -49,6 +50,19 @@ class LidarNavigator:
 
     def time(self, key):
         return self.timer.time(key)
+
+    def save_screenshot(self, index, ensure_dir = False):
+        if self.save_screenshots_to is None:
+            return
+        
+        screenshot_path = os.path.join(self.save_screenshots_to, str(index) + ".png")
+
+        if ensure_dir:
+            self.ensure_dir(screenshot_path)
+
+        self.vis.capture_screen_image(screenshot_path)
+
+        self.time("saved screenshot")
 
     def navigate_through_file(self):
         """ Runs through each frame in the file. For each pair of frames, use NICP
@@ -86,12 +100,14 @@ class LidarNavigator:
             self.vis.show_frame(self.merged_frame)
             self.vis.reset_view()
 
+            self.save_screenshot(0, True)
+
         plot = Plotter(self.preview_always)
 
         self.time("navigation preparations")
 
         # Enumerate all frames until the end of the file and run the merge operation.
-        for _ in tqdm(range(1, self.frame_limit), total=self.frame_limit, ascii=True, initial=1):
+        for i in tqdm(range(1, self.frame_limit), total=self.frame_limit, ascii=True, initial=1):
             
             try:
 
@@ -101,6 +117,8 @@ class LidarNavigator:
                     if self.preview_always:
                         self.vis.refresh_non_blocking()
                         self.time("visualization refresh")
+
+                        self.save_screenshot(i)
 
                     plot.step(self.preview_always)
                     self.time("plot step")
@@ -286,9 +304,13 @@ if __name__ == "__main__":
     parser.add_argument('--downsample-after', type=int, default=25, required=False, help="The cloud will be downsampled after this many frames (which is an expensive operation for large clouds, so don't do it too often). If this number is higher than the number of frames being read, it will be downsampled once at the end of the process (unless downsampling is disabled, see --voxel-size).")
     parser.add_argument('--preview', type=str, default="always", choices=['always', 'end', 'never'], help="Show constantly updated point cloud and data plot previews while processing ('always'), show them only at the end ('end'), or don't show them at all ('never').")
     parser.add_argument('--save-to', type=str, default=None, required=False, help="If given, final results will be stored at this path. The path will be used for all types of results, with appendices depending on file type ('_data.json', '_plot.png', '_cloud.laz', '_cloud.pcd'). The path can include \"[pcap]\" and/or \"[time]\" which will be replaced with the name of the parsed PCAP file and the time of completion respectively.")
+    parser.add_argument('--save-screenshots-to', type=str, default=None, required=False, help="If given, point cloud screenshots will be saved in this directory with their indices as filenames (0.png, 1.png, 2.png, etc). Only works if --preview is set to 'always'.")
     
     args = parser.parse_args()
 
+    if args.save_screenshots_to is not None and args.preview != "always":
+        raise ValueError("Cannot save cloud screenshots without --preview being set to 'always'.")
+
     # Create and start a visualization
-    navigator = LidarNavigator(args.pcap, args.json, args.frames, args.skip_frames, args.voxel_size, args.downsample_after, args.preview, args.save_to)
+    navigator = LidarNavigator(args.pcap, args.json, args.frames, args.skip_frames, args.voxel_size, args.downsample_after, args.preview, args.save_to, args.save_screenshots_to)
     navigator.navigate_through_file()
