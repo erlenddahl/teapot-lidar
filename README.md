@@ -15,7 +15,9 @@ More details can be found in the [notes](./notes/notes.md).
 ## Georeferenced point cloud navigation
 _[This part is not yet started.]_
 
-## Requirements
+## Running the code
+
+### Requirements
 The code is implemented and tested with Python 3.6 because of limitations with some of the libraries. 
 
 Create a new Anaconda environment (or use an existing, or venv, or whatever):
@@ -30,9 +32,7 @@ Install the Python requirements using pip:
 pip install -r requirements.txt
 ```
 
-## Running the code
-
-### Navigator
+### Incremental navigation
 navigator.py runs through all frames the given PCAP file, and uses the selected registration algorithm to place all frames in the same coordinate system. The vehicle's movements between frames are calculated and visualized as a red line in the final point cloud. Data can be previewed using the --preview argument, and/or saved using the --save-to argument. For debugging, the --frames argument sets a maximum number of frames to be read before finishing, and the --skip-frames argument allows for simulating lower frequencies.
 
 **Example with default preview and no saving:**
@@ -96,7 +96,7 @@ optional arguments:
                         'always'.
 ```
 
-### PcapBrowser
+### Browsing PCAP files
 pcapBrowser.py is a very simple open3d based tool for visualizing the frames in a PCAP file. It allows you to browse the frames using the arrow keys on the keyboard, and can be run like this:
 
 ```
