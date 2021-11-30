@@ -18,7 +18,7 @@ from matchers.fastglobalregistrationfirst import FastGlobalFirstNicpMatcher
 
 class LidarNavigator:
 
-    def __init__(self, pcap_path, meta_data_path, frames = -1, skip_frames = 0, voxel_size = 0.1, downsample_cloud_after_frames = 10, preview = "always", save_path = None, save_screenshots_to = None):
+    def __init__(self, pcap_paths, meta_data_paths, frames = -1, skip_frames = 0, voxel_size = 0.1, downsample_cloud_after_frames = 10, preview = "always", save_path = None, save_screenshots_to = None):
         """Initialize a LidarNavigator by reading metadata and setting
         up a package source from the pcap file.
         """
@@ -27,7 +27,7 @@ class LidarNavigator:
 
         print("Preparing ...")
 
-        self.reader = PcapReader(pcap_path, meta_data_path, skip_frames)
+        self.reader = PcapReader.from_lists(pcap_paths, meta_data_paths, skip_frames)
 
         # Fetch the first frame and use it as a base for the generated visualization
         self.voxel_size = voxel_size

@@ -3,6 +3,61 @@ import open3d as o3d
 from colormaps import colorize, normalize
 import argparse
 
+class SerialPcapReader:
+
+    def __init__(self, pcapPaths, metaDataPaths, skip_frames = 0):
+        self.readers = [PcapReader(x[0], x[1], skip_frames) for x in zip(pcapPaths, metaDataPaths)]
+        self.currentReaderIndex = 0
+
+    def count_frames(self):
+        return sum([x.count_frames() for x in self.readers])
+
+    def reset(self):
+        for reader in self.readers:
+            reader.reset()
+        self.currentReaderIndex = 0
+
+    def skip_and_get(self, iterator):
+
+        if self.currentReaderIndex >= len(self.readers):
+            return None
+
+        frame = self.readers[self.currentReaderIndex].skip_and_get(iterator)
+        if frame is None:
+            self.currentReaderIndex += 1
+            return self.skip_and_get(iterator)
+
+        return frame
+
+
+    def print_info(self):
+        for reader in self.readers:
+            reader.print_info()
+
+    def remove_vehicle(self, frame, cloud = None):
+        return self.readers[0].remove_vehicle(frame, cloud)
+
+    def next_frame(self, remove_vehicle:bool = False, timer = None):
+        if self.currentReaderIndex >= len(self.readers):
+            return None
+
+        frame = self.readers[self.currentReaderIndex].next_frame(remove_vehicle, timer)
+        if frame is None:
+            self.currentReaderIndex += 1
+            return self.next_frame(remove_vehicle, timer)
+
+        return frame
+
+    def read_all_frames(self, remove_vehicle:bool = False):
+
+        frames = []
+        while True:
+            frame = self.next_frame(remove_vehicle)
+            if frame is None:
+                return frames
+            frames.append(frame)
+
+
 class PcapReader:
 
     def __init__(self, pcapPath, metaDataPath = None, skip_frames = 0):
@@ -143,15 +198,12 @@ class PcapReader:
             PcapReader.add_path_arguments(parser)
             args = parser.parse_args()
 
-        if args.json is None:
-            args.json = args.pcap.replace(".pcap", ".json")
-
         return args
 
     @staticmethod
     def add_path_arguments(parser):
-        parser.add_argument('--pcap', type=str, required=True, help="The path to the PCAP file to visualize, relative or absolute.")
-        parser.add_argument('--json', type=str, required=False, help="The path to the corresponding JSON file with the sensor metadata, relative or absolute. If this is not given, the PCAP location is used (by replacing .pcap with .json).")
+        parser.add_argument('--pcap', type=str, nargs='+', required=True, help="The path to one or more PCAP files to visualize, relative or absolute.")
+        parser.add_argument('--json', type=str, nargs='+', required=False, help="The path to corresponding JSON file(s) for each of the PCAP file(s) with the sensor metadata, relative or absolute. If this is not given, the PCAP location is used (by replacing .pcap with .json).")
 
     @staticmethod
     def from_path_args(args = None):
@@ -159,4 +211,18 @@ class PcapReader:
         if args is None:
             args = PcapReader.get_path_args()
 
-        return PcapReader(args.pcap, args.json)
+        return PcapReader.from_lists(args.pcap, args.json)
+
+    @staticmethod
+    def from_lists(pcaps, jsons, skip_frames = 0):
+
+        if jsons is None:
+            jsons = [x.replace(".pcap", ".json") for x in pcaps]
+
+        if len(jsons) != len(pcaps):
+            raise ValueError("Number of JSON files does not match number of PCAP files.")
+
+        if len(pcaps) == 1:
+            return PcapReader(pcaps[0], jsons[0], skip_frames)
+        else:
+            return SerialPcapReader(pcaps, jsons, skip_frames)
