@@ -5,8 +5,8 @@ import argparse
 
 class SerialPcapReader:
 
-    def __init__(self, pcapPaths, metaDataPaths, skip_frames = 0):
-        self.readers = [PcapReader(x[0], x[1], skip_frames) for x in zip(pcapPaths, metaDataPaths)]
+    def __init__(self, pcap_paths, meta_data_paths, skip_frames = 0):
+        self.readers = [PcapReader(x[0], x[1], skip_frames) for x in zip(pcap_paths, meta_data_paths)]
         self.currentReaderIndex = 0
 
     def count_frames(self):
@@ -60,24 +60,24 @@ class SerialPcapReader:
 
 class PcapReader:
 
-    def __init__(self, pcapPath, metaDataPath = None, skip_frames = 0):
+    def __init__(self, pcap_path, meta_data_path = None, skip_frames = 0):
         """Initialize a LidarVisualizer by reading metadata and setting
         up a package source from the pcap file.
         """
 
-        self.pcapPath = pcapPath
+        self.pcap_path = pcap_path
 
-        if metaDataPath is None or metaDataPath == "":
-            metaDataPath = pcapPath.replace(".pcap", ".json")
+        if meta_data_path is None or meta_data_path == "":
+            meta_data_path = pcap_path.replace(".pcap", ".json")
 
-        self.metaDataPath = metaDataPath
+        self.meta_data_path = meta_data_path
 
         # Read the metadata from the JSON file.
-        with open(metaDataPath, "r") as f:
+        with open(meta_data_path, "r") as f:
             self.metadata = client.SensorInfo(f.read())
         self.xyzLut = client.XYZLut(self.metadata)            
 
-        self.source = pcap.Pcap(pcapPath, self.metadata)
+        self.source = pcap.Pcap(pcap_path, self.metadata)
 
         self.channels = [c for c in client.ChanField]
 
