@@ -105,9 +105,11 @@ class RegistrationTester:
     def create_result(self, result, key, source, target, start_time):
 
         time_usage = time.perf_counter() - start_time
-        image_path = os.path.join(self.path_results, "screenshots", key + ".png")
+        image_path_before = os.path.join(self.path_results, "screenshots", key + "_before.png")
+        image_path_after = image_path_before.replace("_before", "_after")
         
-        self.save_screenshot(source, source.transform(result.transformation), target, image_path)
+        self.save_screenshot(source, target, image_path_before)
+        self.save_screenshot(source.transform(result.transformation), target, image_path_after)
 
         movement = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(result.transformation).get_center()
         
@@ -116,7 +118,8 @@ class RegistrationTester:
             "rmse": result.inlier_rmse,
             "fitness": result.fitness,
             "movement_distance": np.sqrt(np.dot(movement, movement)),
-            "image": image_path,
+            "image_before": image_path_before,
+            "image_after": image_path_after,
             "transformation": list(movement)
         }
 
@@ -127,7 +130,7 @@ class RegistrationTester:
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-    def save_screenshot(self, source, transformed_source, target, path):
+    def save_screenshot(self, source, target, path):
         vis = o3d.visualization.Visualizer()
         vis.create_window(visible=False) # May be set to True on some systems
 
@@ -136,13 +139,11 @@ class RegistrationTester:
         ropt.background_color = np.asarray([0, 0, 0])
 
         source_temp = copy.deepcopy(source)
-        transformed_source_temp = copy.deepcopy(transformed_source)
         target_temp = copy.deepcopy(target)
         source_temp.paint_uniform_color([1, 0.706, 0])
-        transformed_source_temp.paint_uniform_color([1/2.0, 0.706/2.0, 0])
         target_temp.paint_uniform_color([0, 0.651, 0.929])
 
-        for g in [source_temp, transformed_source_temp, target_temp]:
+        for g in [source_temp, target_temp]:
             vis.add_geometry(g)
             vis.update_geometry(g)
 
