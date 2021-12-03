@@ -1,4 +1,4 @@
-from pcapReader import PcapReader
+from pcapReaderHelper import PcapReaderHelper
 from open3dVisualizer import Open3DVisualizer
 from plotter import Plotter
 import numpy as np
@@ -27,7 +27,7 @@ class LidarNavigator:
 
         print("Preparing ...")
 
-        self.reader = PcapReader.from_lists(pcap_paths, meta_data_paths, skip_frames)
+        self.reader = PcapReaderHelper.from_lists(pcap_paths, meta_data_paths, skip_frames)
 
         # Fetch the first frame and use it as a base for the generated visualization
         self.voxel_size = voxel_size
@@ -314,7 +314,7 @@ class LidarNavigator:
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    PcapReader.add_path_arguments(parser)
+    PcapReaderHelper.add_path_arguments(parser)
     parser.add_argument('--frames', type=int, default=-1, required=False, help="If given a number larger than 1, only this many frames will be read from the PCAP file.")
     parser.add_argument('--skip-frames', type=int, default=0, required=False, help="If given a positive number larger than 0, this many frames will be skipped between every frame read from the PCAP file.")
     parser.add_argument('--voxel-size', type=float, default=0.1, required=False, help="The voxel size used for cloud downsampling. If less than or equal to zero, downsampling will be disabled.")

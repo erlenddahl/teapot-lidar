@@ -1,4 +1,5 @@
 from bufferedPcapReader import BufferedPcapReader
+from pcapReaderHelper import PcapReaderHelper
 from open3dVisualizer import Open3DVisualizer
 
 class PcapBrowser:
@@ -79,7 +80,7 @@ class PcapBrowser:
 
 if __name__ == "__main__":
 
-    args = BufferedPcapReader.get_path_args()
+    args = PcapReaderHelper.get_path_args()
 
     # Create and start a visualization
     visualizer = PcapBrowser(args.pcap[0], args.json[0] if args.json is not None else None)

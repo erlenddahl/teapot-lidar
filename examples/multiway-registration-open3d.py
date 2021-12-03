@@ -4,7 +4,7 @@ import open3d as o3d
 import time
 import sys
 sys.path.append('..')
-from pcapReader import PcapReader
+from pcapReaderHelper import PcapReaderHelper
 
 def pairwise_registration(source, target, max_correspondence_distance_coarse,
                       max_correspondence_distance_fine):
@@ -57,7 +57,7 @@ def full_registration(pcds, max_correspondence_distance_coarse,
 print("Read all frames")
 startTime = time.perf_counter()
 voxel_size = 0.02
-reader = PcapReader.from_path_args()
+reader = PcapReaderHelper.from_path_args()
 pcds = reader.read_all_frames(True)
 print(f"    > Time usage: {time.perf_counter() - startTime:0.4f} seconds.")
 
@@ -105,7 +105,7 @@ print(f"    > Time usage: {time.perf_counter() - startTime:0.4f} seconds.")
 
 print("Combine point cloud")
 startTime = time.perf_counter()
-reader = PcapReader.from_path_args()
+reader = PcapReaderHelper.from_path_args()
 pcds = reader.read_all_frames(True)
 pcd_combined = o3d.geometry.PointCloud()
 for point_id in range(len(pcds)):

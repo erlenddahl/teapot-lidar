@@ -5,7 +5,7 @@ import time
 
 import sys
 sys.path.append('..')
-from pcapReader import PcapReader
+from pcapReaderHelper import PcapReaderHelper
 
 def draw_registration_result(source, target, transformation):
     source_temp = copy.deepcopy(source)
@@ -71,7 +71,7 @@ def execute_global_registration(source_down, target_down, source_fpfh, target_fp
 
 if __name__ == "__main__":
 
-    reader = PcapReader.from_path_args()
+    reader = PcapReaderHelper.from_path_args()
 
     source = reader.read_frame(20, True)
     target = reader.read_frame(25, True)
