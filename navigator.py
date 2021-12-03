@@ -18,7 +18,7 @@ from matchers.fastglobalregistrationfirst import FastGlobalFirstNicpMatcher
 
 class LidarNavigator:
 
-    def __init__(self, pcap_paths, meta_data_paths, frames = -1, skip_frames = 0, voxel_size = 0.1, downsample_cloud_after_frames = 10, preview = "always", save_path = None, save_screenshots_to = None):
+    def __init__(self, pcap_paths, meta_data_paths, frames = -1, skip_frames = 0, voxel_size = 0.1, downsample_cloud_after_frames = 10, preview = "always", save_path = None, save_screenshots_to = None, save_frame_pairs_to = None, save_frame_pair_threshold = 0.97):
         """Initialize a LidarNavigator by reading metadata and setting
         up a package source from the pcap file.
         """
@@ -41,6 +41,8 @@ class LidarNavigator:
         self.downsample_cloud_after_frames = downsample_cloud_after_frames
         self.merged_frame_is_dirty = True
         self.save_screenshots_to = save_screenshots_to
+        self.save_frame_pairs_to = save_frame_pairs_to
+        self.save_frame_pair_threshold = save_frame_pair_threshold
         
         self.time("setup")
 
@@ -211,6 +213,20 @@ class LidarNavigator:
 
         las.write(path)
 
+    def check_save_frame_pair(self, source, target, reg):
+        """ Saves the frame pair if enabled and fitness is below threshold. """
+
+        if self.save_frame_pairs_to is None: 
+            return
+
+        if reg.fitness >= self.save_frame_pair_threshold:
+            return
+
+        filenameBase = os.path.join(self.save_frame_pairs_to, str(reg.fitness) + "_" + os.path.basename(self.reader.pcap_path).replace(".pcap", "") + "_" + datetime.now().strftime('%Y-%m-%d_%H-%M-%S_%f%z'))
+        self.ensure_dir(filenameBase)
+        o3d.io.write_point_cloud(filenameBase + "_a.pcd", source, compressed=True)
+        o3d.io.write_point_cloud(filenameBase + "_b.pcd", target, compressed=True)
+
     def merge_next_frame(self, plot):
         """ Reads the next frame, aligns it with the previous frame, merges them together
         to create a 3D model, and tracks the movement between frames.
@@ -232,6 +248,7 @@ class LidarNavigator:
 
         # Run the alignment
         reg = self.matcher.match(self.previous_frame, frame)
+        self.check_save_frame_pair(self.previous_frame, frame, reg)
 
         registration_time = self.time("registration")
 
@@ -305,12 +322,14 @@ if __name__ == "__main__":
     parser.add_argument('--preview', type=str, default="always", choices=['always', 'end', 'never'], help="Show constantly updated point cloud and data plot previews while processing ('always'), show them only at the end ('end'), or don't show them at all ('never').")
     parser.add_argument('--save-to', type=str, default=None, required=False, help="If given, final results will be stored at this path. The path will be used for all types of results, with appendices depending on file type ('_data.json', '_plot.png', '_cloud.laz', '_cloud.pcd'). The path can include \"[pcap]\" and/or \"[time]\" which will be replaced with the name of the parsed PCAP file and the time of completion respectively.")
     parser.add_argument('--save-screenshots-to', type=str, default=None, required=False, help="If given, point cloud screenshots will be saved in this directory with their indices as filenames (0.png, 1.png, 2.png, etc). Only works if --preview is set to 'always'.")
-    
+    parser.add_argument('--save-frame-pairs-to', type=str, default=None, required=False, help="If given, frame pairs with a registered fitness below --save-frame-pair-threshold will be saved to the given directory for manual inspection.")
+    parser.add_argument('--save-frame-pair-threshold', type=float, default=0.97, required=False, help="If --save-frame-pairs-to is given, frame pairs with a registered fitness value below this value will be saved.")
+
     args = parser.parse_args()
 
     if args.save_screenshots_to is not None and args.preview != "always":
         raise ValueError("Cannot save cloud screenshots without --preview being set to 'always'.")
 
     # Create and start a visualization
-    navigator = LidarNavigator(args.pcap, args.json, args.frames, args.skip_frames, args.voxel_size, args.downsample_after, args.preview, args.save_to, args.save_screenshots_to)
+    navigator = LidarNavigator(args.pcap, args.json, args.frames, args.skip_frames, args.voxel_size, args.downsample_after, args.preview, args.save_to, args.save_screenshots_to, args.save_frame_pairs_to, args.save_frame_pair_threshold)
     navigator.navigate_through_file()
