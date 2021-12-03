@@ -2,6 +2,7 @@ from ouster import client, pcap
 import open3d as o3d
 from colormaps import colorize, normalize
 import argparse
+import os
 
 class SerialPcapReader:
 
@@ -210,8 +211,8 @@ class PcapReader:
 
     @staticmethod
     def add_path_arguments(parser):
-        parser.add_argument('--pcap', type=str, nargs='+', required=True, help="The path to one or more PCAP files to visualize, relative or absolute.")
-        parser.add_argument('--json', type=str, nargs='+', required=False, help="The path to corresponding JSON file(s) for each of the PCAP file(s) with the sensor metadata, relative or absolute. If this is not given, the PCAP location is used (by replacing .pcap with .json).")
+        parser.add_argument('--pcap', type=str, nargs='+', required=True, help="The path to one or more PCAP files to visualize, relative or absolute. A path to a directory containing multiple pcap files can also be provided.")
+        parser.add_argument('--json', type=str, nargs='+', required=False, help="The path to corresponding JSON file(s) for each of the PCAP file(s) with the sensor metadata, relative or absolute. If this is not given, the PCAP location is used (by replacing .pcap with .json). A path to a directory containing multiple json files can also be provided.")
 
     @staticmethod
     def from_path_args(args = None):
@@ -222,7 +223,26 @@ class PcapReader:
         return PcapReader.from_lists(args.pcap, args.json)
 
     @staticmethod
+    def expand_folders(items, file_extension):
+        if items is None:
+            return None
+
+        expanded = []
+        for item in items:
+            if os.path.isdir(item):
+                for file in os.listdir(item):
+                    if os.path.isfile(os.path.join(item, file)) and file.lower().endswith(file_extension.lower()):
+                        expanded.append(os.path.join(item, file))
+            else:
+                expanded.append(item)
+
+        return expanded
+
+    @staticmethod
     def from_lists(pcaps, jsons, skip_frames = 0):
+
+        pcaps = PcapReader.expand_folders(pcaps, ".pcap")
+        jsons = PcapReader.expand_folders(jsons, ".json")
 
         if jsons is None:
             jsons = [x.replace(".pcap", ".json") for x in pcaps]
