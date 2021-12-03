@@ -9,6 +9,7 @@ class SerialPcapReader:
     def __init__(self, pcap_paths, meta_data_paths, skip_frames = 0):
         self.readers = [PcapReader(x[0], x[1], skip_frames) for x in zip(pcap_paths, meta_data_paths)]
         self.current_reader_index = 0
+        self._set_metadata()
 
     def count_frames(self):
         return sum([x.count_frames() for x in self.readers])
