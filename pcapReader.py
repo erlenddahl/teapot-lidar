@@ -16,6 +16,14 @@ class SerialPcapReader:
         for reader in self.readers:
             reader.reset()
         self.current_reader_index = 0
+        self._set_metadata()
+
+    def _next_reader(self):
+        self.current_reader_index += 1
+        self._set_metadata()
+
+    def _set_metadata(self):
+        self.pcap_path = None if self.current_reader_index >= len(self.readers) else self.readers[self.current_reader_index].pcap_path
 
     def skip_and_get(self, iterator):
 
@@ -24,7 +32,7 @@ class SerialPcapReader:
 
         frame = self.readers[self.current_reader_index].skip_and_get(iterator)
         if frame is None:
-            self.currentReaderIndex += 1
+            self._next_reader()
             return self.skip_and_get(iterator)
 
         return frame
@@ -43,7 +51,7 @@ class SerialPcapReader:
 
         frame = self.readers[self.current_reader_index].next_frame(remove_vehicle, timer)
         if frame is None:
-            self.currentReaderIndex += 1
+            self._next_reader()
             return self.next_frame(remove_vehicle, timer)
 
         return frame
