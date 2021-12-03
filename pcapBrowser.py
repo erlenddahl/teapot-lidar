@@ -82,5 +82,5 @@ if __name__ == "__main__":
     args = BufferedPcapReader.get_path_args()
 
     # Create and start a visualization
-    visualizer = PcapBrowser(args.pcap, args.json)
+    visualizer = PcapBrowser(args.pcap[0], args.json[0] if args.json is not None else None)
     visualizer.start_visualization()
