@@ -29,6 +29,7 @@ class Plotter:
         
         # Enable interactive mode, which redraws plot on change
         plt.ion()
+        
         # Show the plot without blocking
         plt.show(block=False)
 

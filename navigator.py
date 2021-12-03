@@ -52,7 +52,7 @@ class LidarNavigator:
     def time(self, key):
         return self.timer.time(key)
 
-    def save_screenshot(self, index, ensure_dir = False):
+    def check_save_screenshot(self, index, ensure_dir = False):
         if self.save_screenshots_to is None:
             return
         
@@ -101,7 +101,7 @@ class LidarNavigator:
             self.vis.show_frame(self.merged_frame)
             self.vis.reset_view()
 
-            self.save_screenshot(0, True)
+            self.check_save_screenshot(0, True)
 
         plot = Plotter(self.preview_always)
 
@@ -119,7 +119,7 @@ class LidarNavigator:
                         self.vis.refresh_non_blocking()
                         self.time("visualization refresh")
 
-                        self.save_screenshot(i)
+                        self.check_save_screenshot(i)
 
                     plot.step(self.preview_always)
                     self.time("plot step")

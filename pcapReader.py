@@ -7,7 +7,7 @@ class SerialPcapReader:
 
     def __init__(self, pcap_paths, meta_data_paths, skip_frames = 0):
         self.readers = [PcapReader(x[0], x[1], skip_frames) for x in zip(pcap_paths, meta_data_paths)]
-        self.currentReaderIndex = 0
+        self.current_reader_index = 0
 
     def count_frames(self):
         return sum([x.count_frames() for x in self.readers])
@@ -15,14 +15,14 @@ class SerialPcapReader:
     def reset(self):
         for reader in self.readers:
             reader.reset()
-        self.currentReaderIndex = 0
+        self.current_reader_index = 0
 
     def skip_and_get(self, iterator):
 
-        if self.currentReaderIndex >= len(self.readers):
+        if self.current_reader_index >= len(self.readers):
             return None
 
-        frame = self.readers[self.currentReaderIndex].skip_and_get(iterator)
+        frame = self.readers[self.current_reader_index].skip_and_get(iterator)
         if frame is None:
             self.currentReaderIndex += 1
             return self.skip_and_get(iterator)
@@ -38,10 +38,10 @@ class SerialPcapReader:
         return self.readers[0].remove_vehicle(frame, cloud)
 
     def next_frame(self, remove_vehicle:bool = False, timer = None):
-        if self.currentReaderIndex >= len(self.readers):
+        if self.current_reader_index >= len(self.readers):
             return None
 
-        frame = self.readers[self.currentReaderIndex].next_frame(remove_vehicle, timer)
+        frame = self.readers[self.current_reader_index].next_frame(remove_vehicle, timer)
         if frame is None:
             self.currentReaderIndex += 1
             return self.next_frame(remove_vehicle, timer)
