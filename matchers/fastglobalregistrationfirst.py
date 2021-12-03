@@ -18,15 +18,12 @@ class FastGlobalFirstNicpMatcher:
         pcd_down = pcd.voxel_down_sample(voxel_size)
 
         radius_feature = voxel_size * 5
-        pcd_fpfh = o3d.pipelines.registration.compute_fpfh_feature(pcd_down,
-            o3d.geometry.KDTreeSearchParamHybrid(radius=radius_feature, max_nn=100))
+        pcd_fpfh = o3d.pipelines.registration.compute_fpfh_feature(pcd_down, o3d.geometry.KDTreeSearchParamHybrid(radius=radius_feature, max_nn=100))
         return pcd_down, pcd_fpfh
 
     def execute_fast_global_registration(self, source_down, target_down, source_fpfh,
                                         target_fpfh, voxel_size):
         distance_threshold = voxel_size * 0.5
-        print(":: Apply fast global registration with distance threshold %.3f" \
-                % distance_threshold)
         result = o3d.pipelines.registration.registration_fast_based_on_feature_matching(
             source_down, target_down, source_fpfh, target_fpfh,
             o3d.pipelines.registration.FastGlobalRegistrationOption(
