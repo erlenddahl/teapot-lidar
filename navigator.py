@@ -27,7 +27,6 @@ class LidarNavigator:
 
         print("Preparing ...")
 
-        self.first_pcap_path = pcap_paths[0]
         self.reader = PcapReader.from_lists(pcap_paths, meta_data_paths, skip_frames)
 
         # Fetch the first frame and use it as a base for the generated visualization
@@ -145,7 +144,7 @@ class LidarNavigator:
 
         if self.save_path is not None:
             filenameBase = self.save_path.replace("[time]", datetime.now().strftime('%Y-%m-%d_%H-%M-%S_%f%z'))
-            filenameBase = filenameBase.replace("[pcap]", os.path.basename(self.first_pcap_path).replace(".pcap", ""))
+            filenameBase = filenameBase.replace("[pcap]", os.path.basename(self.reader.pcap_path).replace(".pcap", ""))
             self.ensure_dir(filenameBase)
             plot.save_plot(filenameBase + "_plot.png")
             self.save_cloud_as_las(filenameBase + "_cloud.laz", self.merged_frame)
