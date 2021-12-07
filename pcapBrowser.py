@@ -1,6 +1,8 @@
 from bufferedPcapReader import BufferedPcapReader
 from pcapReaderHelper import PcapReaderHelper
 from open3dVisualizer import Open3DVisualizer
+import open3d as o3d
+import numpy as np
 
 class PcapBrowser:
 
@@ -12,7 +14,22 @@ class PcapBrowser:
         self.reader = BufferedPcapReader(pcap_path, metadata_path)
         self.vis = Open3DVisualizer()
 
-        self.cloud_processors = [None]
+        browser = self
+        class RemoveVehicleProcessor:
+
+            def process(self, cloud):
+                xyz = np.asarray(cloud.points)
+                colors = np.asarray(cloud.colors)
+                
+                colors = browser.reader.remove_vehicle(xyz, colors)
+                xyz = browser.reader.remove_vehicle(xyz)
+
+                cloud = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(xyz))
+                cloud.colors = o3d.utility.Vector3dVector(colors)
+
+                return cloud
+
+        self.cloud_processors = [None, RemoveVehicleProcessor()]
         self.cloud_processor_index = 0
     
     def start_visualization(self):
