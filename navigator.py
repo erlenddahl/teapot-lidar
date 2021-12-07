@@ -25,8 +25,6 @@ class LidarNavigator:
 
         self.timer = TaskTimer()
 
-        print("Preparing ...")
-
         self.reader = PcapReaderHelper.from_lists(pcap_paths, meta_data_paths, skip_frames)
 
         # Fetch the first frame and use it as a base for the generated visualization
