@@ -57,41 +57,65 @@ class RegistrationTester:
             try:
                 with open(self.path_summary_json, 'r') as file:
                     summary = json.load(file)
-            except:
+            except Exception as e:
+                print("Failed to read JSON:", e)
                 pass # If error, skip JSON loading
-        
+
         datasets = [x for x in os.listdir(self.dataset_path) if os.path.isdir(os.path.join(self.dataset_path, x))]
+
+        pcap_runs = [
+            {
+                "title": "No modifications",
+                "remove_vehicle": False
+            },
+            {
+                "title": "Vehicle removed",
+                "remove_vehicle": True
+            }
+        ]
 
         for dataset in tqdm(datasets, desc="Datasets", position=0, ascii=True):
             for algorithm in tqdm(self.algorithms, desc="Algorithms", position=1, ascii=True, leave=False):
 
                 key = [dataset, algorithm.name]
-                keyString = "_".join(key)
+                key_string = "_".join(key)
 
-                if keyString in summary:
+                if key_string in summary:
                     continue
 
                 if dataset.startswith("pairs_"):
-                    summary[keyString] = self.run_pairs(key, dataset, algorithm)
+                    summary[key_string] = self.run_pairs(key, dataset, algorithm)
                 elif dataset.startswith("pcap_"):
-                    summary[keyString] = self.run_pcaps(key, dataset, algorithm)
+                    
+                    for (i, run) in tqdm(enumerate(pcap_runs), desc="PCAP Runs", position=2, ascii=True, leave=False):
+                        numbered_key_string = key_string + "_" + str(i)
+                
+                        if numbered_key_string in summary:
+                            continue
+
+                        summary[numbered_key_string] = self.run_pcaps(key, run, dataset, algorithm)
+
                 else:
                     raise ValueError("Invalid dataset type: " + dataset)
 
                 with open(self.path_summary_json, 'w') as file:
                     json.dump(summary, file)
 
-    def run_pcaps(self, result_key, dataset, algorithm):
+    def run_pcaps(self, result_key, pcap_run, dataset, algorithm):
 
         dataset_path = os.path.join(self.dataset_path, dataset)
         
         results_path = os.path.join(self.path_results, "pcap_results", "_".join(result_key))
         navigator = LidarNavigator(dataset_path, preview="never", save_path=results_path)
-        navigator.tqdm_position = 2
+
         navigator.matcher = algorithm
+        navigator.remove_vehicle = pcap_run["remove_vehicle"]
+
+        navigator.tqdm_position = 3
 
         results = navigator.navigate_through_file()
         results["results"] = results_path
+        results["pcap-run"] = pcap_run
 
         return results
 
