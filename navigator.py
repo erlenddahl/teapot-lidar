@@ -18,7 +18,7 @@ from matchers.fastglobalregistrationfirst import FastGlobalFirstNicpMatcher
 
 class LidarNavigator:
 
-    def __init__(self, pcap_paths, meta_data_paths, frames = -1, skip_frames = 0, voxel_size = 0.1, downsample_cloud_after_frames = 10, preview = "always", save_path = None, save_screenshots_to = None, save_frame_pairs_to = None, save_frame_pair_threshold = 0.97):
+    def __init__(self, pcap_paths, meta_data_paths = None, frames = -1, skip_frames = 0, voxel_size = 0.1, downsample_cloud_after_frames = 10, preview = "always", save_path = None, save_screenshots_to = None, save_frame_pairs_to = None, save_frame_pair_threshold = 0.97):
         """Initialize a LidarNavigator by reading metadata and setting
         up a package source from the pcap file.
         """
@@ -33,6 +33,7 @@ class LidarNavigator:
         self.voxel_size = voxel_size
 
         self.matcher = NicpMatcher()
+        self.remove_vehicle = True
         self.frame_limit = frames
         self.preview_always = preview == "always"
         self.preview_at_end = preview == "always" or preview =="end"
@@ -43,6 +44,7 @@ class LidarNavigator:
         self.save_screenshots_to = save_screenshots_to
         self.save_frame_pairs_to = save_frame_pairs_to
         self.save_frame_pair_threshold = save_frame_pair_threshold
+        self.tqdm_position = 0
         
         self.time("setup")
 
@@ -84,7 +86,7 @@ class LidarNavigator:
             points = o3d.utility.Vector3dVector([]), lines=o3d.utility.Vector2iVector([])
         )
 
-        self.merged_frame = self.reader.next_frame(True, self.timer)
+        self.merged_frame = self.reader.next_frame(self.remove_vehicle, self.timer)
         self.previous_frame = self.merged_frame
 
         # Estimate normals for the first source frame in order to speed up the 
@@ -109,7 +111,7 @@ class LidarNavigator:
         self.time("navigation preparations")
 
         # Enumerate all frames until the end of the file and run the merge operation.
-        for i in tqdm(range(1, self.frame_limit), total=self.frame_limit, ascii=True, initial=1):
+        for i in tqdm(range(1, self.frame_limit), total=self.frame_limit, ascii=True, initial=1, position=self.tqdm_position):
             
             try:
 
@@ -144,6 +146,8 @@ class LidarNavigator:
         if self.preview_at_end:
             plot.update()
 
+        results = self.get_results(plot)
+
         if self.save_path is not None:
             filenameBase = self.save_path.replace("[time]", datetime.now().strftime('%Y-%m-%d_%H-%M-%S_%f%z'))
             filenameBase = filenameBase.replace("[pcap]", os.path.basename(self.reader.pcap_path).replace(".pcap", ""))
@@ -154,7 +158,7 @@ class LidarNavigator:
 
             self.time("results saving")
             
-            self.save_data(filenameBase + "_data.json", plot)
+            self.save_data(filenameBase + "_data.json", results)
         
         plot.print_summary(self.timer)
 
@@ -166,6 +170,8 @@ class LidarNavigator:
             self.vis.reset_view()
 
             self.vis.run()
+
+        return results
 
     def ensure_merged_frame_is_downsampled(self):
 
@@ -186,11 +192,14 @@ class LidarNavigator:
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-    def save_data(self, path, plot):
-
+    def get_results(self, plot):
         data = plot.get_json(self.timer)
 
         data["movement"] = np.asarray(self.movement_path.points).tolist()
+
+        return data
+
+    def save_data(self, path, data):
 
         with open(path, 'w') as f:
             json.dump(data, f, indent=4)
@@ -233,7 +242,7 @@ class LidarNavigator:
         """
 
         # Fetch the next frame
-        frame = self.reader.next_frame(True, self.timer)
+        frame = self.reader.next_frame(self.remove_vehicle, self.timer)
 
         # If it is empty, that (usually) means we have reached the end of
         # the file. Return False to stop the loop.
