@@ -1,6 +1,7 @@
 from ouster import client, pcap
 import open3d as o3d
 from colormaps import colorize, normalize
+import numpy as np
 
 class PcapReader:
 
@@ -79,8 +80,9 @@ class PcapReader:
         if cloud is None:
             cloud = frame
 
-        vr = 2.5
-        return cloud[((frame[:, 0] > vr) | (frame[:, 0] < -vr)) | ((frame[:, 1] > vr) | (frame[:, 1] < -vr))]
+        vw = 0.7
+        vl = 2.2
+        return cloud[((frame[:, 0] > 0.2) | (frame[:, 0] < -vl)) | ((frame[:, 1] > vw) | (frame[:, 1] < -vw)) | ((frame[:, 2] > 0.3) | (frame[:, 2] < -2))]
 
     def next_frame(self, remove_vehicle:bool = False, timer = None):
         """Retrieves the next frame"""
