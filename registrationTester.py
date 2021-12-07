@@ -87,6 +87,7 @@ class RegistrationTester:
 
                 if dataset.startswith("pairs_"):
                     summary[key_string] = self.run_pairs(key, dataset, algorithm)
+                    self.save_summary(summary)
                 elif dataset.startswith("pcap_"):
                     
                     for run in tqdm(pcap_runs, desc="PCAP Runs", position=2, ascii=True, leave=False):
@@ -96,12 +97,14 @@ class RegistrationTester:
                             continue
 
                         summary[numbered_key_string] = self.run_pcaps(key, run, dataset, algorithm)
-
+                        self.save_summary(summary)
+                
                 else:
                     raise ValueError("Invalid dataset type: " + dataset)
 
-                with open(self.path_summary_json, 'w') as file:
-                    json.dump(summary, file)
+    def save_summary(self, summary):
+        with open(self.path_summary_json, 'w') as file:
+            json.dump(summary, file)
 
     def run_pcaps(self, result_key, pcap_run, dataset, algorithm):
 
