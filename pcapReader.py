@@ -65,7 +65,7 @@ class PcapReader:
                 timestamps = packet.header(client.ColHeader.TIMESTAMP)
                 ranges = packet.field(client.ChanField.RANGE)
                 print(f'  encoder counts = {encoder_counts.shape}')
-                print(f'  timestamps = {timestamps.shape}')
+                print(f'  timestamps = {timestamps.shape}, {list(timestamps)}')
                 print(f'  ranges = {ranges.shape}')
 
             elif isinstance(packet, client.ImuPacket):
