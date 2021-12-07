@@ -65,10 +65,12 @@ class RegistrationTester:
 
         pcap_runs = [
             {
+                "id": "nothing",
                 "title": "No modifications",
                 "remove_vehicle": False
             },
             {
+                "id": "vehicle",
                 "title": "Vehicle removed",
                 "remove_vehicle": True
             }
@@ -87,8 +89,8 @@ class RegistrationTester:
                     summary[key_string] = self.run_pairs(key, dataset, algorithm)
                 elif dataset.startswith("pcap_"):
                     
-                    for (i, run) in tqdm(enumerate(pcap_runs), desc="PCAP Runs", position=2, ascii=True, leave=False):
-                        numbered_key_string = key_string + "_" + str(i)
+                    for run in tqdm(pcap_runs, desc="PCAP Runs", position=2, ascii=True, leave=False):
+                        numbered_key_string = key_string + "_" + run["id"]
                 
                         if numbered_key_string in summary:
                             continue
