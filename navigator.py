@@ -44,6 +44,7 @@ class LidarNavigator:
         self.save_frame_pair_threshold = save_frame_pair_threshold
         
         self.tqdm_config = {}
+        self.print_summary_at_end = False
         
         self.time("setup")
 
@@ -159,7 +160,8 @@ class LidarNavigator:
             
             self.save_data(filenameBase + "_data.json", results)
         
-        plot.print_summary(self.timer)
+        if self.print_summary_at_end:
+            plot.print_summary(self.timer)
 
         # Then continue showing the visualization in a blocking way until the user stops it.
         if self.preview_at_end:
@@ -340,4 +342,5 @@ if __name__ == "__main__":
 
     # Create and start a visualization
     navigator = LidarNavigator(args.pcap, args.json, args.frames, args.skip_frames, args.voxel_size, args.downsample_after, args.preview, args.save_to, args.save_screenshots_to, args.save_frame_pairs_to, args.save_frame_pair_threshold)
+    navigator.print_summary_at_end = True
     navigator.navigate_through_file()
