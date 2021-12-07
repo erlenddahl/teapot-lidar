@@ -5,6 +5,7 @@ class SerialPcapReader:
     def __init__(self, pcap_paths, meta_data_paths, skip_frames = 0):
         self.readers = [PcapReader(x[0], x[1], skip_frames) for x in zip(pcap_paths, meta_data_paths)]
         self.current_reader_index = 0
+        self.max_distance = None
         self._set_metadata()
 
     def count_frames(self):
@@ -28,6 +29,7 @@ class SerialPcapReader:
         if self.current_reader_index >= len(self.readers):
             return None
 
+        self.readers[self.current_reader_index].max_distance = self.max_distance
         frame = self.readers[self.current_reader_index].skip_and_get(iterator)
         if frame is None:
             self._next_reader()
@@ -47,6 +49,7 @@ class SerialPcapReader:
         if self.current_reader_index >= len(self.readers):
             return None
 
+        self.readers[self.current_reader_index].max_distance = self.max_distance
         frame = self.readers[self.current_reader_index].next_frame(remove_vehicle, timer)
         if frame is None:
             self._next_reader()
