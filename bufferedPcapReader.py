@@ -31,3 +31,7 @@ class BufferedPcapReader(PcapReader):
 
         # Retrieve the requested frame, which will now be read.
         return self.prepared_clouds[num]
+
+    def invalidate_cache(self):
+        self.prepared_clouds = []
+        self.reset()

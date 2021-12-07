@@ -58,10 +58,34 @@ class PcapBrowser:
             self.reader.print_info()
             self.set_frame(self._currentFrame)
 
+        def key_increase_max_distance(vis):
+            if self.reader.max_distance is None:
+                self.reader.max_distance = 0
+            self.reader.max_distance += 1
+            print("Max distance:", self.reader.max_distance)
+            
+            self.reader.invalidate_cache()
+            self.set_frame(self._currentFrame)
+
+        def key_decrease_max_distance(vis):
+            if self.reader.max_distance is None:
+                return
+            
+            self.reader.max_distance -= 1
+            if self.reader.max_distance < 1:
+                self.reader.max_distance = None
+
+            print("Max distance:", self.reader.max_distance)
+            
+            self.reader.invalidate_cache()
+            self.set_frame(self._currentFrame)
+
         self.vis.register_key_callback(262, key_next) # Arrow right
         self.vis.register_key_callback(263, key_prev) # Arrow left
         self.vis.register_key_callback(73, key_print_info) # I
         self.vis.register_key_callback(80, key_toggle_thinning) # P
+        self.vis.register_key_callback(75, key_decrease_max_distance) # K
+        self.vis.register_key_callback(76, key_increase_max_distance) # L
         # List of key codes can be found here: https://www.glfw.org/docs/latest/group__keys.html
 
         self.set_frame(0)

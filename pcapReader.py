@@ -28,6 +28,8 @@ class PcapReader:
 
         # If 0, every frame will be read. If 1, every second frame, etc.
         self.skip_frames = skip_frames
+        
+        self.max_distance = None
 
         self.reset()
 
@@ -84,6 +86,15 @@ class PcapReader:
         vl = 2.2
         return cloud[((frame[:, 0] > 0.2) | (frame[:, 0] < -vl)) | ((frame[:, 1] > vw) | (frame[:, 1] < -vw)) | ((frame[:, 2] > 0.3) | (frame[:, 2] < -2))]
 
+    def remove_outside_distance(self, meters, frame, cloud = None):
+        # Remove the vehicle, which is always stationary at the center. We don't want that
+        # to interfere with the point cloud alignment.
+
+        if cloud is None:
+            cloud = frame
+
+        return cloud[np.sqrt(frame[:,0]**2+frame[:,1]**2+frame[:,2]**2) <= meters]
+
     def next_frame(self, remove_vehicle:bool = False, timer = None):
         """Retrieves the next frame"""
 
@@ -115,6 +126,10 @@ class PcapReader:
             color_img = self.remove_vehicle(xyz, color_img)
             xyz = self.remove_vehicle(xyz)
             if timer is not None: timer.time("frame vehicle removal")
+        if self.max_distance is not None:
+            color_img = self.remove_outside_distance(self.max_distance, xyz, color_img)
+            xyz = self.remove_outside_distance(self.max_distance, xyz)
+            if timer is not None: timer.time("frame max distance removal")
 
         cloud = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(xyz))
         cloud.colors = o3d.utility.Vector3dVector(color_img)
