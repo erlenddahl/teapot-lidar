@@ -98,17 +98,18 @@ class RegistrationTester:
             target = o3d.io.read_point_cloud(os.path.join(dataset_path, groups[key][1]))
 
             start_time = time.perf_counter()
-            results[key] = self.create_result(algorithm.match(source, target), result_key + "_" + key, source, target, start_time)
+            results[key] = self.create_result(algorithm.match(source, target), result_key + [key], source, target, start_time)
 
         return results
 
     def create_result(self, result, key, source, target, start_time):
 
         time_usage = time.perf_counter() - start_time
-        image_path_before = os.path.join(self.path_results, "screenshots", key + "_before.png")
-        image_path_after = image_path_before.replace("_before", "_after")
+        image_path_before = os.path.join(self.path_results, "screenshots", "before_" + key[0] + "_" + key[2] + ".png")
+        image_path_after = os.path.join(self.path_results, "screenshots", "_".join(key) + "_after.png")
         
-        self.save_screenshot(source, target, image_path_before)
+        if not os.path.isfile(image_path_before):
+            self.save_screenshot(source, target, image_path_before)
         self.save_screenshot(source.transform(result.transformation), target, image_path_after)
 
         movement = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(result.transformation).get_center()
