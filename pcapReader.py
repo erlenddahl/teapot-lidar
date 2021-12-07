@@ -86,6 +86,15 @@ class PcapReader:
         vl = 2.2
         return cloud[((frame[:, 0] > 0.2) | (frame[:, 0] < -vl)) | ((frame[:, 1] > vw) | (frame[:, 1] < -vw)) | ((frame[:, 2] > 0.3) | (frame[:, 2] < -2))]
 
+    def remove_invalid(self, frame, cloud = None):
+        # Remove the vehicle, which is always stationary at the center. We don't want that
+        # to interfere with the point cloud alignment.
+
+        if cloud is None:
+            cloud = frame
+
+        return cloud[(frame[:, 0] != 0) & (frame[:, 1] != 0) & (frame[:, 2] != 0)]
+
     def remove_outside_distance(self, meters, frame, cloud = None):
         # Remove the vehicle, which is always stationary at the center. We don't want that
         # to interfere with the point cloud alignment.
@@ -126,6 +135,11 @@ class PcapReader:
             color_img = self.remove_vehicle(xyz, color_img)
             xyz = self.remove_vehicle(xyz)
             if timer is not None: timer.time("frame vehicle removal")
+        else:
+            color_img = self.remove_invalid(xyz, color_img)
+            xyz = self.remove_invalid(xyz)
+            if timer is not None: timer.time("frame invalid values removal")
+
         if self.max_distance is not None:
             color_img = self.remove_outside_distance(self.max_distance, xyz, color_img)
             xyz = self.remove_outside_distance(self.max_distance, xyz)
