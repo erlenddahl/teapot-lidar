@@ -35,7 +35,7 @@ class PcapBrowser:
 
         def key_toggle_thinning(vis):
             self.cloud_processor_index = (self.cloud_processor_index + 1) % len(self.cloud_processors)
-            self.setFrame(self._currentFrame)
+            self.set_frame(self._currentFrame)
 
         self.vis.register_key_callback(262, key_next) # Arrow right
         self.vis.register_key_callback(263, key_prev) # Arrow left
