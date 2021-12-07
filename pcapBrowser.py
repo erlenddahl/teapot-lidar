@@ -54,8 +54,13 @@ class PcapBrowser:
             self.cloud_processor_index = (self.cloud_processor_index + 1) % len(self.cloud_processors)
             self.set_frame(self._currentFrame)
 
+        def key_print_info(vis):
+            self.reader.print_info()
+            self.set_frame(self._currentFrame)
+
         self.vis.register_key_callback(262, key_next) # Arrow right
         self.vis.register_key_callback(263, key_prev) # Arrow left
+        self.vis.register_key_callback(73, key_print_info) # I
         self.vis.register_key_callback(80, key_toggle_thinning) # P
         # List of key codes can be found here: https://www.glfw.org/docs/latest/group__keys.html
 
