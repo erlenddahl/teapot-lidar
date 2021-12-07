@@ -76,6 +76,13 @@ class RegistrationTester:
             }
         ]
 
+        pcap_runs += [{
+                "id": "vehicle," + str(x) + "m",
+                "title": "Vehicle and distance < " + str(x) + " m",
+                "remove_vehicle": True,
+                "max_distance": x
+            } for x in [5, 7.5, 10, 15, 20, 25, 30, 50]]
+
         for dataset in tqdm(datasets, desc="Datasets", position=0, ascii=True):
             for algorithm in tqdm(self.algorithms, desc="Algorithms", position=1, ascii=True, leave=False):
 
@@ -115,6 +122,9 @@ class RegistrationTester:
 
         navigator.matcher = algorithm
         navigator.remove_vehicle = pcap_run["remove_vehicle"]
+
+        if "max_distance" in pcap_run:
+            navigator.reader.max_distance = pcap_run["max_distance"]
 
         navigator.tqdm_config = {
             "position": 3,
