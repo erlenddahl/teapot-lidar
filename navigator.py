@@ -42,7 +42,8 @@ class LidarNavigator:
         self.save_screenshots_to = save_screenshots_to
         self.save_frame_pairs_to = save_frame_pairs_to
         self.save_frame_pair_threshold = save_frame_pair_threshold
-        self.tqdm_position = 0
+        
+        self.tqdm_config = {}
         
         self.time("setup")
 
@@ -109,7 +110,7 @@ class LidarNavigator:
         self.time("navigation preparations")
 
         # Enumerate all frames until the end of the file and run the merge operation.
-        for i in tqdm(range(1, self.frame_limit), total=self.frame_limit, ascii=True, initial=1, position=self.tqdm_position):
+        for i in tqdm(range(1, self.frame_limit), total=self.frame_limit, ascii=True, initial=1, **self.tqdm_config):
             
             try:
 

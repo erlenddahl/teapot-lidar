@@ -111,7 +111,10 @@ class RegistrationTester:
         navigator.matcher = algorithm
         navigator.remove_vehicle = pcap_run["remove_vehicle"]
 
-        navigator.tqdm_position = 3
+        navigator.tqdm_config = {
+            "position": 3,
+            "leave": False
+        }
 
         results = navigator.navigate_through_file()
         results["results"] = results_path
