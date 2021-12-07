@@ -103,7 +103,7 @@ class RegistrationTester:
                         if numbered_key_string in summary:
                             continue
 
-                        summary[numbered_key_string] = self.run_pcaps(key, run, dataset, algorithm)
+                        summary[numbered_key_string] = self.run_pcaps(key + [run["id"]], run, dataset, algorithm)
                         self.save_summary(summary)
                 
                 else:
