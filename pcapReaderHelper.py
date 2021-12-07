@@ -52,6 +52,11 @@ class PcapReaderHelper:
     @staticmethod
     def from_lists(pcaps, jsons = None, skip_frames = 0):
 
+        if isinstance(pcaps, str):
+            pcaps = [pcaps]
+        if isinstance(jsons, str):
+            jsons = [jsons]
+
         pcaps = PcapReaderHelper.expand_folders(pcaps, ".pcap")
         jsons = PcapReaderHelper.expand_folders(jsons, ".json")
 
