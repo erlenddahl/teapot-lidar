@@ -50,7 +50,7 @@ class PcapReaderHelper:
         return expanded
 
     @staticmethod
-    def from_lists(pcaps, jsons, skip_frames = 0):
+    def from_lists(pcaps, jsons = None, skip_frames = 0):
 
         pcaps = PcapReaderHelper.expand_folders(pcaps, ".pcap")
         jsons = PcapReaderHelper.expand_folders(jsons, ".json")
