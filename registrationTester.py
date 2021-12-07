@@ -8,6 +8,8 @@ import numpy as np
 import open3d as o3d
 from tqdm import tqdm
 
+from navigator import LidarNavigator
+
 from matchers.nicp import NicpMatcher
 from matchers.downsamplefirst import DownsampleFirstNicpMatcher
 from matchers.globalregistrationfirst import GlobalFirstNicpMatcher
@@ -63,18 +65,36 @@ class RegistrationTester:
         for dataset in tqdm(datasets, desc="Datasets", position=0, ascii=True):
             for algorithm in tqdm(self.algorithms, desc="Algorithms", position=1, ascii=True, leave=False):
 
-                key = dataset + "_" + algorithm.name
+                key = [dataset, algorithm.name]
+                keyString = "_".join(key)
 
-                if key in summary:
+                if keyString in summary:
                     continue
 
                 if dataset.startswith("pairs_"):
-                    summary[key] = self.run_pairs(key, dataset, algorithm)
+                    summary[keyString] = self.run_pairs(key, dataset, algorithm)
+                elif dataset.startswith("pcap_"):
+                    summary[keyString] = self.run_pcaps(key, dataset, algorithm)
                 else:
                     raise ValueError("Invalid dataset type: " + dataset)
 
                 with open(self.path_summary_json, 'w') as file:
                     json.dump(summary, file)
+
+    def run_pcaps(self, result_key, dataset, algorithm):
+
+        dataset_path = os.path.join(self.dataset_path, dataset)
+        
+        results_path = os.path.join(self.path_results, "pcap_results", "_".join(result_key))
+        navigator = LidarNavigator(dataset_path, preview="never", save_path=results_path)
+        navigator.tqdm_position = 2
+        navigator.matcher = algorithm
+
+        results = navigator.navigate_through_file()
+        results["results"] = results_path
+
+        return results
+
 
     def run_pairs(self, result_key, dataset, algorithm):
 
