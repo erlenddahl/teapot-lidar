@@ -81,7 +81,7 @@ class RegistrationTester:
                 "title": "Vehicle and distance < " + str(x) + " m",
                 "remove_vehicle": True,
                 "max_distance": x
-            } for x in [5, 7.5, 10, 15, 20, 25, 30, 50]]
+            } for x in [7.5, 10, 15, 20, 25, 30, 50]]
 
         for dataset in tqdm(datasets, desc="Datasets", position=0, ascii=True):
             for algorithm in tqdm(self.algorithms, desc="Algorithms", position=1, ascii=True, leave=False):
