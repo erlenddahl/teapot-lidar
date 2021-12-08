@@ -107,6 +107,14 @@ class RegistrationTester:
         }
 
         results = navigator.navigate_through_file()
+
+        # Remove stuff that is stored in the results file anyway
+        del results["fitnesses"]
+        del results["distances"]
+        del results["timeUsages"]
+        del results["rmses"]
+        del results["movement"]
+
         results["results"] = results_path
         results["pcap-run"] = run
 
