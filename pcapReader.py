@@ -56,24 +56,69 @@ class PcapReader:
         except StopIteration:
             return None
 
-    def print_info(self):
+    def print_info(self, frame_index = None):
         """Print information about all the packets in this file."""
 
-        for packet in self.source:
+        source = pcap.Pcap(self.pcap_path, self.metadata)
+        ix = -1
+        imu = -1
+
+        for packet in source:
             if isinstance(packet, client.LidarPacket):
+
+                ix += 1
+                
+                frame_id = packet.header(client.ColHeader.FRAME_ID)
+
+                if frame_index is not None and ix != frame_index:
+                    continue
+
                 # Now we can process the LidarPacket. In this case, we access
                 # the encoder_counts, timestamps, and ranges
                 encoder_counts = packet.header(client.ColHeader.ENCODER_COUNT)
                 timestamps = packet.header(client.ColHeader.TIMESTAMP)
+                measurement_id = packet.header(client.ColHeader.MEASUREMENT_ID)
+                status = packet.header(client.ColHeader.STATUS)
+
                 ranges = packet.field(client.ChanField.RANGE)
-                print(f'  encoder counts = {encoder_counts.shape}')
-                print(f'  timestamps = {timestamps.shape}, {list(timestamps)}')
+                reflectivity = packet.field(client.ChanField.REFLECTIVITY)
+                signal = packet.field(client.ChanField.SIGNAL)
+                near_ir = packet.field(client.ChanField.NEAR_IR)
+
+                print("")
+                print("Headers:")
+                print(f'  encoder counts = {encoder_counts}')
+                print(f'  timestamps = {timestamps}')
+                print(f'  frame_index = {ix}')
+                print(f'  frame_id = {frame_id}')
+                print(f'  measurement_id = {measurement_id}')
+                print(f'  status = {status}')
+
+                print("")
+                print("Channels:")
                 print(f'  ranges = {ranges.shape}')
+                print(f'  reflectivity = {reflectivity.shape}')
+                print(f'  signal = {signal.shape}')
+                print(f'  near_ir = {near_ir.shape}')
 
             elif isinstance(packet, client.ImuPacket):
+
+                imu += 1
+
+                if frame_index is not None and ix <= frame_index:
+                    continue
+
                 # and access ImuPacket content
+                print("")
+                print("IMU packet " + str(imu) + ": ")
+                print(f'  sys_ts = {packet.sys_ts}')
+                print(f'  acceleration_ts = {packet.accel_ts}')
                 print(f'  acceleration = {packet.accel}')
+                print(f'  gyro_ts = {packet.gyro_ts}')
                 print(f'  angular_velocity = {packet.angular_vel}')
+                
+                if frame_index is not None:
+                    break
 
     def remove_vehicle(self, frame, cloud = None):
         # Remove the vehicle, which is always stationary at the center. We don't want that
