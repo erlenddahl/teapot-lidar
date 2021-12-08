@@ -56,7 +56,7 @@ class PcapReader:
         except StopIteration:
             return None
 
-    def print_info(self, frame_index = None):
+    def print_info(self, frame_index = None, printFunc = print):
         """Print information about all the packets in this file."""
 
         source = pcap.Pcap(self.pcap_path, self.metadata)
@@ -85,21 +85,21 @@ class PcapReader:
                 signal = packet.field(client.ChanField.SIGNAL)
                 near_ir = packet.field(client.ChanField.NEAR_IR)
 
-                print("")
-                print("Headers:")
-                print(f'  encoder counts = {encoder_counts}')
-                print(f'  timestamps = {timestamps}')
-                print(f'  frame_index = {ix}')
-                print(f'  frame_id = {frame_id}')
-                print(f'  measurement_id = {measurement_id}')
-                print(f'  status = {status}')
+                printFunc("")
+                printFunc("Headers:")
+                printFunc(f'  encoder counts = {encoder_counts}')
+                printFunc(f'  timestamps = {timestamps}')
+                printFunc(f'  frame_index = {ix}')
+                printFunc(f'  frame_id = {frame_id}')
+                printFunc(f'  measurement_id = {measurement_id}')
+                printFunc(f'  status = {status}')
 
-                print("")
-                print("Channels:")
-                print(f'  ranges = {ranges.shape}')
-                print(f'  reflectivity = {reflectivity.shape}')
-                print(f'  signal = {signal.shape}')
-                print(f'  near_ir = {near_ir.shape}')
+                printFunc("")
+                printFunc("Channels:")
+                printFunc(f'  ranges = {ranges.shape}')
+                printFunc(f'  reflectivity = {reflectivity.shape}')
+                printFunc(f'  signal = {signal.shape}')
+                printFunc(f'  near_ir = {near_ir.shape}')
 
             elif isinstance(packet, client.ImuPacket):
 
@@ -109,13 +109,13 @@ class PcapReader:
                     continue
 
                 # and access ImuPacket content
-                print("")
-                print("IMU packet " + str(imu) + ": ")
-                print(f'  sys_ts = {packet.sys_ts}')
-                print(f'  acceleration_ts = {packet.accel_ts}')
-                print(f'  acceleration = {packet.accel}')
-                print(f'  gyro_ts = {packet.gyro_ts}')
-                print(f'  angular_velocity = {packet.angular_vel}')
+                printFunc("")
+                printFunc("IMU packet " + str(imu) + ": ")
+                printFunc(f'  sys_ts = {packet.sys_ts}')
+                printFunc(f'  acceleration_ts = {packet.accel_ts}')
+                printFunc(f'  acceleration = {packet.accel}')
+                printFunc(f'  gyro_ts = {packet.gyro_ts}')
+                printFunc(f'  angular_velocity = {packet.angular_vel}')
                 
                 if frame_index is not None:
                     break
@@ -205,3 +205,19 @@ class PcapReader:
             if frame is None:
                 return frames
             frames.append(frame)
+
+if __name__ == "__main__":
+
+    import argparse
+    from pcapReaderHelper import PcapReaderHelper
+
+    parser = argparse.ArgumentParser()
+    PcapReaderHelper.add_path_arguments(parser)
+    parser.add_argument('--output', type=str, required=True, help="A text file where all packet info should be saved.")
+
+    args = parser.parse_args()
+
+    reader = PcapReaderHelper.from_path_args(args)
+
+    with open(args.output, 'w') as f:
+        reader.print_info(printFunc=lambda l: f.write(l + "\n"))
