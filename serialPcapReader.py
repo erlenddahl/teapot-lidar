@@ -38,9 +38,9 @@ class SerialPcapReader:
         return frame
 
 
-    def print_info(self):
+    def print_info(self, frame_index = None, printFunc = print):
         for reader in self.readers:
-            reader.print_info()
+            reader.print_info(frame_index, printFunc)
 
     def remove_vehicle(self, frame, cloud = None):
         return self.readers[0].remove_vehicle(frame, cloud)
