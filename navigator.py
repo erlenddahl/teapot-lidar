@@ -172,6 +172,8 @@ class LidarNavigator:
 
             self.vis.run()
 
+        plot.destroy()
+
         return results
 
     def ensure_merged_frame_is_downsampled(self):

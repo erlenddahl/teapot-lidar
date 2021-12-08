@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 from tabulate import tabulate
-import math
 import statistics
 
 class Plotter:
@@ -29,7 +28,7 @@ class Plotter:
         
         # Enable interactive mode, which redraws plot on change
         plt.ion()
-        
+
         # Show the plot without blocking
         plt.show(block=False)
 
@@ -52,6 +51,9 @@ class Plotter:
         handles2, labels2 = ax2.get_legend_handles_labels()
         handles3, labels3 = ax3.get_legend_handles_labels()
         self.fig.legend(handles1+handles2+handles3, labels1+labels2+labels3, loc='center right')
+
+    def destroy(self):
+        plt.close(self.fig)
 
     def print_summary(self, timer = None):
 
