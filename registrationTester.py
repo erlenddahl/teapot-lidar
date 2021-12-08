@@ -14,18 +14,22 @@ from matchers.nicp import NicpMatcher
 from matchers.downsamplefirst import DownsampleFirstNicpMatcher
 from matchers.globalregistrationfirst import GlobalFirstNicpMatcher
 from matchers.fastglobalregistrationfirst import FastGlobalFirstNicpMatcher
+from matchers.cpd import CpdMatcher
 
 class RegistrationTester:
 
-    def __init__(self, dataset_path, results_name):
+    def __init__(self, config_file):
         
-        self.dataset_path = dataset_path
-        self.results_name = results_name
-        self.path_results = os.path.join(dataset_path, results_name)
-        self.path_summary_json = os.path.join(dataset_path, results_name + ".json")
-        self.path_summary_md = os.path.join(dataset_path, results_name + ".md")
+        self.config_file = config_file
+        self.dataset_path = os.path.dirname(config_file)
+        results_name = os.path.basename(config_file).lower().replace(".json", "")
+        self.path_results = os.path.join(self.dataset_path, "results", results_name)
+        self.path_summary_json = os.path.join(self.path_results, "summary.json")
 
         self.init_algorithms()
+
+        with open(config_file, 'r') as file:
+            self.config = json.load(file)
 
     def init_algorithms(self):
 
@@ -37,16 +41,13 @@ class RegistrationTester:
         self.add_algorithm(DownsampleFirstNicpMatcher(0.05), "Downsample (0.05), then NICP")
         self.add_algorithm(GlobalFirstNicpMatcher(), "Global registration, then NICP")
         self.add_algorithm(FastGlobalFirstNicpMatcher(), "Fast global registration, then NICP")
+        self.add_algorithm(CpdMatcher(), "CPD")
 
     def add_algorithm(self, algo, name):
         algo.name = name
         self.algorithms.append(algo)
 
     def clean(self):
-        if os.path.isfile(self.path_summary_md):
-            os.remove(self.path_summary_md)
-        if os.path.isfile(self.path_summary_json):
-            os.remove(self.path_summary_json)
         if os.path.isdir(self.path_results):
             shutil.rmtree(self.path_results)
 
@@ -61,59 +62,33 @@ class RegistrationTester:
                 print("Failed to read JSON:", e)
                 pass # If error, skip JSON loading
 
-        datasets = [x for x in os.listdir(self.dataset_path) if os.path.isdir(os.path.join(self.dataset_path, x))]
-
-        pcap_runs = [
-            {
-                "id": "nothing",
-                "title": "No modifications",
-                "remove_vehicle": False
-            },
-            {
-                "id": "vehicle",
-                "title": "Vehicle removed",
-                "remove_vehicle": True
-            }
-        ]
-
-        pcap_runs += [{
-                "id": "vehicle," + str(x) + "m",
-                "title": "Vehicle and distance < " + str(x) + " m",
-                "remove_vehicle": True,
-                "max_distance": x
-            } for x in [7.5, 10, 15, 20, 25, 30, 50]]
+        datasets = self.config["datasets"]
+        algorithms = [x for x in self.algorithms if x.name in self.config["algorithms"]]
 
         for dataset in tqdm(datasets, desc="Datasets", position=0, ascii=True):
-            for algorithm in tqdm(self.algorithms, desc="Algorithms", position=1, ascii=True, leave=False):
+            for algorithm in tqdm(algorithms, desc="Algorithms", position=1, ascii=True, leave=False):
+                for run in tqdm(self.config["runs"], desc="Runs", position=2, ascii=True, leave=False):
 
-                key = [dataset, algorithm.name]
-                key_string = "_".join(key)
+                    key = [dataset, algorithm.name, run["id"]]
+                    key_string = "_".join(key)
 
-                if key_string in summary:
-                    continue
+                    if key_string in summary:
+                        continue
 
-                if dataset.startswith("pairs_"):
-                    summary[key_string] = self.run_pairs(key, dataset, algorithm)
+                    if dataset.startswith("pairs_"):
+                        summary[key_string] = self.run_pairs(key, dataset, algorithm)
+                    elif dataset.startswith("pcap_"):
+                        summary[key_string] = self.run_pcaps(key, run, dataset, algorithm)
+                    else:
+                        raise ValueError("Invalid dataset type: " + dataset)
+
                     self.save_summary(summary)
-                elif dataset.startswith("pcap_"):
-                    
-                    for run in tqdm(pcap_runs, desc="PCAP Runs", position=2, ascii=True, leave=False):
-                        numbered_key_string = key_string + "_" + run["id"]
-                
-                        if numbered_key_string in summary:
-                            continue
-
-                        summary[numbered_key_string] = self.run_pcaps(key + [run["id"]], run, dataset, algorithm)
-                        self.save_summary(summary)
-                
-                else:
-                    raise ValueError("Invalid dataset type: " + dataset)
 
     def save_summary(self, summary):
         with open(self.path_summary_json, 'w') as file:
-            json.dump(summary, file)
+            json.dump(summary, file, indent=4)
 
-    def run_pcaps(self, result_key, pcap_run, dataset, algorithm):
+    def run_pcaps(self, result_key, run, dataset, algorithm):
 
         dataset_path = os.path.join(self.dataset_path, dataset)
         
@@ -121,10 +96,10 @@ class RegistrationTester:
         navigator = LidarNavigator(dataset_path, preview="never", save_path=results_path)
 
         navigator.matcher = algorithm
-        navigator.remove_vehicle = pcap_run["remove_vehicle"]
+        navigator.remove_vehicle = run["remove_vehicle"]
 
-        if "max_distance" in pcap_run:
-            navigator.reader.max_distance = pcap_run["max_distance"]
+        if "max_distance" in run:
+            navigator.reader.max_distance = run["max_distance"]
 
         navigator.tqdm_config = {
             "position": 3,
@@ -133,7 +108,7 @@ class RegistrationTester:
 
         results = navigator.navigate_through_file()
         results["results"] = results_path
-        results["pcap-run"] = pcap_run
+        results["pcap-run"] = run
 
         return results
 
@@ -153,7 +128,7 @@ class RegistrationTester:
                 groups[group] = [file]
 
         results = {}
-        for key in tqdm(groups, desc="Pairs", position=2, ascii=True, leave=False):
+        for key in tqdm(groups, desc="Pairs", position=3, ascii=True, leave=False):
 
             # We repeat the reading for every algorithm in case any of them should ever change anything in the clouds.
             source = o3d.io.read_point_cloud(os.path.join(dataset_path, groups[key][0]))
@@ -226,13 +201,12 @@ class RegistrationTester:
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--datasets', type=str, required=True, help="The path to a directory containing one or more dataset directories. Results will be saved in the same directory.")
-    parser.add_argument('--results-name', type=str, default='results', help="The name of the results file and folder.")
-    parser.add_argument('--clean', dest='clean', action='store_true', help="If set, all previous results will be deleted before running (otherwise, algorithms and datasets with previous results will be skipped).")
+    parser.add_argument('--run', type=str, required=True, help="The path to a test config file.")
+    parser.add_argument('--clean', dest='clean', action='store_true', help="If set, all previous results will be deleted before running (otherwise, runs with previous results will be skipped).")
 
     args = parser.parse_args()
 
-    navigator = RegistrationTester(args.datasets, args.results_name)
+    navigator = RegistrationTester(args.run)
 
     if args.clean:
         navigator.clean()
