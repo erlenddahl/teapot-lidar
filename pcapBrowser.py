@@ -55,8 +55,7 @@ class PcapBrowser:
             self.set_frame(self._currentFrame)
 
         def key_print_info(vis):
-            self.reader.print_info()
-            self.set_frame(self._currentFrame)
+            self.reader.print_info(self._currentFrame)
 
         def key_increase_max_distance(vis):
             if self.reader.max_distance is None:
