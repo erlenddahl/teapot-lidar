@@ -7,14 +7,9 @@ import argparse
 import numpy as np
 import open3d as o3d
 from tqdm import tqdm
+from algorithmHelper import AlgorithmHelper
 
 from navigator import LidarNavigator
-
-from matchers.nicp import NicpMatcher
-from matchers.downsamplefirst import DownsampleFirstNicpMatcher
-from matchers.globalregistrationfirst import GlobalFirstNicpMatcher
-from matchers.fastglobalregistrationfirst import FastGlobalFirstNicpMatcher
-from matchers.cpd import CpdMatcher
 
 class RegistrationTester:
 
@@ -26,26 +21,10 @@ class RegistrationTester:
         self.path_results = os.path.join(self.dataset_path, "results", results_name)
         self.path_summary_json = os.path.join(self.path_results, "summary.json")
 
-        self.init_algorithms()
+        self.algorithms = AlgorithmHelper.get_all_algorithms()
 
         with open(config_file, 'r') as file:
             self.config = json.load(file)
-
-    def init_algorithms(self):
-
-        self.algorithms = []
-
-        self.add_algorithm(NicpMatcher(), "NICP")
-        self.add_algorithm(DownsampleFirstNicpMatcher(), "Downsample (0.5), then NICP")
-        self.add_algorithm(DownsampleFirstNicpMatcher(0.1), "Downsample (0.1), then NICP")
-        self.add_algorithm(DownsampleFirstNicpMatcher(0.05), "Downsample (0.05), then NICP")
-        self.add_algorithm(GlobalFirstNicpMatcher(), "Global registration, then NICP")
-        self.add_algorithm(FastGlobalFirstNicpMatcher(), "Fast global registration, then NICP")
-        self.add_algorithm(CpdMatcher(), "CPD")
-
-    def add_algorithm(self, algo, name):
-        algo.name = name
-        self.algorithms.append(algo)
 
     def clean(self):
         if os.path.isdir(self.path_results):

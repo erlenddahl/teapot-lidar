@@ -1,3 +1,4 @@
+from algorithmHelper import AlgorithmHelper
 from pcapReaderHelper import PcapReaderHelper
 from open3dVisualizer import Open3DVisualizer
 from plotter import Plotter
@@ -11,14 +12,9 @@ import json
 import argparse
 from taskTimer import TaskTimer
 
-from matchers.nicp import NicpMatcher
-from matchers.downsamplefirst import DownsampleFirstNicpMatcher
-from matchers.globalregistrationfirst import GlobalFirstNicpMatcher
-from matchers.fastglobalregistrationfirst import FastGlobalFirstNicpMatcher
-
 class LidarNavigator:
 
-    def __init__(self, pcap_paths, meta_data_paths = None, frames = -1, skip_frames = 0, voxel_size = 0.1, downsample_cloud_after_frames = 10, preview = "always", save_path = None, save_screenshots_to = None, save_frame_pairs_to = None, save_frame_pair_threshold = 0.97):
+    def __init__(self, pcap_paths, meta_data_paths = None, frames = -1, skip_frames = 0, voxel_size = 0.1, downsample_cloud_after_frames = 10, preview = "always", save_path = None, save_screenshots_to = None, save_frame_pairs_to = None, save_frame_pair_threshold = 0.97, registration_algorithm = "NICP"):
         """Initialize a LidarNavigator by reading metadata and setting
         up a package source from the pcap file.
         """
@@ -30,7 +26,7 @@ class LidarNavigator:
         # Fetch the first frame and use it as a base for the generated visualization
         self.voxel_size = voxel_size
 
-        self.matcher = NicpMatcher()
+        self.matcher = AlgorithmHelper.get_algorithm(registration_algorithm)
         self.remove_vehicle = True
         self.frame_limit = frames
         self.preview_always = preview == "always"
@@ -327,6 +323,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     PcapReaderHelper.add_path_arguments(parser)
+    parser.add_argument('--algorithm', type=str, default="NICP", required=False, help="Use this registration algorithm (see names in algorithmHelper.py).")
     parser.add_argument('--frames', type=int, default=-1, required=False, help="If given a number larger than 1, only this many frames will be read from the PCAP file.")
     parser.add_argument('--skip-frames', type=int, default=0, required=False, help="If given a positive number larger than 0, this many frames will be skipped between every frame read from the PCAP file.")
     parser.add_argument('--voxel-size', type=float, default=0.1, required=False, help="The voxel size used for cloud downsampling. If less than or equal to zero, downsampling will be disabled.")
