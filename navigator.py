@@ -98,7 +98,7 @@ class LidarNavigator:
 
             # Show the first frame and reset the view
             self.vis.show_frame(self.merged_frame)
-            self.vis.reset_view()
+            self.vis.set_follow_vehicle_view()
 
             self.check_save_screenshot(0, True)
 
@@ -116,6 +116,7 @@ class LidarNavigator:
                     # Refresh the non-blocking visualization
                     if self.preview_always:
                         self.vis.refresh_non_blocking()
+                        self.vis.set_follow_vehicle_view()
                         self.time("visualization refresh")
 
                         self.check_save_screenshot(i)
@@ -195,6 +196,7 @@ class LidarNavigator:
         data = plot.get_json(self.timer)
 
         data["movement"] = np.asarray(self.movement_path.points).tolist()
+        data["algorithm"] = self.matcher.name
 
         return data
 
@@ -340,6 +342,6 @@ if __name__ == "__main__":
         raise ValueError("Cannot save cloud screenshots without --preview being set to 'always'.")
 
     # Create and start a visualization
-    navigator = LidarNavigator(args.pcap, args.json, args.frames, args.skip_frames, args.voxel_size, args.downsample_after, args.preview, args.save_to, args.save_screenshots_to, args.save_frame_pairs_to, args.save_frame_pair_threshold)
+    navigator = LidarNavigator(args.pcap, args.json, args.frames, args.skip_frames, args.voxel_size, args.downsample_after, args.preview, args.save_to, args.save_screenshots_to, args.save_frame_pairs_to, args.save_frame_pair_threshold, args.algorithm)
     navigator.print_summary_at_end = True
     navigator.navigate_through_file()

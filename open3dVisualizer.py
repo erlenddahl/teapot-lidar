@@ -44,6 +44,15 @@ class Open3DVisualizer:
         self.ctr.set_zoom(0.1)
         self.ctr.set_lookat([0, 0, 0])
         self.ctr.set_up([1, 0, 0])
+
+    def set_follow_vehicle_view(self):
+
+        self._initialize()
+
+        """Reset the view to the axis center"""
+        self.ctr.set_zoom(0.05)
+        self.ctr.set_lookat([0, 0, 0.5])
+        self.ctr.set_up([0.35, 0, 0.94])
     
     def register_key_callback(self, keyCode, callback):
         self.vis.register_key_callback(keyCode, callback)
