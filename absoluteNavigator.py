@@ -264,7 +264,8 @@ class AbsoluteLidarNavigator:
         self.time("normal estimation")
 
         # Run the alignment
-        reg = self.matcher.match(self.full_cloud, frame, 99999999 if self.previous_transformation is None else 3, self.previous_transformation) # cloud.get_relevant(579140, 6776251)
+        is_first = self.previous_transformation is None
+        reg = self.matcher.match(self.full_cloud, frame, 99999999 if is_first else 3, self.previous_transformation) # cloud.get_relevant(579140, 6776251)
         self.check_save_frame_pair(self.full_cloud, frame, reg)
 
         registration_time = self.time("registration")
@@ -282,7 +283,7 @@ class AbsoluteLidarNavigator:
         plot.timeUsages.append(registration_time)
         plot.rmses.append(reg.inlier_rmse)
         plot.fitnesses.append(reg.fitness)
-        plot.distances.append(np.sqrt(np.dot(movement, movement)))
+        plot.distances.append(0 if is_first else np.sqrt(np.dot(movement, movement)))
 
         # Append the newest movement
         self.movements.append(movement)
