@@ -98,4 +98,6 @@ if __name__ == "__main__":
     cloud = reader.read_all(args.preview, args.max_files)
 
     if args.write_to is not None:
-        o3d.io.write_point_cloud(args.write_to, cloud, compressed=True)
+        o3d.io.write_point_cloud(args.write_to, cloud, compressed=False)
+        cloud.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
+        o3d.io.write_point_cloud(args.write_to.replace(".pcd", "-with-normals.pcd"), cloud, compressed=False)
