@@ -25,8 +25,16 @@ class AbsoluteLidarNavigator:
         self.reader = PcapReaderHelper.from_lists(pcap_paths, meta_data_paths, skip_frames)
 
         #self.cloud = PointCloud(point_cloud_path)
-        print("Reading point cloud ...")
+        print("Preparing point cloud:")
+        print("    > Reading ...")
         self.full_cloud = o3d.io.read_point_cloud(point_cloud_path)
+        print("    > Moving")
+        self.print_cloud_info("Full cloud original", self.full_cloud, "    ")
+        points = np.asarray(self.full_cloud.points)
+        self.full_point_cloud_offset = np.amin(points, axis=0)
+        points -= self.full_point_cloud_offset
+        self.full_cloud.points = o3d.utility.Vector3dVector(points)
+        self.print_cloud_info("Full cloud moved", self.full_cloud, "    ")
         print("    > Done")
 
         # Fetch the first frame and use it as a base for the generated visualization
@@ -179,6 +187,17 @@ class AbsoluteLidarNavigator:
         plot.destroy()
 
         return results
+    
+    def print_cloud_info(self, title, cloud, prefix = ""):
+        mf = np.asarray(cloud.points)
+        print(prefix + title + ":")
+
+        mins = np.amin(mf, axis=0)
+        maxs = np.amax(mf, axis=0)
+
+        print(prefix + "    > X: {:.2f} - {:.2f}".format(mins[0], maxs[0]))
+        print(prefix + "    > Y: {:.2f} - {:.2f}".format(mins[1], maxs[1]))
+        print(prefix + "    > Z: {:.2f} - {:.2f}".format(mins[2], maxs[2]))
 
     def ensure_merged_frame_is_downsampled(self):
 
