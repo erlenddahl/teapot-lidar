@@ -1,6 +1,7 @@
 import numpy as np
 import json
 import os
+from tqdm import tqdm
 import open3d as o3d
 import laspy
 from datetime import datetime
@@ -14,7 +15,7 @@ class NavigatorBase:
     def __init__(self, args, min_frame_limit = 1):
         self.timer = TaskTimer()
 
-        self.reader = PcapReaderHelper.from_lists(args.pcap, args.json, args.skip_frames)
+        self.reader = PcapReaderHelper.from_lists(args.pcap, args.json, args.skip_every_frame)
         self.voxel_size = args.voxel_size
         self.matcher = AlgorithmHelper.get_algorithm(args.algorithm)
         self.remove_vehicle = True
@@ -29,6 +30,7 @@ class NavigatorBase:
         self.save_frame_pairs_to = args.save_frame_pairs_to
         self.save_frame_pair_threshold = args.save_frame_pair_threshold
         self.previous_transformation = None
+        self.skip_start = args.skip_start
         
         self.tqdm_config = {}
         self.print_summary_at_end = False
@@ -36,8 +38,14 @@ class NavigatorBase:
         self.time("setup")
 
         if self.frame_limit <= min_frame_limit:
-            self.frame_limit = self.reader.count_frames()
+            self.frame_limit = self.reader.count_frames(True)
             self.time("frame counting")
+
+    def skip_initial_frames(self):
+        if self.skip_start > 0:
+            self.frame_limit -= self.skip_start
+            for _ in tqdm(range(0, self.skip_start), ascii=True, desc="Skipping frames", **self.tqdm_config):
+                self.reader.next_frame(False, self.timer)
 
     @staticmethod
     def print_cloud_info(title, cloud, prefix = ""):
@@ -149,7 +157,8 @@ class NavigatorBase:
     def add_standard_and_parse_args(parser):
         parser.add_argument('--algorithm', type=str, default="NICP", required=False, help="Use this registration algorithm (see names in algorithmHelper.py).")
         parser.add_argument('--frames', type=int, default=-1, required=False, help="If given a number larger than 1, only this many frames will be read from the PCAP file.")
-        parser.add_argument('--skip-frames', type=int, default=0, required=False, help="If given a positive number larger than 0, this many frames will be skipped between every frame read from the PCAP file.")
+        parser.add_argument('--skip-every-frame', type=int, default=0, required=False, help="If given a positive number larger than 0, this many frames will be skipped between every frame read from the PCAP file.")
+        parser.add_argument('--skip-start', type=int, default=0, required=False, help="If given a positive number larger than 0, this many frames will be skipped before starting processing frames.")
         parser.add_argument('--voxel-size', type=float, default=0.1, required=False, help="The voxel size used for cloud downsampling. If less than or equal to zero, downsampling will be disabled.")
         parser.add_argument('--downsample-after', type=int, default=10, required=False, help="The cloud will be downsampled after this many frames (which is an expensive operation for large clouds, so don't do it too often). If this number is higher than the number of frames being read, it will be downsampled once at the end of the process (unless downsampling is disabled, see --voxel-size).")
         parser.add_argument('--preview', type=str, default="always", choices=['always', 'end', 'never'], help="Show constantly updated point cloud and data plot previews while processing ('always'), show them only at the end ('end'), or don't show them at all ('never').")

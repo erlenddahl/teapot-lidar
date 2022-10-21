@@ -7,11 +7,7 @@ import numpy as np
 import os
 from tqdm import tqdm
 import open3d as o3d
-import laspy
 from datetime import datetime
-import json
-import argparse
-from taskTimer import TaskTimer
 
 class LidarNavigator(NavigatorBase):
 
@@ -40,7 +36,10 @@ class LidarNavigator(NavigatorBase):
             points = o3d.utility.Vector3dVector([]), lines=o3d.utility.Vector2iVector([])
         )
 
+        self.skip_initial_frames()
+
         self.merged_frame = self.reader.next_frame(self.remove_vehicle, self.timer)
+
         self.previous_frame = self.merged_frame
 
         # Estimate normals for the first source frame in order to speed up the 

@@ -43,6 +43,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
         """
         
         self.timer.reset()
+        self.skip_initial_frames()
 
         # Initialize the list of movements as well as the merged frame, and the first 
         # source frame.
