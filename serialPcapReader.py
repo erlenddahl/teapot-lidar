@@ -1,4 +1,5 @@
 from pcapReader import PcapReader
+from tqdm import tqdm
 
 class SerialPcapReader:
 
@@ -8,8 +9,8 @@ class SerialPcapReader:
         self.max_distance = None
         self._set_metadata()
 
-    def count_frames(self):
-        return sum([x.count_frames() for x in self.readers])
+    def count_frames(self, show_progress):
+        return sum([x.count_frames(False) for x in tqdm(self.readers, ascii=True, desc="Counting frames", disable=not show_progress)])
 
     def reset(self):
         for reader in self.readers:

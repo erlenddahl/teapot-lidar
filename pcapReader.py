@@ -33,9 +33,11 @@ class PcapReader:
 
         self.reset()
 
-    def count_frames(self):
+    def count_frames(self, show_progress):
         count = 0
         i = iter(client.Scans(self.source))
+        if show_progress:
+            print("Counting frames ...")
         while True:
             frame = self.skip_and_get(i)
             if frame is None:
