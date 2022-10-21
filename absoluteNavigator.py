@@ -6,6 +6,7 @@ import os
 from tqdm import tqdm
 import open3d as o3d
 from datetime import datetime
+import copy
 
 class AbsoluteLidarNavigator(NavigatorBase):
 
@@ -17,16 +18,21 @@ class AbsoluteLidarNavigator(NavigatorBase):
         print("Preparing point cloud:")
         print("    > Reading ...")
         self.full_cloud = o3d.io.read_point_cloud(args.point_cloud)
-        print("    > Moving")
-        self.print_cloud_info("Full cloud original", self.full_cloud, "    ")
-        points = np.asarray(self.full_cloud.points)
-        self.full_point_cloud_offset = np.amin(points, axis=0)
-        points -= self.full_point_cloud_offset
-        self.full_cloud.points = o3d.utility.Vector3dVector(points)
-        self.print_cloud_info("Full cloud moved", self.full_cloud, "    ")
+        #print("    > Moving")
+        #self.print_cloud_info("Full cloud original", self.full_cloud, "    ")
+        #points = np.asarray(self.full_cloud.points)
+        #self.full_point_cloud_offset = np.amin(points, axis=0)
+        #self.full_point_cloud_offset += (np.amax(points, axis=0) - self.full_point_cloud_offset) / 2
+        #points -= self.full_point_cloud_offset
+        #self.full_cloud = o3d.geometry.PointCloud()
+        #self.full_cloud.points = o3d.utility.Vector3dVector(points)
+        #self.print_cloud_info("Full cloud moved", self.full_cloud, "    ")
+        #print("    > Estimating normals")
+        #self.full_cloud.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
+        #o3d.io.write_point_cloud("D:\\Lager\\2021-10-21 - Kartverket, LIDAR\\data\\Referanse punktskyer\\211021_Lillehammer\\assembled-moved-with-normals.pcd", self.full_cloud, compressed=False)
         print("    > Done")
 
-        NavigatorBase.__init__(self, args)
+        NavigatorBase.__init__(self, args, 0)
 
     def navigate_through_file(self):
         """ Runs through each frame in the file. For each pair of frames, use NICP
@@ -46,41 +52,37 @@ class AbsoluteLidarNavigator(NavigatorBase):
             points = o3d.utility.Vector3dVector([]), lines=o3d.utility.Vector2iVector([])
         )
 
-        self.merged_frame = self.reader.next_frame(self.remove_vehicle, self.timer)
-        self.previous_frame = self.merged_frame
-
-        # Estimate normals for the first source frame in order to speed up the 
-        # alignment operation.
-        self.previous_frame.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
-        
-        # Initialize the visualizer
-        self.vis = Open3DVisualizer()
-
-        if self.preview_always:
-            # Initiate non-blocking visualizer window
-            self.vis.refresh_non_blocking()
-
-            # Show the first frame and reset the view
-            self.vis.show_frame(self.merged_frame)
-            self.vis.set_follow_vehicle_view()
-
-            self.check_save_screenshot(0, True)
-
+        self.vis = None
+        self.merged_frame = o3d.geometry.PointCloud()
         plot = Plotter(self.preview_always)
 
-        self.time("navigation preparations")
-
         # Enumerate all frames until the end of the file and run the merge operation.
-        for i in tqdm(range(1, self.frame_limit), total=self.frame_limit, ascii=True, initial=1, **self.tqdm_config):
+        for i in tqdm(range(0, self.frame_limit), total=self.frame_limit, ascii=True, initial=0, **self.tqdm_config):
             
             try:
 
-                if self.merge_next_frame(plot): 
+                if self.merge_next_frame(plot):
+
+                    if self.vis is None:
+                        # Initialize the visualizer
+                        self.vis = Open3DVisualizer()
+
+                        if self.preview_always:
+                            # Initiate non-blocking visualizer window
+                            self.vis.refresh_non_blocking()
+
+                            # Show the first frame and reset the view
+                            self.vis.show_frame(self.merged_frame)
+                            self.vis.set_follow_vehicle_view(self.movements[-1])
+
+                            self.check_save_screenshot(0, True)
+
+                        self.time("navigation preparations")
 
                     # Refresh the non-blocking visualization
                     if self.preview_always:
                         self.vis.refresh_non_blocking()
-                        self.vis.set_follow_vehicle_view()
+                        self.vis.set_follow_vehicle_view(self.movements[-1])
                         self.time("visualization refresh")
 
                         self.check_save_screenshot(i)
@@ -106,6 +108,10 @@ class AbsoluteLidarNavigator(NavigatorBase):
         # When everything is finished, print a summary, and save the point cloud and debug data.
         if self.preview_at_end:
             plot.update()
+
+        self.print_cloud_info("Merged frame", self.merged_frame)
+        self.print_cloud_info("Full cloud", self.full_cloud)
+        self.draw_registration_result(self.merged_frame, self.full_cloud)
 
         results = self.get_results(plot)
 
@@ -137,13 +143,24 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         return results
 
+    def draw_registration_result(self, source, target):
+        source_temp = copy.deepcopy(source)
+        target_temp = copy.deepcopy(target)
+        source_temp.paint_uniform_color([1, 0.706, 0])
+        target_temp.paint_uniform_color([0, 0.651, 0.929])
+        o3d.visualization.draw_geometries([source_temp, target_temp])
+
     def merge_next_frame(self, plot):
         """ Reads the next frame, aligns it with the previous frame, merges them together
         to create a 3D model, and tracks the movement between frames.
         """
 
         # Fetch the next frame
-        frame = self.reader.next_frame(self.remove_vehicle, self.timer)
+        #frame = self.reader.next_frame(self.remove_vehicle, self.timer)
+        points = np.asarray(self.full_cloud.points)
+        points = np.asarray([x for x in points.tolist() if (x[0] > 350) and (x[0] < 450) and (x[1] > -72) and (x[1] < -2)])
+        frame = o3d.geometry.PointCloud()
+        frame.points = o3d.utility.Vector3dVector(points + [3, 3, 3])
 
         # If it is empty, that (usually) means we have reached the end of
         # the file. Return False to stop the loop.
@@ -157,33 +174,25 @@ class AbsoluteLidarNavigator(NavigatorBase):
         self.time("normal estimation")
 
         # Run the alignment
-        is_first = self.previous_transformation is None
-        reg = self.matcher.match(self.full_cloud, frame, 99999999 if is_first else 3, self.previous_transformation) # cloud.get_relevant(579140, 6776251)
+        reg = self.matcher.match(frame, self.full_cloud, 10, None)
         self.check_save_frame_pair(self.full_cloud, frame, reg)
 
         registration_time = self.time("registration")
 
-        # Store this transformation to use as input for the next.
-        transformation = np.array(reg.transformation)
-        if self.previous_transformation is not None:
-            transformation -= self.previous_transformation
-
-        self.previous_transformation = reg.transformation
-
         # Extract the translation part from the transformation array
-        movement = transformation[:3,3]
+        movement = reg.transformation[:3,3]
         
         plot.timeUsages.append(registration_time)
         plot.rmses.append(reg.inlier_rmse)
         plot.fitnesses.append(reg.fitness)
-        plot.distances.append(0 if is_first else np.sqrt(np.dot(movement, movement)))
+        plot.distances.append(np.sqrt(np.dot(movement, movement)))
 
         # Append the newest movement
         self.movements.append(movement)
 
         # Append the new movement to the path
-        self.movement_path.points.append([0,0,0])
-        self.movement_path = self.movement_path.transform(transformation)
+        self.movement_path.points.append(reg.transformation[:3,3])
+        #self.movement_path = self.movement_path.transform(transformation)
 
         # Add the new line
         if len(self.movements) == 2:
@@ -196,12 +205,23 @@ class AbsoluteLidarNavigator(NavigatorBase):
         self.time("book keeping")
 
         # Transform the frame to fit the merged point cloud
-        self.merged_frame = self.merged_frame.transform(reg.transformation)
+        #self.merged_frame = self.merged_frame
 
         self.time("frame transformation")
 
+        self.previous_transformation = reg.transformation
+
         # Combine the points from the merged visualization with the points from the next frame
-        self.merged_frame += frame
+        transformed_frame = copy.deepcopy(frame)
+        print("")
+        print("")
+        print("Movement", movement)
+        print("Transformation:")
+        print(reg.transformation)
+        self.print_cloud_info("Frame", frame)
+        transformed_frame.transform(reg.transformation)
+        self.print_cloud_info("Transformed frame", transformed_frame)
+        self.merged_frame += transformed_frame
         self.merged_frame_is_dirty = True
 
         self.time("cloud merging")
@@ -215,11 +235,8 @@ class AbsoluteLidarNavigator(NavigatorBase):
             self.ensure_merged_frame_is_downsampled()
             self.downsample_timer = self.downsample_cloud_after_frames
 
-        # Store this frame so that it can be used as the source frame in the next iteration.
-        self.previous_frame = frame
-
         # Update the visualization
-        if self.preview_always:
+        if self.preview_always and self.vis is not None:
             self.vis.show_frame(self.merged_frame, True)
 
             self.time("visualization")
