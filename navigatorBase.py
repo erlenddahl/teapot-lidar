@@ -42,7 +42,12 @@ class NavigatorBase:
     @staticmethod
     def print_cloud_info(title, cloud, prefix = ""):
         mf = np.asarray(cloud.points)
+
         print(prefix + title + ":")
+
+        if len(mf) < 1:
+            print("    > Empty array")
+            return
 
         mins = np.amin(mf, axis=0)
         maxs = np.amax(mf, axis=0)
