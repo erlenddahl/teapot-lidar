@@ -2,6 +2,8 @@ from ouster import client, pcap
 import open3d as o3d
 from colormaps import colorize, normalize
 import numpy as np
+import os
+import json
 
 class PcapReader:
 
@@ -31,9 +33,18 @@ class PcapReader:
         
         self.max_distance = None
 
+        self.internal_meta_path = pcap_path.replace(".pcap", ".pcap.meta.json")
+        self.internal_meta = {}
+        if os.path.isfile(self.internal_meta_path):
+            with open(self.internal_meta_path) as f:
+                self.internal_meta = json.load(f)
+
         self.reset()
 
     def count_frames(self, show_progress):
+        if "frame_count" in self.internal_meta:
+            return self.internal_meta["frame_count"]
+
         count = 0
         i = iter(client.Scans(self.source))
         if show_progress:
@@ -44,7 +55,15 @@ class PcapReader:
                 break
             count += 1
         self.reset()
+
+        self.internal_meta["frame_count"] = count
+        self.save_internal_meta()
+
         return count
+
+    def save_internal_meta(self):
+        with open(self.internal_meta_path, 'w') as f:
+            json.dump(self.internal_meta, f)
 
     def reset(self):
         self.source.reset()
