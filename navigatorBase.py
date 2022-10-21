@@ -11,7 +11,7 @@ import argparse
 
 class NavigatorBase:
 
-    def __init__(self, args):
+    def __init__(self, args, min_frame_limit = 1):
         self.timer = TaskTimer()
 
         self.reader = PcapReaderHelper.from_lists(args.pcap, args.json, args.skip_frames)
@@ -35,7 +35,7 @@ class NavigatorBase:
         
         self.time("setup")
 
-        if self.frame_limit <= 1:
+        if self.frame_limit <= min_frame_limit:
             self.frame_limit = self.reader.count_frames()
             self.time("frame counting")
 
