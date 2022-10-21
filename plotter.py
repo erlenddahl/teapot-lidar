@@ -66,9 +66,9 @@ class Plotter:
         lines = [
             ["Number of frames:", len(self.plot_x) + 1],
             ["Total movement distance:", sum(self.distances)],
-            ["Max distance: ", max(self.distances)],
-            ["Avg distance: ", statistics.mean(self.distances)],
-            ["Min distance: ", min(self.distances)],
+            ["Max distance: ", max(self.distances) if len(self.distances) > 0 else float('nan')],
+            ["Avg distance: ", statistics.mean(self.distances) if len(self.distances) > 0 else float('nan')],
+            ["Min distance: ", min(self.distances) if len(self.distances) > 0 else float('nan')],
             ["Max time: ", max(self.timeUsages)],
             ["Avg time: ", statistics.mean(self.timeUsages)],
             ["Min time: ", min(self.timeUsages)],
