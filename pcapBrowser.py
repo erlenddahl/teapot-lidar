@@ -8,12 +8,12 @@ import os
 
 class PcapBrowser:
 
-    def __init__(self, pcap_path, metadata_path, save_screenshots_to):
+    def __init__(self, pcap_path, metadata_path, save_screenshots_to, sbet_path):
         """Initialize a PcapBrowser by reading metadata and setting
         up a package source from the pcap file.
         """
 
-        self.reader = BufferedPcapReader(pcap_path, metadata_path)
+        self.reader = BufferedPcapReader(pcap_path, metadata_path, sbet_path=sbet_path)
         self.vis = Open3DVisualizer()
         self.save_screenshots_to = save_screenshots_to
 
@@ -139,5 +139,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Create and start a visualization
-    visualizer = PcapBrowser(args.pcap[0], args.json[0] if args.json is not None else None, args.save_screenshots_to)
+    visualizer = PcapBrowser(args.pcap[0], args.json[0] if args.json is not None else None, args.save_screenshots_to, args.sbet)
     visualizer.start_visualization()

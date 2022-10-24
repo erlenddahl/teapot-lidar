@@ -3,8 +3,8 @@ from tqdm import tqdm
 
 class SerialPcapReader:
 
-    def __init__(self, pcap_paths, meta_data_paths, skip_frames = 0):
-        self.readers = [PcapReader(x[0], x[1], skip_frames) for x in zip(pcap_paths, meta_data_paths)]
+    def __init__(self, pcap_paths, meta_data_paths, skip_frames = 0, sbet_path = None):
+        self.readers = [PcapReader(x[0], x[1], skip_frames, sbet_path=sbet_path) for x in zip(pcap_paths, meta_data_paths)]
         self.current_reader_index = 0
         self.max_distance = None
         self._set_metadata()

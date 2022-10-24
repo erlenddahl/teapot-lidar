@@ -24,6 +24,7 @@ class PcapReaderHelper:
     def add_path_arguments(parser):
         parser.add_argument('--pcap', type=str, nargs='+', required=True, help="The path to one or more PCAP files to visualize, relative or absolute. A path to a directory containing multiple pcap files can also be provided.")
         parser.add_argument('--json', type=str, nargs='+', required=False, help="The path to corresponding JSON file(s) for each of the PCAP file(s) with the sensor metadata, relative or absolute. If this is not given, the PCAP location is used (by replacing .pcap with .json). A path to a directory containing multiple json files can also be provided.")
+        parser.add_argument('--sbet', type=str, required=False, help="The path to a corresponding SBET file with GNSS coordinates.")
 
     @staticmethod
     def from_path_args(args = None):
@@ -31,7 +32,7 @@ class PcapReaderHelper:
         if args is None:
             args = PcapReaderHelper.get_path_args()
 
-        return PcapReaderHelper.from_lists(args.pcap, args.json)
+        return PcapReaderHelper.from_lists(args.pcap, args.json, sbet=args.sbet)
 
     @staticmethod
     def expand_folders(items, file_extension):
@@ -50,7 +51,7 @@ class PcapReaderHelper:
         return expanded
 
     @staticmethod
-    def from_lists(pcaps, jsons = None, skip_frames = 0):
+    def from_lists(pcaps, jsons = None, skip_frames = 0, sbet = None):
 
         if isinstance(pcaps, str):
             pcaps = [pcaps]
@@ -67,6 +68,6 @@ class PcapReaderHelper:
             raise ValueError("Number of JSON files does not match number of PCAP files.")
 
         if len(pcaps) == 1:
-            return PcapReader(pcaps[0], jsons[0], skip_frames)
+            return PcapReader(pcaps[0], jsons[0], skip_frames, sbet_path = sbet)
         else:
-            return SerialPcapReader(pcaps, jsons, skip_frames)
+            return SerialPcapReader(pcaps, jsons, skip_frames, sbet_path = sbet)

@@ -7,12 +7,12 @@ from pcapReader import PcapReader
 
 class BufferedPcapReader(PcapReader):
 
-    def __init__(self, pcap_path, metadata_path = None, skip_frames = 0):
+    def __init__(self, pcap_path, metadata_path = None, skip_frames = 0, sbet_path = None):
         """Initialize a LidarVisualizer by reading metadata and setting
         up a package source from the pcap file.
         """
 
-        PcapReader.__init__(self, pcap_path, metadata_path, skip_frames)
+        PcapReader.__init__(self, pcap_path, metadata_path, skip_frames, sbet_path)
 
         self.prepared_clouds = []
 

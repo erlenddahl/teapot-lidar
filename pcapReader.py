@@ -1,13 +1,14 @@
 from ouster import client, pcap
 import open3d as o3d
 from colormaps import colorize, normalize
+from sbetParser import SbetParser
 import numpy as np
 import os
 import json
 
 class PcapReader:
 
-    def __init__(self, pcap_path, meta_data_path = None, skip_frames = 0):
+    def __init__(self, pcap_path, meta_data_path = None, skip_frames = 0, sbet_path = None):
         """Initialize a LidarVisualizer by reading metadata and setting
         up a package source from the pcap file.
         """
@@ -22,7 +23,7 @@ class PcapReader:
         # Read the metadata from the JSON file.
         with open(meta_data_path, "r") as f:
             self.metadata = client.SensorInfo(f.read())
-        self.xyzLut = client.XYZLut(self.metadata)            
+        self.xyzLut = client.XYZLut(self.metadata)
 
         self.source = pcap.Pcap(pcap_path, self.metadata)
 
@@ -38,6 +39,13 @@ class PcapReader:
         if os.path.isfile(self.internal_meta_path):
             with open(self.internal_meta_path) as f:
                 self.internal_meta = json.load(f)
+
+        if sbet_path is not None:
+            self.sbet = SbetParser(sbet_path)
+            self.gps_week = self.sbet.get_gps_week(pcap_path = self.pcap_path)
+            print("Read", len(self.sbet.rows), "sbet rows with gps week ", self.gps_week)
+        else:
+            self.sbet = None
 
         self.reset()
 
@@ -84,6 +92,8 @@ class PcapReader:
         ix = -1
         imu = -1
 
+        initial_timestamp = -1
+
         for packet in source:
             if isinstance(packet, client.LidarPacket):
 
@@ -100,6 +110,9 @@ class PcapReader:
                 timestamps = packet.header(client.ColHeader.TIMESTAMP)
                 measurement_id = packet.header(client.ColHeader.MEASUREMENT_ID)
                 status = packet.header(client.ColHeader.STATUS)
+
+                if initial_timestamp == -1:
+                    initial_timestamp = timestamps[0]
 
                 ranges = packet.field(client.ChanField.RANGE)
                 reflectivity = packet.field(client.ChanField.REFLECTIVITY)
@@ -121,6 +134,9 @@ class PcapReader:
                 printFunc(f'  reflectivity = {reflectivity.shape}')
                 printFunc(f'  signal = {signal.shape}')
                 printFunc(f'  near_ir = {near_ir.shape}')
+
+                if self.sbet is not None:
+                    printFunc(self.sbet.get_position(timestamps[0], gps_week=self.gps_week))
 
             elif isinstance(packet, client.ImuPacket):
 
