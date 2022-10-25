@@ -1,7 +1,9 @@
 from sbetHelpers import read_sbet, filename2gpsweek, timestamp_unix2sow
 import os
 import numpy as np
+from pyproj import Transformer, transform
 
+transformer = Transformer.from_crs(4326, 5972)
 class SbetRow:
 
     def __init__(self, sow, row):
@@ -10,8 +12,10 @@ class SbetRow:
         self.lon = row["lon"]
         self.age = sow - row["time"]
 
+        self.x, self.y = transformer.transform(self.lat, self.lon)
+
     def __str__(self):
-        return f'lat={self.lat}, lon={self.lon}, time={self.sow}, age={self.age}'
+        return f'lat={self.lat}, lon={self.lon}, x={self.x}, y={self.y}, time={self.sow}, age={self.age}'
 
 class SbetParser:
 
@@ -28,8 +32,8 @@ class SbetParser:
         # Calculate "Seconds of week", which is the time format used in the sbet files
         sow = timestamp_unix2sow(timestamp / 1000000000, gps_week)
 
-        for i in range(self.current_index if continue_from_previous else 0, self.row_count):
-            if i == 0: continue
+        start_ix = self.current_index if continue_from_previous else 1
+        for i in range(start_ix, self.row_count):
 
             if self.rows[i]["time"] >= sow:
                 self.current_index = i
