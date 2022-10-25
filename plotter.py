@@ -106,7 +106,16 @@ class Plotter:
             ["Min fitness: ", min(self.fitnesses)],
             ["Max rmse: ", max(self.rmses)],
             ["Avg rmse: ", statistics.mean(self.rmses)],
-            ["Min rmse: ", min(self.rmses)]
+            ["Min rmse: ", min(self.rmses)],
+            
+            ["Avg error x: ", statistics.mean(self.position_error_x)],
+            ["Avg error y: ", statistics.mean(self.position_error_y)],
+            ["Avg error z: ", statistics.mean(self.position_error_z)],
+            ["Avg error 2d: ", statistics.mean(self.position_error_2d)],
+            ["Avg error 3d: ", statistics.mean(self.position_error_3d)],
+            
+            ["Final error 2d: ", self.position_error_2d[-1]],
+            ["Final error 3d: ", self.position_error_3d[-1]]
         ]
 
         if timer is not None:
