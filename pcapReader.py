@@ -54,24 +54,11 @@ class PcapReader:
         self.reset()
 
     def count_frames(self, show_progress = False):
-        if "frame_count" in self.internal_meta:
-            return self.internal_meta["frame_count"]
-
-        count = 0
-        i = iter(client.Scans(self.source))
-        if show_progress:
-            print("Counting frames ...")
-        while True:
-            frame = self.skip_and_get(i)
-            if frame is None:
-                break
-            count += 1
-        self.reset()
-
-        self.internal_meta["frame_count"] = count
-        self.save_internal_meta()
-
-        return count
+        if "frame_count" not in self.internal_meta:
+            if show_progress:
+                print("Counting frames ...")
+            return len(self.enumerate_lidar_packets())
+        return self.internal_meta["frame_count"]
 
     def save_internal_meta(self):
         with open(self.internal_meta_path, 'w') as f:
@@ -157,36 +144,33 @@ class PcapReader:
                 if frame_index is not None:
                     break
 
-    def get_coordinates(self):
-        """Returns a list of coordinates (SbetRow) corresponding to each LidarPacket in the current Pcap file."""
-
-        if self.sbet is None:
-            return None
-
+    def enumerate_lidar_packets(self):
+        count = 0
         min_time = 9223372036854775807
         max_time = -9223372036854775807
         find_bounds = "min_time_unix" not in self.internal_meta
+        find_count = "frame_count" not in self.internal_meta
 
         source = pcap.Pcap(self.pcap_path, self.metadata)
-        positions = []
         last_frame_id = -1
         for packet in source:
             if isinstance(packet, client.LidarPacket):
                 frame_id = packet.header(client.ColHeader.FRAME_ID)[0]
                 
-                timestamps = None
                 if find_bounds:
                     timestamps = packet.header(client.ColHeader.TIMESTAMP)
                     min_time = min(min_time, timestamps[0])
                     max_time = max(max_time, timestamps[1])
 
-                if frame_id == last_frame_id:
-                    continue
+                if frame_id != last_frame_id:
+                    count += 1
+                    last_frame_id = frame_id
 
-                positions.append(self.sbet.get_position(self.get_sbet_timestamp(packet, timestamps=timestamps), gps_week=self.gps_week, continue_from_previous=True))
-                last_frame_id = frame_id
+                yield packet
 
+        self.internal_meta["frame_count"] = count
         if find_bounds:
+
             self.internal_meta["min_time_unix"] = int(min_time)
             self.internal_meta["max_time_unix"] = int(max_time)
             
@@ -195,7 +179,19 @@ class PcapReader:
 
             print(self.internal_meta)
 
+        if find_bounds or find_count:
             self.save_internal_meta()
+
+    def get_coordinates(self):
+        """Returns a list of coordinates (SbetRow) corresponding to each LidarPacket in the current Pcap file."""
+
+        if self.sbet is None:
+            return None
+
+        positions = []
+        for packet in self.enumerate_lidar_packets():
+            if isinstance(packet, client.LidarPacket):
+                positions.append(self.sbet.get_position(self.get_sbet_timestamp(packet), gps_week=self.gps_week, continue_from_previous=True))
         
         return positions
 
