@@ -43,13 +43,12 @@ class PcapReader:
         if sbet_path is not None:
             self.sbet = SbetParser(sbet_path)
             self.gps_week = self.sbet.get_gps_week(pcap_path = self.pcap_path)
-            print("Read", len(self.sbet.rows), "sbet rows with gps week ", self.gps_week)
         else:
             self.sbet = None
 
         self.reset()
 
-    def count_frames(self, show_progress):
+    def count_frames(self, show_progress = False):
         if "frame_count" in self.internal_meta:
             return self.internal_meta["frame_count"]
 
@@ -92,27 +91,20 @@ class PcapReader:
         ix = -1
         imu = -1
 
-        initial_timestamp = -1
-
         for packet in source:
             if isinstance(packet, client.LidarPacket):
 
                 ix += 1
-                
-                frame_id = packet.header(client.ColHeader.FRAME_ID)
 
                 if frame_index is not None and ix != frame_index:
                     continue
+                
+                frame_id = packet.header(client.ColHeader.FRAME_ID)
 
-                # Now we can process the LidarPacket. In this case, we access
-                # the encoder_counts, timestamps, and ranges
                 encoder_counts = packet.header(client.ColHeader.ENCODER_COUNT)
                 timestamps = packet.header(client.ColHeader.TIMESTAMP)
                 measurement_id = packet.header(client.ColHeader.MEASUREMENT_ID)
                 status = packet.header(client.ColHeader.STATUS)
-
-                if initial_timestamp == -1:
-                    initial_timestamp = timestamps[0]
 
                 ranges = packet.field(client.ChanField.RANGE)
                 reflectivity = packet.field(client.ChanField.REFLECTIVITY)
@@ -136,7 +128,7 @@ class PcapReader:
                 printFunc(f'  near_ir = {near_ir.shape}')
 
                 if self.sbet is not None:
-                    printFunc(self.sbet.get_position(timestamps[0], gps_week=self.gps_week))
+                    printFunc(self.sbet.get_position(self.get_sbet_timestamp(packet), gps_week=self.gps_week))
 
             elif isinstance(packet, client.ImuPacket):
 
@@ -156,6 +148,31 @@ class PcapReader:
                 
                 if frame_index is not None:
                     break
+
+    def get_coordinates(self):
+        """Returns a list of coordinates (SbetRow) corresponding to each LidarPacket in the current Pcap file."""
+
+        if self.sbet is None:
+            return None
+
+        source = pcap.Pcap(self.pcap_path, self.metadata)
+        positions = []
+        last_frame_id = -1
+        from tqdm import tqdm
+        for packet in tqdm(source, desc="Processing frames"):
+            if isinstance(packet, client.LidarPacket):
+                frame_id = packet.header(client.ColHeader.FRAME_ID)[0]
+                if frame_id == last_frame_id:
+                    continue
+
+                positions.append(self.sbet.get_position(self.get_sbet_timestamp(packet), gps_week=self.gps_week, continue_from_previous=True))
+                last_frame_id = frame_id
+        
+        return positions
+
+    def get_sbet_timestamp(self, packet):
+        timestamps = packet.header(client.ColHeader.TIMESTAMP)
+        return timestamps[0]
 
     def remove_vehicle(self, frame, cloud = None):
         # Remove the vehicle, which is always stationary at the center. We don't want that
