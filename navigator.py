@@ -1,5 +1,3 @@
-from algorithmHelper import AlgorithmHelper
-from pcapReaderHelper import PcapReaderHelper
 from open3dVisualizer import Open3DVisualizer
 from navigatorBase import NavigatorBase
 from plotter import Plotter
@@ -39,6 +37,9 @@ class LidarNavigator(NavigatorBase):
         self.skip_initial_frames()
 
         self.merged_frame = self.reader.next_frame(self.remove_vehicle, self.timer)
+
+        if args.sbet is not None:
+            self.current_coordinate = self.reader.get_current_position().clone()
 
         self.previous_frame = self.merged_frame
 
@@ -163,6 +164,26 @@ class LidarNavigator(NavigatorBase):
         plot.rmses.append(reg.inlier_rmse)
         plot.fitnesses.append(reg.fitness)
         plot.distances.append(np.sqrt(np.dot(movement, movement)))
+        
+        if self.current_coordinate is not None:
+            actual_coordinate = self.reader.get_current_position()
+
+            self.current_coordinate.x += movement[0]
+            self.current_coordinate.y += movement[1]
+            self.current_coordinate.alt += movement[2]
+
+            dx = actual_coordinate.x - self.current_coordinate.x
+            dy = actual_coordinate.y - self.current_coordinate.y
+            dz = actual_coordinate.alt - self.current_coordinate.alt
+
+            print(reg.transformation, movement, self.current_coordinate, actual_coordinate, dx, dy, dz)
+
+            plot.position_error_x.append(dx)
+            plot.position_error_y.append(dy)
+            plot.position_error_z.append(dz)
+            plot.position_error_2d.append(np.sqrt(dx*dx+dy*dy))
+            plot.position_error_3d.append(np.sqrt(dx*dx+dy*dy+dz*dz))
+            plot.position_age.append(actual_coordinate.age)
 
         # Append the newest movement
         self.movements.append(movement)

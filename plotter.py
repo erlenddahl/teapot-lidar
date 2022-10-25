@@ -9,14 +9,21 @@ class Plotter:
         # Initialize plot
         self.plot_x = []
 
-        self.fig, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, sharey=False)
-        self.axes = [ax1, ax2, ax3]
+        self.fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(6, sharex=True, sharey=False)
+        self.axes = [ax1, ax2, ax3, ax4, ax5, ax6]
 
         # Initialize value arrays
         self.distances = []
         self.timeUsages = []
         self.rmses = []
         self.fitnesses = []
+        
+        self.position_error_2d = []
+        self.position_error_3d = []
+        self.position_error_x = []
+        self.position_error_y = []
+        self.position_error_z = []
+        self.position_age = []
 
     def step(self, updatePlot = True):
         self.plot_x.append(len(self.distances) - 1)
@@ -32,25 +39,48 @@ class Plotter:
         # Show the plot without blocking
         plt.show(block=False)
 
-        (ax1, ax2, ax3) = self.axes
+        (ax1, ax2, ax3, ax4, ax5, ax6) = self.axes
 
-        ax1.clear()
-        ax2.clear()
-        ax3.clear()
+        for ax in self.axes:
+            ax.clear()
 
-        ax1.plot(self.plot_x, self.timeUsages, color="blue", label="calculation time")
-        ax2.plot(self.plot_x, self.distances, color="red", label="distance")
+        ax1.set_title("Calculation time", fontsize=8)
+        ax1.plot(self.plot_x, self.timeUsages, color="blue")
+        
+        ax2.set_title("Incremental distance", fontsize=8)
+        ax2.plot(self.plot_x, self.distances, color="red")
+        
+        ax3.set_title("Registration error", fontsize=8)
         ax3.plot(self.plot_x, self.rmses, color="purple", label="rmse")
         ax3.plot(self.plot_x, self.fitnesses, color="green", label="fitness")
+        ax3.legend(loc="upper left")
+        
+        if len(self.position_error_3d) > 0:
+            ax4.set_title("Positioning errors, individual axes", fontsize=8)
+            ax4.plot(self.plot_x, self.position_error_x, color="blue", label="x")
+            ax4.plot(self.plot_x, self.position_error_y, color="red", label="y")
+            ax4.plot(self.plot_x, self.position_error_z, color="green", label="z")
+            ax4.legend(loc="upper left")
+            
+            ax5.set_title("Positioning errors, combined axes", fontsize=8)
+            ax5.plot(self.plot_x, self.position_error_2d, color="blue", label="2d")
+            ax5.plot(self.plot_x, self.position_error_3d, color="red", label="3d")
+            ax5.legend(loc="upper left")
+            
+            ax6.set_title("Actual coordinate age", fontsize=8)
+            ax6.plot(self.plot_x, self.position_age, color="purple")
         
         ax1.set_ylabel("Seconds")
         ax2.set_ylabel("Meters")
-        ax3.set_xlabel("Frame index")
+        ax4.set_ylabel("Meters")
+        ax5.set_ylabel("Meters")
+        ax6.set_ylabel("Seconds")
+        
+        ax6.set_xlabel("Frame index")
 
-        handles1, labels1 = ax1.get_legend_handles_labels()
-        handles2, labels2 = ax2.get_legend_handles_labels()
-        handles3, labels3 = ax3.get_legend_handles_labels()
-        self.fig.legend(handles1+handles2+handles3, labels1+labels2+labels3, loc='center right')
+        for ax in self.axes:
+            #
+            pass
 
     def destroy(self):
         plt.close(self.fig)
@@ -95,7 +125,11 @@ class Plotter:
             "distances": self.distances,
             "timeUsages": self.timeUsages,
             "rmses": self.rmses,
-            "fitnesses": self.fitnesses
+            "fitnesses": self.fitnesses,
+            "position_error_x": self.position_error_x,
+            "position_error_y": self.position_error_y,
+            "position_error_z": self.position_error_z,
+            "position_error_3d": self.position_error_3d
         }
 
     def save_plot(self, path):

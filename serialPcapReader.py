@@ -38,6 +38,8 @@ class SerialPcapReader:
 
         return frame
 
+    def get_current_position(self):
+        return self.readers[self.current_reader_index].get_current_position()
 
     def print_info(self, frame_index = None, printFunc = print):
         for reader in self.readers:

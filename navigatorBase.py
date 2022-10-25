@@ -34,15 +34,14 @@ class NavigatorBase:
         
         self.tqdm_config = {}
         self.print_summary_at_end = False
+
+        self.current_coordinate = None
         
         self.time("setup")
 
         if self.frame_limit <= min_frame_limit:
             self.frame_limit = self.reader.count_frames(True)
             self.time("frame counting")
-
-        if self.reader.sbet is not None:
-            self.frame_coordinates = self.reader.get_coordinates()
 
     def skip_initial_frames(self):
         if self.skip_start > 0:

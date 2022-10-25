@@ -40,6 +40,7 @@ class PcapReader:
             with open(self.internal_meta_path) as f:
                 self.internal_meta = json.load(f)
 
+        self.frame_coordinates = None
         if sbet_path is not None:
             self.sbet = SbetParser(sbet_path)
             self.gps_week = self.sbet.get_gps_week(pcap_path = self.pcap_path)
@@ -75,11 +76,14 @@ class PcapReader:
     def reset(self):
         self.source.reset()
         self.scans = iter(client.Scans(self.source))
+        self.last_read_frame_ix = -1
 
     def skip_and_get(self, iterator):
         try:
             for _ in range(self.skip_frames):
+                self.last_read_frame_ix += 1
                 next(iterator)
+            self.last_read_frame_ix += 1
             return next(iterator)
         except StopIteration:
             return None
@@ -158,8 +162,7 @@ class PcapReader:
         source = pcap.Pcap(self.pcap_path, self.metadata)
         positions = []
         last_frame_id = -1
-        from tqdm import tqdm
-        for packet in tqdm(source, desc="Processing frames"):
+        for packet in source:
             if isinstance(packet, client.LidarPacket):
                 frame_id = packet.header(client.ColHeader.FRAME_ID)[0]
                 if frame_id == last_frame_id:
@@ -169,6 +172,13 @@ class PcapReader:
                 last_frame_id = frame_id
         
         return positions
+
+    def get_current_position(self):
+        if self.sbet is None:
+            return None
+        if self.frame_coordinates is None:
+            self.frame_coordinates = self.get_coordinates()
+        return self.frame_coordinates[max(0, self.last_read_frame_ix)]
 
     def get_sbet_timestamp(self, packet):
         timestamps = packet.header(client.ColHeader.TIMESTAMP)

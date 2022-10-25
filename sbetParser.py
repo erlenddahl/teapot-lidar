@@ -6,7 +6,18 @@ from pyproj import Transformer, transform
 transformer = Transformer.from_crs(4326, 5972)
 class SbetRow:
 
-    def __init__(self, sow, row):
+    def __init__(self, sow, row, original = None):
+
+        if original is not None:
+            self.sow = original.sow
+            self.lat = original.lat
+            self.lon = original.lon
+            self.alt = original.alt
+            self.age = original.age
+            self.x = original.x
+            self.y = original.y
+            return
+
         self.sow = row["time"]
         self.lat = row["lat"]
         self.lon = row["lon"]
@@ -17,6 +28,9 @@ class SbetRow:
 
     def __str__(self):
         return f'lat={self.lat}, lon={self.lon}, alt={self.alt}, x={self.x}, y={self.y}, time={self.sow}, age={self.age}'
+
+    def clone(self):
+        return SbetRow(None, None, self)
 
 class SbetParser:
 
