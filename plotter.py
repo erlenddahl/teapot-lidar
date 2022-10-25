@@ -24,6 +24,12 @@ class Plotter:
         self.position_error_y = []
         self.position_error_z = []
         self.position_age = []
+        
+        # Enable interactive mode, which redraws plot on change
+        plt.ion()
+
+        # Show the plot without blocking
+        plt.show(block=False)
 
     def step(self, updatePlot = True):
         self.plot_x.append(len(self.distances) - 1)
@@ -32,12 +38,6 @@ class Plotter:
             self.update()
 
     def update(self):
-        
-        # Enable interactive mode, which redraws plot on change
-        plt.ion()
-
-        # Show the plot without blocking
-        plt.show(block=False)
 
         (ax1, ax2, ax3, ax4, ax5, ax6) = self.axes
 
@@ -78,9 +78,7 @@ class Plotter:
         
         ax6.set_xlabel("Frame index")
 
-        for ax in self.axes:
-            #
-            pass
+        self.fig.canvas.draw()
 
     def destroy(self):
         plt.close(self.fig)
