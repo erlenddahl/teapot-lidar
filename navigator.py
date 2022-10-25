@@ -29,6 +29,8 @@ class LidarNavigator(NavigatorBase):
         # Initialize the list of movements as well as the merged frame, and the first 
         # source frame.
         self.movements = []
+        self.estimated_coordinates = []
+        self.actual_coordinates = []
 
         self.movement_path = o3d.geometry.LineSet(
             points = o3d.utility.Vector3dVector([]), lines=o3d.utility.Vector2iVector([])
@@ -102,6 +104,9 @@ class LidarNavigator(NavigatorBase):
             plot.update()
 
         results = self.get_results(plot)
+        
+        results["estimated_coordinates"] = [x.json() for x in self.estimated_coordinates]
+        results["actual_coordinates"] = [x.json(True) for x in self.actual_coordinates]
 
         if self.save_path is not None:
             filenameBase = self.save_path.replace("[time]", datetime.now().strftime('%Y-%m-%d_%H-%M-%S_%f%z'))
@@ -130,6 +135,33 @@ class LidarNavigator(NavigatorBase):
         plot.destroy()
 
         return results
+
+    def update_plot(self, plot, reg, registration_time, movement):
+        plot.timeUsages.append(registration_time)
+        plot.rmses.append(reg.inlier_rmse)
+        plot.fitnesses.append(reg.fitness)
+        plot.distances.append(np.sqrt(np.dot(movement, movement)))
+        
+        if self.current_coordinate is not None:
+            actual_coordinate = self.reader.get_current_position()
+
+            self.actual_coordinates.append(actual_coordinate)
+            self.estimated_coordinates.append(self.current_coordinate.clone())
+
+            self.current_coordinate.x += movement[0]
+            self.current_coordinate.y += movement[1]
+            self.current_coordinate.alt += movement[2]
+
+            dx = actual_coordinate.x - self.current_coordinate.x
+            dy = actual_coordinate.y - self.current_coordinate.y
+            dz = actual_coordinate.alt - self.current_coordinate.alt
+
+            plot.position_error_x.append(dx)
+            plot.position_error_y.append(dy)
+            plot.position_error_z.append(dz)
+            plot.position_error_2d.append(np.sqrt(dx*dx+dy*dy))
+            plot.position_error_3d.append(np.sqrt(dx*dx+dy*dy+dz*dz))
+            plot.position_age.append(actual_coordinate.age)
 
     def merge_next_frame(self, plot):
         """ Reads the next frame, aligns it with the previous frame, merges them together
@@ -160,30 +192,7 @@ class LidarNavigator(NavigatorBase):
         # the calculated transformation
         movement = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(reg.transformation).get_center()
         
-        plot.timeUsages.append(registration_time)
-        plot.rmses.append(reg.inlier_rmse)
-        plot.fitnesses.append(reg.fitness)
-        plot.distances.append(np.sqrt(np.dot(movement, movement)))
-        
-        if self.current_coordinate is not None:
-            actual_coordinate = self.reader.get_current_position()
-
-            self.current_coordinate.x += movement[0]
-            self.current_coordinate.y += movement[1]
-            self.current_coordinate.alt += movement[2]
-
-            dx = actual_coordinate.x - self.current_coordinate.x
-            dy = actual_coordinate.y - self.current_coordinate.y
-            dz = actual_coordinate.alt - self.current_coordinate.alt
-
-            print(reg.transformation, movement, self.current_coordinate, actual_coordinate, dx, dy, dz)
-
-            plot.position_error_x.append(dx)
-            plot.position_error_y.append(dy)
-            plot.position_error_z.append(dz)
-            plot.position_error_2d.append(np.sqrt(dx*dx+dy*dy))
-            plot.position_error_3d.append(np.sqrt(dx*dx+dy*dy+dz*dz))
-            plot.position_age.append(actual_coordinate.age)
+        self.update_plot(plot, reg, registration_time, movement)
 
         # Append the newest movement
         self.movements.append(movement)

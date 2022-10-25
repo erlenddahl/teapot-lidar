@@ -32,6 +32,18 @@ class SbetRow:
     def clone(self):
         return SbetRow(None, None, self)
 
+    def json(self, actual = False):
+        json = {
+            "x": self.x,
+            "y": self.y,
+            "z": self.z
+        }
+
+        if actual:
+            json["age"] = self.age
+
+        return json
+
 class SbetParser:
 
     def __init__(self, sbet_filename):
