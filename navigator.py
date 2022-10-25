@@ -36,12 +36,17 @@ class LidarNavigator(NavigatorBase):
             points = o3d.utility.Vector3dVector([]), lines=o3d.utility.Vector2iVector([])
         )
 
+        self.actual_movement_path = o3d.geometry.LineSet(
+            points = o3d.utility.Vector3dVector([]), lines=o3d.utility.Vector2iVector([])
+        )
+
         self.skip_initial_frames()
 
         self.merged_frame = self.reader.next_frame(self.remove_vehicle, self.timer)
 
         if args.sbet is not None:
             self.current_coordinate = self.reader.get_current_position().clone()
+            self.initial_coordinate = self.current_coordinate.clone()
 
         self.previous_frame = self.merged_frame
 
@@ -129,8 +134,13 @@ class LidarNavigator(NavigatorBase):
         # Then continue showing the visualization in a blocking way until the user stops it.
         if self.preview_at_end:
             self.vis.show_frame(self.merged_frame)
+
             self.vis.remove_geometry(self.movement_path)
             self.vis.add_geometry(self.movement_path)
+
+            self.vis.remove_geometry(self.actual_movement_path)
+            self.vis.add_geometry(self.actual_movement_path)
+
             self.vis.reset_view()
 
             self.vis.run()
@@ -139,14 +149,13 @@ class LidarNavigator(NavigatorBase):
 
         return results
 
-    def update_plot(self, plot, reg, registration_time, movement):
+    def update_plot(self, plot, reg, registration_time, movement, actual_coordinate):
         plot.timeUsages.append(registration_time)
         plot.rmses.append(reg.inlier_rmse)
         plot.fitnesses.append(reg.fitness)
         plot.distances.append(np.sqrt(np.dot(movement, movement)))
         
         if self.current_coordinate is not None:
-            actual_coordinate = self.reader.get_current_position()
 
             self.actual_coordinates.append(actual_coordinate)
             self.estimated_coordinates.append(self.current_coordinate.clone())
@@ -195,7 +204,8 @@ class LidarNavigator(NavigatorBase):
         # the calculated transformation
         movement = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(reg.transformation).get_center()
         
-        self.update_plot(plot, reg, registration_time, movement)
+        actual_coordinate = self.reader.get_current_position() if self.current_coordinate is not None else None
+        self.update_plot(plot, reg, registration_time, movement, actual_coordinate)
 
         # Append the newest movement
         self.movements.append(movement)
@@ -211,6 +221,20 @@ class LidarNavigator(NavigatorBase):
             self.movement_path.lines.append([len(self.movements) - 2, len(self.movements) - 1])
             self.movement_path.paint_uniform_color([1, 0, 0])
             self.vis.update_geometry(self.movement_path)
+
+        if actual_coordinate is not None:
+
+            self.actual_movement_path.points.append([actual_coordinate.x - self.initial_coordinate.x, actual_coordinate.y - self.initial_coordinate.y, actual_coordinate.alt - self.initial_coordinate.alt])
+            self.actual_movement_path = self.actual_movement_path.transform(reg.transformation)
+            
+            # Add the actual coordinate as a blue line
+            if len(self.movements) == 2:
+                self.vis.add_geometry(self.actual_movement_path)
+            if len(self.movements) >= 2:
+                self.actual_movement_path.lines.append([len(self.movements) - 2, len(self.movements) - 1])
+                self.actual_movement_path.paint_uniform_color([0, 0, 1])
+                self.vis.update_geometry(self.actual_movement_path)
+
 
         self.time("book keeping")
 
