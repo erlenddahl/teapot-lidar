@@ -205,7 +205,9 @@ class PcapReader:
     def get_sbet_timestamp(self, packet = None, timestamps = None):
         if timestamps is None:
             timestamps = packet.header(client.ColHeader.TIMESTAMP)
-        return timestamps[0]
+
+        # There is a very slight difference, but using the final timestamp seems to give the best position.
+        return timestamps[-1]
 
     def remove_vehicle(self, frame, cloud = None):
         # Remove the vehicle, which is always stationary at the center. We don't want that
