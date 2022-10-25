@@ -212,24 +212,25 @@ class LidarNavigator(NavigatorBase):
         self.time("book keeping")
 
         # Transform the frame to fit the merged point cloud
-        self.merged_frame = self.merged_frame.transform(reg.transformation)
+        if self.build_cloud:
+            self.merged_frame = self.merged_frame.transform(reg.transformation)
 
-        self.time("frame transformation")
+            self.time("frame transformation")
 
-        # Combine the points from the merged visualization with the points from the next frame
-        self.merged_frame += frame
-        self.merged_frame_is_dirty = True
+            # Combine the points from the merged visualization with the points from the next frame
+            self.merged_frame += frame
+            self.merged_frame_is_dirty = True
 
-        self.time("cloud merging")
+            self.time("cloud merging")
 
-        # Downsample the merged visualization to make it faster to work with.
-        # Otherwise it would grow extremely large, as it would contain all points
-        # from all processed point clouds.
-        # Don't do this on every frame, as it takes a lot of time.
-        self.downsample_timer -= 1
-        if self.downsample_timer <= 0:
-            self.ensure_merged_frame_is_downsampled()
-            self.downsample_timer = self.downsample_cloud_after_frames
+            # Downsample the merged visualization to make it faster to work with.
+            # Otherwise it would grow extremely large, as it would contain all points
+            # from all processed point clouds.
+            # Don't do this on every frame, as it takes a lot of time.
+            self.downsample_timer -= 1
+            if self.downsample_timer <= 0:
+                self.ensure_merged_frame_is_downsampled()
+                self.downsample_timer = self.downsample_cloud_after_frames
 
         # Store this frame so that it can be used as the source frame in the next iteration.
         self.previous_frame = frame

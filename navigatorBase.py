@@ -31,6 +31,7 @@ class NavigatorBase:
         self.save_frame_pair_threshold = args.save_frame_pair_threshold
         self.previous_transformation = None
         self.skip_start = args.skip_start
+        self.build_cloud = args.build_cloud
         
         self.tqdm_config = {}
         self.print_summary_at_end = False
@@ -159,6 +160,7 @@ class NavigatorBase:
     def add_standard_and_parse_args(parser):
         parser.add_argument('--algorithm', type=str, default="NICP", required=False, help="Use this registration algorithm (see names in algorithmHelper.py).")
         parser.add_argument('--frames', type=int, default=-1, required=False, help="If given a number larger than 1, only this many frames will be read from the PCAP file.")
+        parser.add_argument('--dont-build-cloud', dest="build_cloud", action='store_false', required=False, help="If this flag is given, the algorithm will not build a point cloud by combining the registered LiDAR frames, and thereby save a lot of time. This makes the --downsample-after argument irrelevant.")
         parser.add_argument('--skip-every-frame', type=int, default=0, required=False, help="If given a positive number larger than 0, this many frames will be skipped between every frame read from the PCAP file.")
         parser.add_argument('--skip-start', type=int, default=0, required=False, help="If given a positive number larger than 0, this many frames will be skipped before starting processing frames.")
         parser.add_argument('--voxel-size', type=float, default=0.1, required=False, help="The voxel size used for cloud downsampling. If less than or equal to zero, downsampling will be disabled.")
