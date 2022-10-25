@@ -212,14 +212,18 @@ class LidarNavigator(NavigatorBase):
         self.time("book keeping")
 
         # Transform the frame to fit the merged point cloud
-        if self.build_cloud:
-            self.merged_frame = self.merged_frame.transform(reg.transformation)
+        self.merged_frame = self.merged_frame.transform(reg.transformation)
+
+        # Add the frame to the generated point cloud (unless we should skip some frames)
+        self.build_cloud_timer -= 1
+        if self.build_cloud and self.build_cloud_timer <= 0:
 
             self.time("frame transformation")
 
             # Combine the points from the merged visualization with the points from the next frame
             self.merged_frame += frame
             self.merged_frame_is_dirty = True
+            self.build_cloud_timer = self.build_cloud_after
 
             self.time("cloud merging")
 
