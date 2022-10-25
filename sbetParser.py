@@ -10,12 +10,13 @@ class SbetRow:
         self.sow = row["time"]
         self.lat = row["lat"]
         self.lon = row["lon"]
+        self.alt = row["alt"]
         self.age = sow - row["time"]
 
         self.x, self.y = transformer.transform(self.lat, self.lon)
 
     def __str__(self):
-        return f'lat={self.lat}, lon={self.lon}, x={self.x}, y={self.y}, time={self.sow}, age={self.age}'
+        return f'lat={self.lat}, lon={self.lon}, alt={self.alt}, x={self.x}, y={self.y}, time={self.sow}, age={self.age}'
 
 class SbetParser:
 
@@ -51,7 +52,7 @@ class SbetParser:
     def read_latlon(sbet_filename, smrmsg_filename):
 
         (sbet, _) = read_sbet(sbet_filename, smrmsg_filename)
-        sbet = sbet[["time", "lat", "lon"]]
+        sbet = sbet[["time", "lat", "lon", "alt"]]
         sbet["lat"] = sbet["lat"] * 180 / np.pi
         sbet["lon"] = sbet["lon"] * 180 / np.pi
         
