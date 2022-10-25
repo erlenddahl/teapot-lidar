@@ -36,7 +36,7 @@ class SbetRow:
         json = {
             "x": self.x,
             "y": self.y,
-            "z": self.z
+            "z": self.alt
         }
 
         if actual:
