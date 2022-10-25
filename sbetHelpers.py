@@ -23,9 +23,13 @@ def filename2gpsweek(pcap_file):
     return gpsweek
 
 # regner om fra unix time til gps seconds of week. Lidar bruker unix og sbet bruker seconds of week (SoW)
-def timestamp_unix2sow(np_time_lidar, gps_week):
-    timestamp = np_time_lidar - 315964800 - DELTA_UNIX_GPS - (gps_week * 604800) # Correction by Erlend: subtract epoch unix time as well!
-    return timestamp
+def timestamp_unix2sow(unix, gps_week):
+    sow = unix - 315964800 - DELTA_UNIX_GPS - (gps_week * 604800) # Correction by Erlend: subtract epoch unix time as well!
+    return sow
+    
+def timestamp_sow2unix(sow, gps_week):
+    unix = sow + 315964800 + DELTA_UNIX_GPS + (gps_week * 604800)
+    return unix
 
 # leser sbet og smrmsg. Under record types ser du feltene i hver fil
 def read_sbet(sbet_filename, smrmsg_filename) -> np.array:

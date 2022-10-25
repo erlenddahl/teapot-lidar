@@ -1,7 +1,8 @@
-from sbetHelpers import read_sbet, filename2gpsweek, timestamp_unix2sow
+from sbetHelpers import read_sbet, filename2gpsweek, timestamp_unix2sow, timestamp_sow2unix
 import os
 import numpy as np
-from pyproj import Transformer, transform
+from pyproj import Transformer
+from datetime import datetime
 
 transformer = Transformer.from_crs(4326, 5972)
 class SbetRow:
@@ -83,3 +84,38 @@ class SbetParser:
         sbet["lon"] = sbet["lon"] * 180 / np.pi
         
         return sbet
+
+if __name__ == "__main__":
+
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--sbet', type=str, required=True, help="The path to a corresponding SBET file with GNSS coordinates.")
+    parser.add_argument('--gps-week', type=int, default=-1, required=False, help="If given, this GPS week will be used to transform the timestamps to unix and human readable time.")
+    args = parser.parse_args()
+
+    # Create and start a visualization
+    parser = SbetParser(args.sbet)
+    
+    min_time = np.min(parser.rows["time"])
+    max_time = np.max(parser.rows["time"])
+
+    print("Min time:", min_time)
+    print("Max time:", max_time)
+
+    if args.gps_week >= 0:
+
+        print("With GPS week:", args.gps_week)
+        
+        min_unix_time = timestamp_sow2unix(min_time, args.gps_week)
+        max_unix_time = timestamp_sow2unix(max_time, args.gps_week)
+        print("Min unix time:", min_unix_time)
+        print("Max unix time:", max_unix_time)
+        
+        print("Min human time:", datetime.utcfromtimestamp(min_unix_time).strftime("%Y-%m-%d %H:%M:%S"))
+        print("Max human time:", datetime.utcfromtimestamp(max_unix_time).strftime("%Y-%m-%d %H:%M:%S"))
+
+    print("Min lat:", np.min(parser.rows["lat"]))
+    print("Max lat:", np.max(parser.rows["lat"]))
+    
+    print("Min lon:", np.min(parser.rows["lon"]))
+    print("Max lon:", np.max(parser.rows["lon"]))

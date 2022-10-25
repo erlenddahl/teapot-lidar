@@ -5,6 +5,7 @@ from sbetParser import SbetParser
 import numpy as np
 import os
 import json
+from datetime import datetime
 
 class PcapReader:
 
@@ -37,8 +38,11 @@ class PcapReader:
         self.internal_meta_path = pcap_path.replace(".pcap", ".pcap.meta.json")
         self.internal_meta = {}
         if os.path.isfile(self.internal_meta_path):
-            with open(self.internal_meta_path) as f:
-                self.internal_meta = json.load(f)
+            try:
+                with open(self.internal_meta_path) as f:
+                    self.internal_meta = json.load(f)
+            except:
+                self.internal_meta = {}
 
         self.frame_coordinates = None
         if sbet_path is not None:
@@ -159,17 +163,39 @@ class PcapReader:
         if self.sbet is None:
             return None
 
+        min_time = 9223372036854775807
+        max_time = -9223372036854775807
+        find_bounds = "min_time_unix" not in self.internal_meta
+
         source = pcap.Pcap(self.pcap_path, self.metadata)
         positions = []
         last_frame_id = -1
         for packet in source:
             if isinstance(packet, client.LidarPacket):
                 frame_id = packet.header(client.ColHeader.FRAME_ID)[0]
+                
+                timestamps = None
+                if find_bounds:
+                    timestamps = packet.header(client.ColHeader.TIMESTAMP)
+                    min_time = min(min_time, timestamps[0])
+                    max_time = max(max_time, timestamps[1])
+
                 if frame_id == last_frame_id:
                     continue
 
-                positions.append(self.sbet.get_position(self.get_sbet_timestamp(packet), gps_week=self.gps_week, continue_from_previous=True))
+                positions.append(self.sbet.get_position(self.get_sbet_timestamp(packet, timestamps=timestamps), gps_week=self.gps_week, continue_from_previous=True))
                 last_frame_id = frame_id
+
+        if find_bounds:
+            self.internal_meta["min_time_unix"] = int(min_time)
+            self.internal_meta["max_time_unix"] = int(max_time)
+            
+            self.internal_meta["min_time_human"] = datetime.utcfromtimestamp(min_time/1000000000).strftime("%Y-%m-%d %H:%M:%S")
+            self.internal_meta["max_time_human"] = datetime.utcfromtimestamp(max_time/1000000000).strftime("%Y-%m-%d %H:%M:%S")
+
+            print(self.internal_meta)
+
+            self.save_internal_meta()
         
         return positions
 
@@ -180,8 +206,9 @@ class PcapReader:
             self.frame_coordinates = self.get_coordinates()
         return self.frame_coordinates[max(0, self.last_read_frame_ix)]
 
-    def get_sbet_timestamp(self, packet):
-        timestamps = packet.header(client.ColHeader.TIMESTAMP)
+    def get_sbet_timestamp(self, packet = None, timestamps = None):
+        if timestamps is None:
+            timestamps = packet.header(client.ColHeader.TIMESTAMP)
         return timestamps[0]
 
     def remove_vehicle(self, frame, cloud = None):
