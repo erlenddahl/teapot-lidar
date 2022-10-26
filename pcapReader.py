@@ -166,7 +166,7 @@ class PcapReader:
                     count += 1
                     last_frame_id = frame_id
 
-                yield packet
+                    yield packet
 
         self.internal_meta["frame_count"] = count
         if find_bounds:
@@ -189,9 +189,10 @@ class PcapReader:
             return None
 
         positions = []
+        self.sbet.reset()
         for packet in self.enumerate_lidar_packets():
-            if isinstance(packet, client.LidarPacket):
-                positions.append(self.sbet.get_position(self.get_sbet_timestamp(packet), gps_week=self.gps_week, continue_from_previous=True))
+            pos = self.sbet.get_position(self.get_sbet_timestamp(packet), gps_week=self.gps_week, continue_from_previous=True)
+            positions.append(pos)
         
         return positions
 

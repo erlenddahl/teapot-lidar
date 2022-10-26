@@ -7,7 +7,7 @@ from datetime import datetime
 transformer = Transformer.from_crs(4326, 5972)
 class SbetRow:
 
-    def __init__(self, sow, row, original = None):
+    def __init__(self, sow, row, index, original = None):
 
         if original is not None:
             self.sow = original.sow
@@ -15,6 +15,7 @@ class SbetRow:
             self.lon = original.lon
             self.alt = original.alt
             self.age = original.age
+            self.index = original.index
             self.x = original.x
             self.y = original.y
             return
@@ -24,14 +25,15 @@ class SbetRow:
         self.lon = row["lon"]
         self.alt = row["alt"]
         self.age = sow - row["time"]
+        self.index = index
 
         self.x, self.y = transformer.transform(self.lat, self.lon)
 
     def __str__(self):
-        return f'lat={self.lat}, lon={self.lon}, alt={self.alt}, x={self.x}, y={self.y}, time={self.sow}, age={self.age}'
+        return f'ix={self.index}, lat={self.lat}, lon={self.lon}, alt={self.alt}, x={self.x}, y={self.y}, time={self.sow}, age={self.age}'
 
     def clone(self):
-        return SbetRow(None, None, self)
+        return SbetRow(None, None, None, self)
 
     def json(self, actual = False):
         json = {
@@ -52,6 +54,9 @@ class SbetParser:
         self.current_index = 0
         self.row_count = len(self.rows)
 
+    def reset(self):
+        self.current_index = 0
+
     def get_position(self, timestamp = None, pcap_filename = None, pcap_path = None, gps_week = None, continue_from_previous = False):
 
         if gps_week is None:
@@ -65,7 +70,7 @@ class SbetParser:
 
             if self.rows[i]["time"] >= sow:
                 self.current_index = i
-                return SbetRow(sow, self.rows[i-1])
+                return SbetRow(sow, self.rows[i-1], i)
 
         self.current_index = 0
         return None
