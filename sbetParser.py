@@ -18,6 +18,7 @@ class SbetRow:
             self.index = original.index
             self.x = original.x
             self.y = original.y
+            self.heading = original.heading
             return
 
         self.sow = row["time"]
@@ -25,12 +26,13 @@ class SbetRow:
         self.lon = row["lon"]
         self.alt = row["alt"]
         self.age = sow - row["time"]
+        self.heading = row["heading"]
         self.index = index
 
         self.x, self.y = transformer.transform(self.lat, self.lon)
 
     def __str__(self):
-        return f'ix={self.index}, lat={self.lat}, lon={self.lon}, alt={self.alt}, x={self.x}, y={self.y}, time={self.sow}, age={self.age}'
+        return f'ix={self.index}, lat={self.lat}, lon={self.lon}, heading={self.heading}, alt={self.alt}, x={self.x}, y={self.y}, time={self.sow}, age={self.age}'
 
     def clone(self):
         return SbetRow(None, None, None, self)
@@ -84,7 +86,7 @@ class SbetParser:
     def read_latlon(sbet_filename, smrmsg_filename):
 
         (sbet, _) = read_sbet(sbet_filename, smrmsg_filename)
-        sbet = sbet[["time", "lat", "lon", "alt"]]
+        sbet = sbet[["time", "lat", "lon", "alt", "heading"]]
         sbet["lat"] = sbet["lat"] * 180 / np.pi
         sbet["lon"] = sbet["lon"] * 180 / np.pi
         
