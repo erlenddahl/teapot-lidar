@@ -57,7 +57,7 @@ class PcapReader:
         if "frame_count" not in self.internal_meta:
             if show_progress:
                 print("Counting frames ...")
-            return len(self.enumerate_lidar_packets())
+            return len(list(self.enumerate_lidar_packets()))
         return self.internal_meta["frame_count"]
 
     def save_internal_meta(self):
