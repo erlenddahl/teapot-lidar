@@ -208,13 +208,6 @@ class PcapReader:
     def get_current_frame_index_including_skips(self):
         return self.last_read_frame_ix_including_skips
 
-    def get_current_position(self):
-        if self.sbet is None:
-            return None
-        if self.frame_coordinates is None:
-            self.frame_coordinates = self.get_coordinates()
-        return self.frame_coordinates[max(0, self.last_read_frame_ix)]
-
     def get_sbet_timestamp(self, packet = None, timestamps = None):
         if timestamps is None:
             timestamps = packet.header(client.ColHeader.TIMESTAMP)

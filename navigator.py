@@ -31,20 +31,22 @@ class LidarNavigator(NavigatorBase):
         self.movements = []
         self.estimated_coordinates = []
         self.actual_coordinates = []
+        self.actual_movement_path = None
 
         self.movement_path = o3d.geometry.LineSet(
-            points = o3d.utility.Vector3dVector([]), lines=o3d.utility.Vector2iVector([])
+            points = o3d.utility.Vector3dVector([[0,0,0]]), lines=o3d.utility.Vector2iVector([])
         )
 
         if args.sbet is not None:
-            self.current_coordinate = self.reader.get_current_position().clone()
+            self.actual_coordinates = self.reader.get_coordinates()
+
+            self.current_coordinate = self.actual_coordinates[0].clone()
             self.initial_coordinate = self.current_coordinate.clone()
 
-        self.actual_coordinates = self.reader.get_coordinates()
-        self.actual_movement_path = o3d.geometry.LineSet(
-            points = o3d.utility.Vector3dVector([[p.x - self.initial_coordinate.x, p.y - self.initial_coordinate.y, p.alt - self.initial_coordinate.alt] for p in self.actual_coordinates]), 
-            lines = o3d.utility.Vector2iVector()
-        )
+            self.actual_movement_path = o3d.geometry.LineSet(
+                points = o3d.utility.Vector3dVector([[p.x - self.initial_coordinate.x, p.y - self.initial_coordinate.y, p.alt - self.initial_coordinate.alt] for p in self.actual_coordinates]), 
+                lines = o3d.utility.Vector2iVector()
+            )
 
         self.skip_initial_frames()
 
@@ -162,13 +164,13 @@ class LidarNavigator(NavigatorBase):
             self.actual_coordinates.append(actual_coordinate)
             self.estimated_coordinates.append(self.current_coordinate.clone())
 
-            self.current_coordinate.x += movement[0]
+            self.current_coordinate.x += movement[0] #TODO: Think this is wrong. Should probably use transformed red line in the end to generate all estimated coordinates.
             self.current_coordinate.y += movement[1]
             self.current_coordinate.alt += movement[2]
 
-            dx = actual_coordinate.x - self.current_coordinate.x
-            dy = actual_coordinate.y - self.current_coordinate.y
-            dz = actual_coordinate.alt - self.current_coordinate.alt
+            dx = actual_coordinate.x
+            dy = actual_coordinate.y
+            dz = actual_coordinate.alt
 
             plot.position_error_x.append(dx)
             plot.position_error_y.append(dy)
@@ -176,6 +178,28 @@ class LidarNavigator(NavigatorBase):
             plot.position_error_2d.append(np.sqrt(dx*dx+dy*dy))
             plot.position_error_3d.append(np.sqrt(dx*dx+dy*dy+dz*dz))
             plot.position_age.append(actual_coordinate.age)
+
+    def get_current_position(self):
+
+        # Retrieve the index of the currently processed frame
+        ix = self.reader.get_current_frame_index()
+
+        # Retrieve the SBET data for this frame 
+        # This is the original location and time info from the SBET file.
+        sbet = self.actual_coordinates[ix]
+
+        # Retrieve the transformed coordinates for this frame from the o3d movement line,
+        # which has been transformed after each registration in order to follow the red line.
+        o3d = self.actual_movement_path.points[ix]
+
+        # Combine those into one SbetRow with the original Sbet data, but the
+        # o3d transformed coordinates.
+        pos = sbet.clone()
+        pos.x = o3d[0]
+        pos.y = o3d[1]
+        pos.alt = o3d[2]
+
+        return pos
 
     def merge_next_frame(self, plot):
         """ Reads the next frame, aligns it with the previous frame, merges them together
@@ -206,22 +230,22 @@ class LidarNavigator(NavigatorBase):
         # the calculated transformation
         movement = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(reg.transformation).get_center()
         
-        actual_coordinate = self.reader.get_current_position() if self.current_coordinate is not None else None
+        actual_coordinate = self.get_current_position() if self.current_coordinate is not None else None
         self.update_plot(plot, reg, registration_time, movement, actual_coordinate)
 
         # Append the newest movement
         self.movements.append(movement)
 
         # Append the new movement to the path
-        self.movement_path.points.append([0,0,0])
         self.movement_path = self.movement_path.transform(reg.transformation)
+        self.movement_path.points.append([0,0,0])
+        self.movement_path.lines.append([len(self.movement_path.lines) - 2, len(self.movement_path.lines) - 1])
+        self.movement_path.paint_uniform_color([1, 0, 0])
 
         # Add the new line
         if len(self.movements) == 2:
             self.vis.add_geometry(self.movement_path)
-        if len(self.movements) >= 2:
-            self.movement_path.lines.append([len(self.movements) - 2, len(self.movements) - 1])
-            self.movement_path.paint_uniform_color([1, 0, 0])
+        if len(self.movements) > 2:
             self.vis.update_geometry(self.movement_path)
 
         if actual_coordinate is not None:
