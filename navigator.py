@@ -43,7 +43,7 @@ class LidarNavigator(NavigatorBase):
         self.actual_coordinates = self.reader.get_coordinates()
         self.actual_movement_path = o3d.geometry.LineSet(
             points = o3d.utility.Vector3dVector([[p.x - self.initial_coordinate.x, p.y - self.initial_coordinate.y, p.alt - self.initial_coordinate.alt] for p in self.actual_coordinates]), 
-            lines=o3d.utility.Vector2iVector([[i, i+1] for i in range(len(self.actual_coordinates) - 1)])
+            lines = o3d.utility.Vector2iVector()
         )
 
         self.skip_initial_frames()
@@ -226,14 +226,17 @@ class LidarNavigator(NavigatorBase):
 
         if actual_coordinate is not None:
             
-            #TODO: Update lines here, points are already added.self.actual_movement_path.points.append([actual_coordinate.x - self.current_coordinate.x, actual_coordinate.y - self.current_coordinate.y, actual_coordinate.x - self.current_coordinate.x])
+            if len(self.movements) >= 2:
+                line_count = len(self.actual_movement_path.lines)
+                self.actual_movement_path.lines.append([line_count, line_count + 1])
+
             self.actual_movement_path = self.actual_movement_path.transform(reg.transformation)
+            self.actual_movement_path.paint_uniform_color([0, 0, 1])
             
             # Add the actual coordinate as a blue line
             if len(self.movements) == 2:
                 self.vis.add_geometry(self.actual_movement_path)
-            if len(self.movements) >= 2:
-                self.actual_movement_path.paint_uniform_color([0, 0, 1])
+            elif len(self.movements) > 2:
                 self.vis.update_geometry(self.actual_movement_path)
 
 
@@ -242,11 +245,11 @@ class LidarNavigator(NavigatorBase):
         # Transform the frame to fit the merged point cloud
         self.merged_frame = self.merged_frame.transform(reg.transformation)
 
+        self.time("cloud transformation")
+
         # Add the frame to the generated point cloud (unless we should skip some frames)
         self.build_cloud_timer -= 1
         if self.build_cloud and self.build_cloud_timer <= 0:
-
-            self.time("frame transformation")
 
             # Combine the points from the merged visualization with the points from the next frame
             self.merged_frame += frame

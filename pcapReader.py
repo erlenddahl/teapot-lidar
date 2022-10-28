@@ -68,13 +68,15 @@ class PcapReader:
         self.source.reset()
         self.scans = iter(client.Scans(self.source))
         self.last_read_frame_ix = -1
+        self.last_read_frame_ix_including_skips = -1
 
     def skip_and_get(self, iterator):
         try:
             for _ in range(self.skip_frames):
-                self.last_read_frame_ix += 1
+                self.last_read_frame_ix_including_skips += 1
                 next(iterator)
             self.last_read_frame_ix += 1
+            self.last_read_frame_ix_including_skips += 1
             return next(iterator)
         except StopIteration:
             return None
@@ -190,14 +192,21 @@ class PcapReader:
 
         positions = []
         self.sbet.reset()
-        for packet in self.enumerate_lidar_packets():
+        iterator = iter(self.enumerate_lidar_packets())
+        for packet in iterator:
             pos = self.sbet.get_position(self.get_sbet_timestamp(packet), gps_week=self.gps_week, continue_from_previous=True)
             positions.append(pos)
+
+            for _ in range(self.skip_frames):
+                next(iterator, None)
 
         return SbetParser.rotate_points(positions, positions[0].heading - np.pi / 2)
 
     def get_current_frame_index(self):
         return self.last_read_frame_ix
+
+    def get_current_frame_index_including_skips(self):
+        return self.last_read_frame_ix_including_skips
 
     def get_current_position(self):
         if self.sbet is None:
