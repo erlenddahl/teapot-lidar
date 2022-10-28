@@ -239,7 +239,7 @@ class LidarNavigator(NavigatorBase):
         # Append the new movement to the path
         self.movement_path = self.movement_path.transform(reg.transformation)
         self.movement_path.points.append([0,0,0])
-        self.movement_path.lines.append([len(self.movement_path.lines) - 2, len(self.movement_path.lines) - 1])
+        self.movement_path.lines.append([len(self.movement_path.lines), len(self.movement_path.lines) + 1])
         self.movement_path.paint_uniform_color([1, 0, 0])
 
         # Add the new line
