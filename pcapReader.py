@@ -193,8 +193,11 @@ class PcapReader:
         for packet in self.enumerate_lidar_packets():
             pos = self.sbet.get_position(self.get_sbet_timestamp(packet), gps_week=self.gps_week, continue_from_previous=True)
             positions.append(pos)
-        
-        return positions
+
+        return SbetParser.rotate_points(positions, positions[0].heading - np.pi / 2)
+
+    def get_current_frame_index(self):
+        return self.last_read_frame_ix
 
     def get_current_position(self):
         if self.sbet is None:

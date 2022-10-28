@@ -3,11 +3,12 @@ import os
 import numpy as np
 from pyproj import Transformer
 from datetime import datetime
+import open3d as o3d
 
 transformer = Transformer.from_crs(4326, 5972)
 class SbetRow:
 
-    def __init__(self, sow, row, index, original = None):
+    def __init__(self, row, sow = 0, index = 0, original = None):
 
         if original is not None:
             self.sow = original.sow
@@ -72,7 +73,7 @@ class SbetParser:
 
             if self.rows[i]["time"] >= sow:
                 self.current_index = i
-                return SbetRow(sow, self.rows[i-1], i)
+                return SbetRow(self.rows[i-1], sow, i)
 
         self.current_index = 0
         return None
@@ -91,6 +92,33 @@ class SbetParser:
         sbet["lon"] = sbet["lon"] * 180 / np.pi
         
         return sbet
+
+    def get_rows(self):
+        return [SbetRow(row) for row in self.rows]
+    
+    def get_rotated_rows(self):
+        """ Returns all coordinates rotated so that the initial heading points due north. """
+        coords = self.get_rows()
+        return SbetParser.rotate_points(coords, coords[0].heading)
+
+    @staticmethod
+    def rotate_points(coords, heading):
+        """ Returns all coordinates rotated by the given heading. """
+
+        transformed_path = o3d.geometry.LineSet(
+            points = o3d.utility.Vector3dVector([[p.x, p.y, p.alt] for p in coords]), lines = o3d.utility.Vector2iVector([])
+        )
+        R = transformed_path.get_rotation_matrix_from_xyz((0, 0, heading))
+        transformed_path.rotate(R, center=transformed_path.points[0])
+
+        for i in range(len(coords)):
+            c = coords[i]
+            c.lat = -1
+            c.lon = -1
+            c.x = transformed_path.points[i][0]
+            c.y = transformed_path.points[i][1]
+        
+        return coords
 
 if __name__ == "__main__":
 
@@ -126,3 +154,18 @@ if __name__ == "__main__":
     
     print("Min lon:", np.min(parser.rows["lon"]))
     print("Max lon:", np.max(parser.rows["lon"]))
+
+    print("Initial heading:", parser.rows[0]["heading"])
+
+    coords = parser.get_rows()
+    path = o3d.geometry.LineSet(
+        points = o3d.utility.Vector3dVector([[p.x, p.y, p.alt] for p in coords]), lines=o3d.utility.Vector2iVector([[i, i+1] for i in range(len(coords) - 1)])
+    )
+    
+    coords = parser.get_rotated_rows()
+    transformed_path = o3d.geometry.LineSet(
+        points = o3d.utility.Vector3dVector([[p.x, p.y, p.alt] for p in coords]), lines=o3d.utility.Vector2iVector([[i, i+1] for i in range(len(coords) - 1)])
+    )
+    transformed_path.paint_uniform_color([1, 0, 0])
+
+    o3d.visualization.draw_geometries([path, transformed_path])

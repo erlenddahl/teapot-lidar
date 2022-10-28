@@ -3,7 +3,6 @@ from navigatorBase import NavigatorBase
 from plotter import Plotter
 import numpy as np
 import os
-import copy
 from tqdm import tqdm
 import open3d as o3d
 from datetime import datetime
@@ -32,26 +31,24 @@ class LidarNavigator(NavigatorBase):
         self.movements = []
         self.estimated_coordinates = []
         self.actual_coordinates = []
-        self.actual_movement_path_transformed = None
-        self.total_movement = np.array([0.0,0.0,0.0])
 
         self.movement_path = o3d.geometry.LineSet(
             points = o3d.utility.Vector3dVector([]), lines=o3d.utility.Vector2iVector([])
         )
 
+        if args.sbet is not None:
+            self.current_coordinate = self.reader.get_current_position().clone()
+            self.initial_coordinate = self.current_coordinate.clone()
+
+        self.actual_coordinates = self.reader.get_coordinates()
         self.actual_movement_path = o3d.geometry.LineSet(
-            points = o3d.utility.Vector3dVector([]), lines=o3d.utility.Vector2iVector([])
+            points = o3d.utility.Vector3dVector([[p.x - self.initial_coordinate.x, p.y - self.initial_coordinate.y, p.alt - self.initial_coordinate.alt] for p in self.actual_coordinates]), 
+            lines=o3d.utility.Vector2iVector([[i, i+1] for i in range(len(self.actual_coordinates) - 1)])
         )
 
         self.skip_initial_frames()
 
         self.merged_frame = self.reader.next_frame(self.remove_vehicle, self.timer)
-
-        if args.sbet is not None:
-            self.current_coordinate = self.reader.get_current_position().clone()
-            self.initial_coordinate = self.current_coordinate.clone()
-            print("Initial coordinate:")
-            print(self.initial_coordinate)
 
         self.previous_frame = self.merged_frame
 
@@ -143,8 +140,8 @@ class LidarNavigator(NavigatorBase):
             self.vis.remove_geometry(self.movement_path)
             self.vis.add_geometry(self.movement_path)
 
-            self.vis.remove_geometry(self.actual_movement_path_transformed)
-            self.vis.add_geometry(self.actual_movement_path_transformed)
+            self.vis.remove_geometry(self.actual_movement_path)
+            self.vis.add_geometry(self.actual_movement_path)
 
             self.vis.reset_view()
 
@@ -205,9 +202,9 @@ class LidarNavigator(NavigatorBase):
 
         registration_time = self.time("registration")
 
-        # Extract the movement (translation) from the transformation
-        movement = reg.transformation[:3,3]
-        self.total_movement += movement
+        # Calculate how much the center point has moved by transforming [0,0,0] with
+        # the calculated transformation
+        movement = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(reg.transformation).get_center()
         
         actual_coordinate = self.reader.get_current_position() if self.current_coordinate is not None else None
         self.update_plot(plot, reg, registration_time, movement, actual_coordinate)
@@ -227,28 +224,17 @@ class LidarNavigator(NavigatorBase):
             self.movement_path.paint_uniform_color([1, 0, 0])
             self.vis.update_geometry(self.movement_path)
 
-        if self.actual_movement_path is not None:
-
-            self.actual_movement_path.points.append([actual_coordinate.x, actual_coordinate.y, actual_coordinate.alt])
-            if len(self.actual_movement_path.points) >= 2:
-                self.actual_movement_path.lines.append([len(self.actual_movement_path.points) - 2, len(self.actual_movement_path.points) - 1])
-            self.actual_movement_path.paint_uniform_color([0, 0, 1])
-
-            if self.actual_movement_path_transformed is not None:
-                self.vis.remove_geometry(self.actual_movement_path_transformed)
-            self.actual_movement_path_transformed = copy.deepcopy(self.actual_movement_path)
-
-            fp = self.movement_path.points[0]
-            self.actual_movement_path_transformed.translate((fp[0] - self.initial_coordinate.x, fp[1] - self.initial_coordinate.y, fp[2] - self.initial_coordinate.alt))
-            R = self.actual_movement_path_transformed.get_rotation_matrix_from_xyz((0, 0, 1.8611953258514404))
-            self.actual_movement_path_transformed.rotate(R, center=(fp[0], fp[1], fp[2]))
+        if actual_coordinate is not None:
+            
+            #TODO: Update lines here, points are already added.self.actual_movement_path.points.append([actual_coordinate.x - self.current_coordinate.x, actual_coordinate.y - self.current_coordinate.y, actual_coordinate.x - self.current_coordinate.x])
+            self.actual_movement_path = self.actual_movement_path.transform(reg.transformation)
             
             # Add the actual coordinate as a blue line
-            if len(self.actual_movement_path.points) == 2:
-                self.vis.add_geometry(self.actual_movement_path_transformed)
-            if len(self.actual_movement_path.points) > 2:
-                self.vis.add_geometry(self.actual_movement_path_transformed)
-            
+            if len(self.movements) == 2:
+                self.vis.add_geometry(self.actual_movement_path)
+            if len(self.movements) >= 2:
+                self.actual_movement_path.paint_uniform_color([0, 0, 1])
+                self.vis.update_geometry(self.actual_movement_path)
 
 
         self.time("book keeping")
