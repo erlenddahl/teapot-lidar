@@ -32,8 +32,8 @@ class SbetRow:
 
         self.x, self.y = transformer.transform(self.lat, self.lon)
 
-    def __str__(self):
-        return f'ix={self.index}, lat={self.lat}, lon={self.lon}, heading={self.heading}, alt={self.alt}, x={self.x}, y={self.y}, time={self.sow}, age={self.age}'
+    def __str__(self, include_lat_lon=True):
+        return f'ix={self.index}' + (f', lat={self.lat}, lon={self.lon}, heading={self.heading}' if include_lat_lon else '') + f', alt={self.alt}, x={self.x}, y={self.y}, time={self.sow}, age={self.age}'
 
     def clone(self):
         return SbetRow(None, None, None, self)
