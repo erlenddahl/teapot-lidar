@@ -41,7 +41,7 @@ class LidarNavigator(NavigatorBase):
             self.actual_coordinates = self.reader.get_coordinates()
 
             self.current_coordinate = self.actual_coordinates[0].clone()
-            self.initial_coordinate = self.current_coordinate.clone()
+            self.initial_coordinate = self.actual_coordinates[0].clone()
 
             self.actual_movement_path = o3d.geometry.LineSet(
                 points = o3d.utility.Vector3dVector([[p.x - self.initial_coordinate.x, p.y - self.initial_coordinate.y, p.alt - self.initial_coordinate.alt] for p in self.actual_coordinates]), 

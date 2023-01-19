@@ -71,6 +71,31 @@ class AbsoluteLidarNavigator(NavigatorBase):
             points = o3d.utility.Vector3dVector([]), lines=o3d.utility.Vector2iVector([])
         )
 
+        if args.sbet is not None:
+
+            # Read the coordinates from all frames in the PCAP file(s).
+            # We set the rotate-argument to False, since we're working with
+            # the same coordinate system here -- both the georeferenced point cloud
+            # and the actual coordinates of the frames are in UTM, and there is
+            # therefore no need to rotate them like it is in the visual odometry
+            # based navigator.
+            self.actual_coordinates = self.reader.get_coordinates(False)
+
+            # Translate all coordinates towards origo with the same offset as
+            # the point cloud.
+            for c in self.actual_coordinates:
+                c.translate(self.full_point_cloud_offset)
+                c.translate([0,0, 40])
+
+            self.current_coordinate = self.actual_coordinates[0].clone()
+            self.initial_coordinate = self.actual_coordinates[0].clone()
+
+            self.actual_movement_path = o3d.geometry.LineSet(
+                points = o3d.utility.Vector3dVector([[p.x, p.y, p.alt] for p in self.actual_coordinates]), 
+                lines = o3d.utility.Vector2iVector([[i, i+1] for i in range(len(self.actual_coordinates) - 1)])
+            )
+            self.actual_movement_path.paint_uniform_color([0, 0, 1])
+
         self.vis = None
         self.merged_frame = o3d.geometry.PointCloud()
         plot = Plotter(self.preview_always)
@@ -175,11 +200,15 @@ class AbsoluteLidarNavigator(NavigatorBase):
         """
 
         # Fetch the next frame
-        #frame = self.reader.next_frame(self.remove_vehicle, self.timer)
-        points = np.asarray(self.full_cloud.points)
-        points = np.asarray([x for x in points.tolist() if (x[0] > 350) and (x[0] < 450) and (x[1] > -72) and (x[1] < -2)])
-        frame = o3d.geometry.PointCloud()
-        frame.points = o3d.utility.Vector3dVector(points + [3, 3, 3])
+        frame = self.reader.next_frame(self.remove_vehicle, self.timer)
+
+        # The following lines are a temporary debugging visualization
+        self.vis = Open3DVisualizer()
+        self.vis.show_frame(self.full_cloud)
+        self.vis.add_geometry(self.actual_movement_path)
+        self.vis.reset_view()
+        self.vis.run()
+        afdsajhuiCRASH
 
         # If it is empty, that (usually) means we have reached the end of
         # the file. Return False to stop the loop.
