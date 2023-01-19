@@ -15,9 +15,13 @@ class AbsoluteLidarNavigator(NavigatorBase):
         """Initialize an AbsoluteLidarNavigator by reading metadata and setting
         up a package source from the pcap file.
         """
+        self.load_point_cloud(args.point_cloud)
 
-        if args.point_cloud.endswith(".cloud"):
-            with open(args.point_cloud, "r") as outfile:
+        NavigatorBase.__init__(self, args, 0)
+
+    def load_point_cloud(self, path):
+        if path.endswith(".cloud"):
+            with open(path, "r") as outfile:
                 data = json.load(outfile)
             self.full_point_cloud_offset = np.array(data["offset"])
             self.full_cloud = o3d.io.read_point_cloud(data["cloud"])
@@ -28,7 +32,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
         else:
             print("Preparing point cloud:")
             print("    > Reading ...")
-            self.full_cloud = o3d.io.read_point_cloud(args.point_cloud)
+            self.full_cloud = o3d.io.read_point_cloud(path)
             print("    > Moving")
             self.print_cloud_info("Full cloud original", self.full_cloud, "    ")
             points = np.asarray(self.full_cloud.points)
@@ -48,9 +52,9 @@ class AbsoluteLidarNavigator(NavigatorBase):
             with open("G:\\2021-10-21 - Kartverket, LIDAR\\validation\\Lillehammer\\Punktsky_211021\\assembled-moved-with-normals.cloud", "w") as outfile:
                 json.dump({ "offset": self.full_point_cloud_offset.tolist(), "cloud": "G:\\2021-10-21 - Kartverket, LIDAR\\validation\\Lillehammer\\Punktsky_211021\\assembled-moved-with-normals.pcd" }, outfile)
         
-        print("    > Cloud read")
+        self.full_cloud.paint_uniform_color([0.3, 0.6, 1.0])
 
-        NavigatorBase.__init__(self, args, 0)
+        print("    > Cloud read")
 
     def navigate_through_file(self):
         """ Runs through each frame in the file. For each pair of frames, use NICP
@@ -85,7 +89,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
             # the point cloud.
             for c in self.actual_coordinates:
                 c.translate(self.full_point_cloud_offset)
-                c.translate([0,0, 40])
+                c.translate([0, 0, 40])
 
             self.current_coordinate = self.actual_coordinates[0].clone()
             self.initial_coordinate = self.actual_coordinates[0].clone()
