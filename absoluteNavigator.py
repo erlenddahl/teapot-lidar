@@ -7,6 +7,7 @@ from tqdm import tqdm
 import open3d as o3d
 from datetime import datetime
 import copy
+import json
 
 class AbsoluteLidarNavigator(NavigatorBase):
 
@@ -15,22 +16,39 @@ class AbsoluteLidarNavigator(NavigatorBase):
         up a package source from the pcap file.
         """
 
-        print("Preparing point cloud:")
-        print("    > Reading ...")
-        self.full_cloud = o3d.io.read_point_cloud(args.point_cloud)
-        #print("    > Moving")
-        #self.print_cloud_info("Full cloud original", self.full_cloud, "    ")
-        #points = np.asarray(self.full_cloud.points)
-        #self.full_point_cloud_offset = np.amin(points, axis=0)
-        #self.full_point_cloud_offset += (np.amax(points, axis=0) - self.full_point_cloud_offset) / 2
-        #points -= self.full_point_cloud_offset
-        #self.full_cloud = o3d.geometry.PointCloud()
-        #self.full_cloud.points = o3d.utility.Vector3dVector(points)
-        #self.print_cloud_info("Full cloud moved", self.full_cloud, "    ")
-        #print("    > Estimating normals")
-        #self.full_cloud.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
-        #o3d.io.write_point_cloud("D:\\Lager\\2021-10-21 - Kartverket, LIDAR\\data\\Referanse punktskyer\\211021_Lillehammer\\assembled-moved-with-normals.pcd", self.full_cloud, compressed=False)
-        print("    > Done")
+        if args.point_cloud.endswith(".cloud"):
+            with open(args.point_cloud, "r") as outfile:
+                data = json.load(outfile)
+            self.full_point_cloud_offset = np.array(data["offset"])
+            self.full_cloud = o3d.io.read_point_cloud(data["cloud"])
+
+            print("    > Offset")
+            print("    >", self.full_point_cloud_offset)
+            self.print_cloud_info("Full cloud moved", self.full_cloud, "    ")
+        else:
+            print("Preparing point cloud:")
+            print("    > Reading ...")
+            self.full_cloud = o3d.io.read_point_cloud(args.point_cloud)
+            print("    > Moving")
+            self.print_cloud_info("Full cloud original", self.full_cloud, "    ")
+            points = np.asarray(self.full_cloud.points)
+            self.full_point_cloud_offset = np.amin(points, axis=0)
+            self.full_point_cloud_offset += (np.amax(points, axis=0) - self.full_point_cloud_offset) / 2
+            print("    > Offset")
+            print("    >", self.full_point_cloud_offset)
+            points -= self.full_point_cloud_offset
+            self.full_cloud = o3d.geometry.PointCloud()
+            self.full_cloud.points = o3d.utility.Vector3dVector(points)
+            self.print_cloud_info("Full cloud moved", self.full_cloud, "    ")
+            print("    > Estimating normals")
+            self.full_cloud.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
+        
+            # Hard-coded lines for saving a pre-processed point cloud (that is already moved to origo and has normals) with an accompanying .cloud file.
+            o3d.io.write_point_cloud("G:\\2021-10-21 - Kartverket, LIDAR\\validation\\Lillehammer\\Punktsky_211021\\assembled-moved-with-normals.pcd", self.full_cloud, compressed=False)
+            with open("G:\\2021-10-21 - Kartverket, LIDAR\\validation\\Lillehammer\\Punktsky_211021\\assembled-moved-with-normals.cloud", "w") as outfile:
+                json.dump({ "offset": self.full_point_cloud_offset.tolist(), "cloud": "G:\\2021-10-21 - Kartverket, LIDAR\\validation\\Lillehammer\\Punktsky_211021\\assembled-moved-with-normals.pcd" }, outfile)
+        
+        print("    > Cloud read")
 
         NavigatorBase.__init__(self, args, 0)
 
