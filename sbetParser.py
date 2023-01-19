@@ -50,6 +50,11 @@ class SbetRow:
 
         return json
 
+    def translate(self, t):
+        self.x -= t[0]
+        self.y -= t[1]
+        self.alt -= t[2]
+
 class SbetParser:
 
     def __init__(self, sbet_filename):
