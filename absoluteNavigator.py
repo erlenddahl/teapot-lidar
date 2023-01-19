@@ -15,6 +15,10 @@ class AbsoluteLidarNavigator(NavigatorBase):
         """Initialize an AbsoluteLidarNavigator by reading metadata and setting
         up a package source from the pcap file.
         """
+        
+        self.position_cylinder_radius = 1
+        self.position_cylinder_height = 20
+
         self.load_point_cloud(args.point_cloud)
 
         NavigatorBase.__init__(self, args, 0)
@@ -99,6 +103,9 @@ class AbsoluteLidarNavigator(NavigatorBase):
                 lines = o3d.utility.Vector2iVector([[i, i+1] for i in range(len(self.actual_coordinates) - 1)])
             )
             self.actual_movement_path.paint_uniform_color([0, 0, 1])
+            
+            self.actual_position_cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=self.position_cylinder_radius, height=self.position_cylinder_height, resolution=20, split=4)
+            self.actual_position_cylinder.paint_uniform_color([0.0, 0.0, 1.0])
 
         self.vis = None
         self.merged_frame = o3d.geometry.PointCloud()
@@ -121,6 +128,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
                             # Show the first frame and reset the view
                             self.vis.show_frame(self.merged_frame)
+                            self.vis.add_geometry(self.actual_position_cylinder)
                             self.vis.set_follow_vehicle_view(self.movements[-1])
 
                             self.check_save_screenshot(0, True)
@@ -130,7 +138,9 @@ class AbsoluteLidarNavigator(NavigatorBase):
                     # Refresh the non-blocking visualization
                     if self.preview_always:
                         self.vis.refresh_non_blocking()
-                        self.vis.set_follow_vehicle_view(self.movements[-1])
+                        self.vis.remove_geometry(self.actual_position_cylinder)
+                        self.vis.add_geometry(self.actual_position_cylinder)
+
                         self.time("visualization refresh")
 
                         self.check_save_screenshot(i)
@@ -183,6 +193,8 @@ class AbsoluteLidarNavigator(NavigatorBase):
             self.vis.show_frame(self.merged_frame)
             self.vis.remove_geometry(self.movement_path)
             self.vis.add_geometry(self.movement_path)
+            self.vis.remove_geometry(self.actual_position_cylinder)
+            self.vis.add_geometry(self.actual_position_cylinder)
             self.vis.reset_view()
 
             self.vis.run()
@@ -190,6 +202,15 @@ class AbsoluteLidarNavigator(NavigatorBase):
         plot.destroy()
 
         return results
+
+    def get_current_position(self):
+
+        # Retrieve the index of the currently processed frame
+        ix = self.reader.get_current_frame_index()
+
+        # Retrieve the SBET data for this frame, which has
+        # already been transformed to fit the point cloud.
+        return self.actual_coordinates[ix]
 
     def draw_registration_result(self, source, target):
         source_temp = copy.deepcopy(source)
@@ -206,10 +227,14 @@ class AbsoluteLidarNavigator(NavigatorBase):
         # Fetch the next frame
         frame = self.reader.next_frame(self.remove_vehicle, self.timer)
 
+        actual_position = self.get_current_position().clone()
+        self.actual_position_cylinder.translate(actual_position.np() + np.array([0, 0, self.position_cylinder_height / 2]))
+
         # The following lines are a temporary debugging visualization
         self.vis = Open3DVisualizer()
         self.vis.show_frame(self.full_cloud)
         self.vis.add_geometry(self.actual_movement_path)
+        self.vis.add_geometry(self.actual_position_cylinder)
         self.vis.reset_view()
         self.vis.run()
         afdsajhuiCRASH
