@@ -55,6 +55,9 @@ class SbetRow:
         self.y -= t[1]
         self.alt -= t[2]
 
+    def np(self):
+        return np.array([self.x, self.y, self.alt])
+
 class SbetParser:
 
     def __init__(self, sbet_filename):
