@@ -118,19 +118,17 @@ class LidarNavigator(NavigatorBase):
         results["actual_coordinates"] = [x.json(True) for x in self.actual_coordinates]
 
         if self.save_path is not None:
-            filenameBase = self.save_path.replace("[time]", datetime.now().strftime('%Y-%m-%d_%H-%M-%S_%f%z'))
-            filenameBase = filenameBase.replace("[pcap]", os.path.basename(self.reader.pcap_path).replace(".pcap", ""))
 
-            self.ensure_dir(os.path.join(filenameBase, "plot.png"))
-            plot.save_plot(os.path.join(filenameBase, "plot.png"))
+            self.ensure_dir(os.path.join(self.save_path, "plot.png"))
+            plot.save_plot(os.path.join(self.save_path, "plot.png"))
 
             if self.build_cloud:
-                self.save_cloud_as_las(os.path.join(filenameBase, "cloud.laz"), self.merged_frame)
-                o3d.io.write_point_cloud(os.path.join(filenameBase, "cloud.pcd"), self.merged_frame, compressed=True)
+                self.save_cloud_as_las(os.path.join(self.save_path, "cloud.laz"), self.merged_frame)
+                o3d.io.write_point_cloud(os.path.join(self.save_path, "cloud.pcd"), self.merged_frame, compressed=True)
 
             self.time("results saving")
             
-            self.save_data(os.path.join(filenameBase, "data.json"), results)
+            self.save_data(os.path.join(self.save_path, "data.json"), results)
         
         if self.print_summary_at_end:
             plot.print_summary(self.timer)
