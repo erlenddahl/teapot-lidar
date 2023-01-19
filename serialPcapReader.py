@@ -1,5 +1,7 @@
 from pcapReader import PcapReader
 from tqdm import tqdm
+from sbetParser import SbetParser
+import numpy as np
 
 class SerialPcapReader:
 
@@ -38,8 +40,29 @@ class SerialPcapReader:
 
         return frame
 
-    def get_current_position(self):
-        return self.readers[self.current_reader_index].get_current_position()
+    def get_coordinates(self, rotate=True):
+        """Returns a list of coordinates (SbetRow) corresponding to each LidarPacket in the current Pcap file."""
+
+        coordinates = []
+        self.readers_first_coordinate_index = []
+        
+        for reader in self.readers:
+            self.readers_first_coordinate_index.append(len(coordinates))
+            coordinates.extend(reader.get_coordinates(False))
+        
+        return SbetParser.rotate_points(coordinates, coordinates[0].heading - np.pi / 2) if rotate else coordinates
+
+    def get_current_frame_index(self):
+        ix = 0
+
+        for i, reader in enumerate(self.readers):
+            if reader == self.readers[self.current_reader_index]:
+                ix += reader.get_current_frame_index()
+                break
+            else:
+                ix += self.readers_first_coordinate_index[i]
+
+        return ix
 
     def print_info(self, frame_index = None, printFunc = print):
         for reader in self.readers:
