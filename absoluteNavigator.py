@@ -87,7 +87,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
             # and the actual coordinates of the frames are in UTM, and there is
             # therefore no need to rotate them like it is in the visual odometry
             # based navigator.
-            self.actual_coordinates = self.reader.get_coordinates(False)
+            self.actual_coordinates = self.reader.get_coordinates(False, show_progress=True)
 
             # Translate all coordinates towards origo with the same offset as
             # the point cloud.

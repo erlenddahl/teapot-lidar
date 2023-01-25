@@ -40,13 +40,13 @@ class SerialPcapReader:
 
         return frame
 
-    def get_coordinates(self, rotate=True):
+    def get_coordinates(self, rotate=True, show_progress=False):
         """Returns a list of coordinates (SbetRow) corresponding to each LidarPacket in the current Pcap file."""
 
         coordinates = []
         self.readers_first_coordinate_index = []
         
-        for reader in self.readers:
+        for reader in tqdm(self.readers, ascii=True, desc="Extracting coordinates", disable=not show_progress):
             self.readers_first_coordinate_index.append(len(coordinates))
             coordinates.extend(reader.get_coordinates(False))
         
