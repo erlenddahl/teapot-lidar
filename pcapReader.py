@@ -1,7 +1,7 @@
 from ouster import client, pcap
 import open3d as o3d
 from colormaps import colorize, normalize
-from sbetParser import SbetParser
+from sbetParser import SbetParser, SbetRow
 import numpy as np
 import os
 import json
@@ -9,7 +9,7 @@ from datetime import datetime
 
 class PcapReader:
 
-    def __init__(self, pcap_path, meta_data_path = None, skip_frames = 0, sbet_path = None):
+    def __init__(self, pcap_path, meta_data_path=None, skip_frames=0, args=None):
         """Initialize a LidarVisualizer by reading metadata and setting
         up a package source from the pcap file.
         """
@@ -37,7 +37,8 @@ class PcapReader:
 
         self.internal_meta_path = pcap_path.replace(".pcap", ".pcap.meta.json")
         self.internal_meta = {}
-        if os.path.isfile(self.internal_meta_path):
+        recreate_caches = True if args is not None and args.recreate_caches else False
+        if os.path.isfile(self.internal_meta_path) and not recreate_caches:
             try:
                 with open(self.internal_meta_path) as f:
                     self.internal_meta = json.load(f)
@@ -45,8 +46,8 @@ class PcapReader:
                 self.internal_meta = {}
 
         self.frame_coordinates = None
-        if sbet_path is not None:
-            self.sbet = SbetParser(sbet_path)
+        if args is not None and args.sbet is not None:
+            self.sbet = SbetParser(args.sbet, args.sbet_z_offset)
             self.gps_week = self.sbet.get_gps_week(pcap_path = self.pcap_path)
         else:
             self.sbet = None
@@ -178,8 +179,6 @@ class PcapReader:
             
             self.internal_meta["min_time_human"] = datetime.utcfromtimestamp(min_time/1000000000).strftime("%Y-%m-%d %H:%M:%S")
             self.internal_meta["max_time_human"] = datetime.utcfromtimestamp(max_time/1000000000).strftime("%Y-%m-%d %H:%M:%S")
-
-            print(self.internal_meta)
 
         if find_bounds or find_count:
             self.save_internal_meta()

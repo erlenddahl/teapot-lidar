@@ -15,7 +15,7 @@ class NavigatorBase:
     def __init__(self, args, min_frame_limit = 1):
         self.timer = TaskTimer()
 
-        self.reader = PcapReaderHelper.from_lists(args.pcap, args.json, args.skip_every_frame, sbet=args.sbet)
+        self.reader = PcapReaderHelper.from_lists(args.pcap, args.json, args.skip_every_frame, args=args)
         self.voxel_size = args.voxel_size
         self.matcher = AlgorithmHelper.get_algorithm(args.algorithm)
         self.remove_vehicle = True

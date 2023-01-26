@@ -26,6 +26,7 @@ class PcapReaderHelper:
         parser.add_argument('--json', type=str, nargs='+', required=False, help="The path to corresponding JSON file(s) for each of the PCAP file(s) with the sensor metadata, relative or absolute. If this is not given, the PCAP location is used (by replacing .pcap with .json). A path to a directory containing multiple json files can also be provided.")
         parser.add_argument('--sbet', type=str, required=False, help="The path to a corresponding SBET file with GNSS coordinates.")
         parser.add_argument('--sbet-z-offset', type=float, default=0, required=False, help="If the GNSS positions in the SBET file have an altitude offset from the point cloud, this argument will be added/subtracted on the Z coordinates of each SBET coordinate.")
+        parser.add_argument('--recreate-caches', action='store_true')
 
     @staticmethod
     def from_path_args(args = None):
@@ -33,7 +34,7 @@ class PcapReaderHelper:
         if args is None:
             args = PcapReaderHelper.get_path_args()
 
-        return PcapReaderHelper.from_lists(args.pcap, args.json, sbet=args.sbet)
+        return PcapReaderHelper.from_lists(args.pcap, args.json, args=args)
 
     @staticmethod
     def expand_folders(items, file_extension):
@@ -52,7 +53,7 @@ class PcapReaderHelper:
         return expanded
 
     @staticmethod
-    def from_lists(pcaps, jsons = None, skip_frames = 0, sbet = None):
+    def from_lists(pcaps, jsons = None, skip_frames = 0, args=None):
 
         if isinstance(pcaps, str):
             pcaps = [pcaps]
@@ -69,6 +70,6 @@ class PcapReaderHelper:
             raise ValueError("Number of JSON files does not match number of PCAP files.")
 
         if len(pcaps) == 1:
-            return PcapReader(pcaps[0], jsons[0], skip_frames, sbet_path = sbet)
+            return PcapReader(pcaps[0], jsons[0], skip_frames, args=args)
         else:
-            return SerialPcapReader(pcaps, jsons, skip_frames, sbet_path = sbet)
+            return SerialPcapReader(pcaps, jsons, skip_frames, args=args)
