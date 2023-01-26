@@ -123,7 +123,6 @@ class AbsoluteLidarNavigator(NavigatorBase):
             self.actual_position_cylinder.paint_uniform_color([0.0, 0.0, 1.0])
 
         self.vis = None
-        self.merged_frame = o3d.geometry.PointCloud()
         plot = Plotter(self.preview_always)
 
         # Enumerate all frames until the end of the file and run the merge operation.
@@ -142,7 +141,6 @@ class AbsoluteLidarNavigator(NavigatorBase):
                             self.vis.refresh_non_blocking()
 
                             # Show the first frame and reset the view
-                            self.vis.show_frame(self.merged_frame)
                             self.vis.add_geometry(self.actual_position_cylinder)
                             self.vis.set_follow_vehicle_view(self.movements[-1])
 
@@ -175,16 +173,11 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
                 raise
 
-        # Ensure the final cloud has been downsampled
-        self.ensure_merged_frame_is_downsampled()
-
         # When everything is finished, print a summary, and save the point cloud and debug data.
         if self.preview_at_end:
             plot.update()
 
-        self.print_cloud_info("Merged frame", self.merged_frame)
         self.print_cloud_info("Full cloud", self.full_cloud)
-        self.draw_registration_result(self.merged_frame, self.full_cloud)
 
         results = self.get_results(plot)
 
@@ -193,8 +186,6 @@ class AbsoluteLidarNavigator(NavigatorBase):
             filenameBase = filenameBase.replace("[pcap]", os.path.basename(self.reader.pcap_path).replace(".pcap", ""))
             self.ensure_dir(filenameBase)
             plot.save_plot(filenameBase + "_plot.png")
-            self.save_cloud_as_las(filenameBase + "_cloud.laz", self.merged_frame)
-            o3d.io.write_point_cloud(filenameBase + "_cloud.pcd", self.merged_frame, compressed=True)
 
             self.time("results saving")
             
@@ -205,7 +196,6 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         # Then continue showing the visualization in a blocking way until the user stops it.
         if self.preview_at_end:
-            self.vis.show_frame(self.merged_frame)
             self.vis.remove_geometry(self.movement_path)
             self.vis.add_geometry(self.movement_path)
             self.vis.remove_geometry(self.actual_position_cylinder)
@@ -296,41 +286,18 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         self.time("book keeping")
 
-        # Transform the frame to fit the merged point cloud
-        #self.merged_frame = self.merged_frame
-
-        self.time("frame transformation")
-
         self.previous_transformation = reg.transformation
 
         # Combine the points from the merged visualization with the points from the next frame
         transformed_frame = copy.deepcopy(frame)
-        print("")
-        print("")
         print("Movement", movement)
         print("Transformation:")
         print(reg.transformation)
-        self.print_cloud_info("Frame", frame)
         transformed_frame.transform(reg.transformation)
-        self.print_cloud_info("Transformed frame", transformed_frame)
-        self.merged_frame += transformed_frame
-        self.merged_frame_is_dirty = True
-
-        self.time("cloud merging")
-
-        # Downsample the merged visualization to make it faster to work with.
-        # Otherwise it would grow extremely large, as it would contain all points
-        # from all processed point clouds.
-        # Don't do this on every frame, as it takes a lot of time.
-        self.downsample_timer -= 1
-        if self.downsample_timer <= 0:
-            self.ensure_merged_frame_is_downsampled()
-            self.downsample_timer = self.downsample_cloud_after_frames
 
         # Update the visualization
         if self.preview_always and self.vis is not None:
-            self.vis.show_frame(self.merged_frame, True)
-
+            # TODO: cylinder stuff
             self.time("visualization")
 
         # Return True to let the loop continue to the next frame.
