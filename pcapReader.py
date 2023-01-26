@@ -42,6 +42,8 @@ class PcapReader:
             try:
                 with open(self.internal_meta_path) as f:
                     self.internal_meta = json.load(f)
+                    if "coordinates" in self.internal_meta:
+                        self.internal_meta["coordinates"] = [SbetRow(None, None, None, x) for x in self.internal_meta["coordinates"]]
             except:
                 self.internal_meta = {}
 
@@ -63,7 +65,7 @@ class PcapReader:
 
     def save_internal_meta(self):
         with open(self.internal_meta_path, 'w') as f:
-            json.dump(self.internal_meta, f)
+            json.dump(self.internal_meta, f, default=vars)
 
     def reset(self):
         self.source.reset()
@@ -186,6 +188,9 @@ class PcapReader:
     def get_coordinates(self, rotate=True):
         """Returns a list of coordinates (SbetRow) corresponding to each LidarPacket in the current Pcap file."""
 
+        if "coordinates" in self.internal_meta:
+            return self.internal_meta["coordinates"]
+
         if self.sbet is None:
             return None
 
@@ -199,10 +204,13 @@ class PcapReader:
             for _ in range(self.skip_frames):
                 next(iterator, None)
 
-        if not rotate:
-            return positions
+        if rotate:
+            positions = SbetParser.rotate_points(positions, positions[0].heading - np.pi / 2)
 
-        return SbetParser.rotate_points(positions, positions[0].heading - np.pi / 2)
+        self.internal_meta["coordinates"] = positions
+        self.save_internal_meta()
+
+        return positions
 
     def get_current_frame_index(self):
         return self.last_read_frame_ix
