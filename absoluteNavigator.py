@@ -121,8 +121,12 @@ class AbsoluteLidarNavigator(NavigatorBase):
             
             self.actual_position_cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=self.position_cylinder_radius, height=self.position_cylinder_height, resolution=20, split=4)
             self.actual_position_cylinder.paint_uniform_color([0.0, 0.0, 1.0])
+            
+            self.estimated_position_cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=self.position_cylinder_radius, height=self.position_cylinder_height, resolution=20, split=4)
+            self.estimated_position_cylinder.paint_uniform_color([1.0, 0.0, 0.0])
 
         self.vis = None
+        self.is_first_frame = True
         plot = Plotter(self.preview_always)
 
         # Enumerate all frames until the end of the file and run the merge operation.
@@ -142,6 +146,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
                             # Show the first frame and reset the view
                             self.vis.add_geometry(self.actual_position_cylinder)
+                            self.vis.add_geometry(self.estimated_position_cylinder)
                             self.vis.set_follow_vehicle_view(self.movements[-1])
 
                             self.check_save_screenshot(0, True)
@@ -153,6 +158,8 @@ class AbsoluteLidarNavigator(NavigatorBase):
                         self.vis.refresh_non_blocking()
                         self.vis.remove_geometry(self.actual_position_cylinder)
                         self.vis.add_geometry(self.actual_position_cylinder)
+                        self.vis.remove_geometry(self.estimated_position_cylinder)
+                        self.vis.add_geometry(self.estimated_position_cylinder)
 
                         self.time("visualization refresh")
 
@@ -232,32 +239,47 @@ class AbsoluteLidarNavigator(NavigatorBase):
         # Fetch the next frame
         frame = self.reader.next_frame(self.remove_vehicle, self.timer)
 
+        # Find the current position, and update the blue (actual) position cylinder
         actual_position = self.get_current_position().clone()
         self.actual_position_cylinder.translate(actual_position.np() + np.array([0, 0, self.position_cylinder_height / 2]))
 
-        # The following lines are a temporary debugging visualization
-        self.vis = Open3DVisualizer()
-        self.vis.show_frame(self.full_cloud)
-        self.vis.add_geometry(self.actual_movement_path)
-        self.vis.add_geometry(self.actual_position_cylinder)
-        self.vis.reset_view()
-        self.vis.run()
-        afdsajhuiCRASH
+        if self.is_first_frame:
+            self.estimated_position_cylinder.translate(actual_position.np() + np.array([0, 0, self.position_cylinder_height / 2]))
+            self.is_first_frame = False
+
+        self.time("frame and position extraction")
+
+        # Extract a part of the cloud around the actual position. This is the cloud we are going to register against.
+        a = self.full_cloud_np
+        partial_radius = 25
+        points = a[(a[:, 0] >= actual_position.x - partial_radius) & (a[:, 0] <= actual_position.x + partial_radius) & (a[:, 1] >= actual_position.y - partial_radius) & (a[:, 1] <= actual_position.y + partial_radius)]
+        self.time("partial cloud point extraction")
+        
+        offset = np.amin(points, axis=0)
+        offset += (np.amax(points, axis=0) - offset) / 2
+        points -= offset
+        self.time("partial cloud point movement")
+
+        partial_cloud = o3d.geometry.PointCloud()
+        partial_cloud.points = o3d.utility.Vector3dVector(points)
+        self.time("partial cloud creation")
 
         # If it is empty, that (usually) means we have reached the end of
         # the file. Return False to stop the loop.
         if frame is None:
             return False
 
-        # Estimate normals for the target frame (the source frame will always have
-        # normals from the previous step).
+        # Estimate normals for the target frame
         frame.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
+
+        # For now, estimate normals for the partial cloud as well (to save some time, try to transfer them from the full cloud!)
+        partial_cloud.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
 
         self.time("normal estimation")
 
         # Run the alignment
-        reg = self.matcher.match(frame, self.full_cloud, 10, None)
-        self.check_save_frame_pair(self.full_cloud, frame, reg)
+        reg = self.matcher.match(frame, partial_cloud, 10, None)
+        self.check_save_frame_pair(partial_cloud, frame, reg)
 
         registration_time = self.time("registration")
 
@@ -274,7 +296,8 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         # Append the new movement to the path
         self.movement_path.points.append(reg.transformation[:3,3])
-        #self.movement_path = self.movement_path.transform(transformation)
+
+        self.estimated_position_cylinder.transform(reg.transformation)
 
         # Add the new line
         if len(self.movements) == 2:
@@ -299,6 +322,29 @@ class AbsoluteLidarNavigator(NavigatorBase):
         if self.preview_always and self.vis is not None:
             # TODO: cylinder stuff
             self.time("visualization")
+
+        # The following lines are a temporary debugging visualization
+
+        partial_cloud.paint_uniform_color([1,0,0])
+        frame.paint_uniform_color([0,1,0])
+        transformed_frame.paint_uniform_color([0,0,1])
+
+        self.print_cloud_info("Full cloud (bright blue)", self.full_cloud)
+        self.print_cloud_info("Partial cloud (red)", partial_cloud)
+        self.print_cloud_info("Current frame (green)", frame)
+        self.print_cloud_info("Transformed frame (blue)", transformed_frame)
+
+        vis = Open3DVisualizer()
+        vis.show_frame(self.full_cloud)
+        vis.add_geometry(self.actual_movement_path)
+        vis.add_geometry(partial_cloud)
+        vis.add_geometry(frame)
+        vis.add_geometry(transformed_frame)
+        vis.add_geometry(self.actual_position_cylinder)
+        vis.add_geometry(self.estimated_position_cylinder)
+        vis.reset_view()
+        vis.run()
+        afdsajhuiCRASH
 
         # Return True to let the loop continue to the next frame.
         return True
