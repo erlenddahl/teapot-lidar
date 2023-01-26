@@ -8,24 +8,28 @@ import open3d as o3d
 transformer = Transformer.from_crs(4326, 5972)
 class SbetRow:
 
-    def __init__(self, row, sow = 0, index = 0, original = None):
+    def __init__(self, row, sow=0, index=0, original=None, z_offset=0):
 
         if original is not None:
-            self.sow = original.sow
-            self.lat = original.lat
-            self.lon = original.lon
-            self.alt = original.alt
-            self.age = original.age
-            self.index = original.index
-            self.x = original.x
-            self.y = original.y
-            self.heading = original.heading
+
+            if type(original) is not dict:
+                original = original.__dict__
+                
+            self.sow = original["sow"]
+            self.lat = original["lat"]
+            self.lon = original["lon"]
+            self.alt = original["alt"]
+            self.age = original["age"]
+            self.index = original["index"]
+            self.x = original["x"]
+            self.y = original["y"]
+            self.heading = original["heading"]
             return
 
         self.sow = row["time"]
         self.lat = row["lat"]
         self.lon = row["lon"]
-        self.alt = row["alt"]
+        self.alt = row["alt"] + z_offset
         self.age = sow - row["time"]
         self.heading = row["heading"]
         self.index = index
@@ -60,8 +64,9 @@ class SbetRow:
 
 class SbetParser:
 
-    def __init__(self, sbet_filename):
-        self.rows = SbetParser.read_latlon(sbet_filename, sbet_filename.replace(".out", "-smrmsg.out"))
+    def __init__(self, filename, z_offset):
+        self.z_offset = z_offset
+        self.rows = SbetParser.read_latlon(filename, filename.replace(".out", "-smrmsg.out"))
         self.current_index = 0
         self.row_count = len(self.rows)
 
@@ -81,7 +86,7 @@ class SbetParser:
 
             if self.rows[i]["time"] >= sow:
                 self.current_index = i
-                return SbetRow(self.rows[i-1], sow, i)
+                return SbetRow(self.rows[i-1], sow, i, z_offset=self.z_offset)
 
         self.current_index = 0
         return None
@@ -102,7 +107,7 @@ class SbetParser:
         return sbet
 
     def get_rows(self):
-        return [SbetRow(row) for row in self.rows]
+        return [SbetRow(row, z_offset=self.z_offset) for row in self.rows]
     
     def get_rotated_rows(self):
         """ Returns all coordinates rotated so that the initial heading points due north. """

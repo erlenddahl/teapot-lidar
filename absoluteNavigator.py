@@ -109,7 +109,6 @@ class AbsoluteLidarNavigator(NavigatorBase):
             # the point cloud.
             for c in self.actual_coordinates:
                 c.translate(self.full_point_cloud_offset)
-                c.translate([0, 0, 40])
 
             self.current_coordinate = self.actual_coordinates[0].clone()
             self.initial_coordinate = self.actual_coordinates[0].clone()
