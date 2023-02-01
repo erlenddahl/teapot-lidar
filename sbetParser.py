@@ -1,6 +1,8 @@
+from open3dVisualizer import Open3DVisualizer
 from sbetHelpers import read_sbet, filename2gpsweek, timestamp_unix2sow, timestamp_sow2unix
 import os
 import numpy as np
+from tqdm import tqdm
 from pyproj import Transformer
 from datetime import datetime
 import open3d as o3d
@@ -139,10 +141,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--sbet', type=str, required=True, help="The path to a corresponding SBET file with GNSS coordinates.")
     parser.add_argument('--gps-week', type=int, default=-1, required=False, help="If given, this GPS week will be used to transform the timestamps to unix and human readable time.")
+    parser.add_argument('--sbet-z-offset', type=float, default=0, required=False, help="If the GNSS positions in the SBET file have an altitude offset from the point cloud, this argument will be added/subtracted on the Z coordinates of each SBET coordinate.")
     args = parser.parse_args()
 
     # Create and start a visualization
-    parser = SbetParser(args.sbet)
+    parser = SbetParser(args.sbet, args.sbet_z_offset)
     
     min_time = np.min(parser.rows["time"])
     max_time = np.max(parser.rows["time"])
@@ -174,11 +177,28 @@ if __name__ == "__main__":
     path = o3d.geometry.LineSet(
         points = o3d.utility.Vector3dVector([[p.x, p.y, p.alt] for p in coords]), lines=o3d.utility.Vector2iVector([[i, i+1] for i in range(len(coords) - 1)])
     )
+    path.paint_uniform_color([1, 0, 0])
     
     coords = parser.get_rotated_rows()
     transformed_path = o3d.geometry.LineSet(
         points = o3d.utility.Vector3dVector([[p.x, p.y, p.alt] for p in coords]), lines=o3d.utility.Vector2iVector([[i, i+1] for i in range(len(coords) - 1)])
     )
-    transformed_path.paint_uniform_color([1, 0, 0])
+    transformed_path.paint_uniform_color([0, 0, 1])
 
-    o3d.visualization.draw_geometries([path, transformed_path])
+    position_cylinder_radius = 1
+    position_cylinder_height = 20
+    actual_position_cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=position_cylinder_radius, height=position_cylinder_height, resolution=20, split=4)
+    actual_position_cylinder.paint_uniform_color([0, 0, 1])
+
+    vis = Open3DVisualizer()
+    vis.add_axes = False
+    vis.show_frame(transformed_path)
+    vis.add_geometry(path)
+    vis.add_geometry(actual_position_cylinder)
+
+    for c in tqdm(coords, ascii=True, desc="Animating"):
+        actual_position_cylinder.translate(c.np() + np.array([0, 0, position_cylinder_height / 2]), relative=False)
+        vis.update_geometry(actual_position_cylinder)
+        vis.refresh_non_blocking()
+
+    vis.run()
