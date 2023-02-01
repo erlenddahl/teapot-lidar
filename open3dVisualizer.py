@@ -1,6 +1,5 @@
 import open3d as o3d
 import numpy as np
-from pcapReader import PcapReader
 
 class Open3DVisualizer:
 
@@ -115,7 +114,7 @@ class Open3DVisualizer:
     def capture_screen_image(self, path):
         self.vis.capture_screen_image(path)
 
-    def show_frame_from_reader(self, reader:PcapReader, num:int):
+    def show_frame_from_reader(self, reader, num):
         """Show the frame with the given index in the visualizer. This function
         removes the geometry object containing the previous frame, then adds
         the geometry object containing the current frame. If the current frame is
