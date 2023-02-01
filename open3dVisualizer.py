@@ -4,18 +4,18 @@ import numpy as np
 class Open3DVisualizer:
 
     def __init__(self):
-        self._isInitialGeometry = True
+        self._is_initial_geometry = True
 
         self.vis = o3d.visualization.VisualizerWithKeyCallback()
 
-        self._currentGeometry = None
-        self._isNonBlocking = False
+        self._current_geometry = None
+        self._is_non_blocking = False
 
-        self.hasBeenInitialized = False
+        self.has_been_initialized = False
 
     def _initialize(self):
 
-        if self.hasBeenInitialized:
+        if self.has_been_initialized:
             return
 
         # Create a simple axis visualization
@@ -33,7 +33,7 @@ class Open3DVisualizer:
         # initialize camera settings
         self.ctr = self.vis.get_view_control()
 
-        self.hasBeenInitialized = True
+        self.has_been_initialized = True
 
     def reset_view(self):
         
@@ -53,8 +53,8 @@ class Open3DVisualizer:
         self.ctr.set_lookat([0, 0, 0.5])
         self.ctr.set_up([0.35, 0, 0.94])
     
-    def register_key_callback(self, keyCode, callback):
-        self.vis.register_key_callback(keyCode, callback)
+    def register_key_callback(self, key_code, callback):
+        self.vis.register_key_callback(key_code, callback)
 
     def run(self):
         """Initializes an open3d visualizer"""
@@ -73,42 +73,45 @@ class Open3DVisualizer:
 
         self.vis.poll_events()
         self.vis.update_renderer()
-        self._isNonBlocking = True
+        self._is_non_blocking = True
 
     def stop(self):
         self.vis.destroy_window()
 
-    def show_frame(self, frame, removePrevious = False):
+    def show_frame(self, frame, remove_previous = False):
         """ Shows the given frame by adding it as a geometry.
         If this is a numpy array, it will be converted to a point cloud.
         """
 
         self._initialize()
 
-        if removePrevious and self._currentGeometry is not None:
-            self.vis.remove_geometry(self._currentGeometry, False)
+        if remove_previous and self._current_geometry is not None:
+            self.vis.remove_geometry(self._current_geometry, False)
 
         if type(frame) is np.ndarray:
             geometry = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(frame))
         else:
             geometry = frame
 
-        self._currentGeometry = geometry
-        self.vis.add_geometry(geometry, self._isInitialGeometry)
-        self._isInitialGeometry = False
+        self._current_geometry = geometry
+        self.vis.add_geometry(geometry, self._is_initial_geometry)
+        self._is_initial_geometry = False
 
-        if self._isNonBlocking:
+        if self._is_non_blocking:
             self.vis.update_geometry(geometry)
 
         return True
 
-    def add_geometry(self, geometry):
-        self.vis.add_geometry(geometry, False)
+    def add_geometry(self, geometry, reset_bounding_box = False):
+        self._initialize()
+        self.vis.add_geometry(geometry, reset_bounding_box)
 
     def update_geometry(self, geometry):
+        self._initialize()
         self.vis.update_geometry(geometry)
 
     def remove_geometry(self, geometry):
+        self._initialize()
         self.vis.remove_geometry(geometry, False)
 
     def capture_screen_image(self, path):
