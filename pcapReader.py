@@ -254,7 +254,7 @@ class PcapReader:
 
         return cloud[np.sqrt(frame[:,0]**2+frame[:,1]**2+frame[:,2]**2) <= meters]
 
-    def next_frame(self, remove_vehicle:bool = False, timer = None):
+    def next_frame(self, remove_vehicle:bool = False, timer = None, colored = True):
         """Retrieves the next frame"""
 
         if timer is not None: timer.reset()
@@ -272,31 +272,36 @@ class PcapReader:
 
         if timer is not None: timer.time("frame reshaping")
 
-        key = scan.field(self.channels[1])
+        if colored:
+            key = scan.field(self.channels[1])
 
-        # apply colormap to field values
-        key_img = normalize(key)
-        color_img = colorize(key_img)
-        color_img = color_img.reshape((-1, 3))
+            # apply colormap to field values
+            key_img = normalize(key)
+            color_img = colorize(key_img)
+            color_img = color_img.reshape((-1, 3))
 
-        if timer is not None: timer.time("frame colorization")
+            if timer is not None: timer.time("frame colorization")
 
         if remove_vehicle:
-            color_img = self.remove_vehicle(xyz, color_img)
+            if colored:
+                color_img = self.remove_vehicle(xyz, color_img)
             xyz = self.remove_vehicle(xyz)
             if timer is not None: timer.time("frame vehicle removal")
         else:
-            color_img = self.remove_invalid(xyz, color_img)
+            if colored:
+                color_img = self.remove_invalid(xyz, color_img)
             xyz = self.remove_invalid(xyz)
             if timer is not None: timer.time("frame invalid values removal")
 
         if self.max_distance is not None:
-            color_img = self.remove_outside_distance(self.max_distance, xyz, color_img)
+            if colored:
+                color_img = self.remove_outside_distance(self.max_distance, xyz, color_img)
             xyz = self.remove_outside_distance(self.max_distance, xyz)
             if timer is not None: timer.time("frame max distance removal")
 
         cloud = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(xyz))
-        cloud.colors = o3d.utility.Vector3dVector(color_img)
+        if colored:
+            cloud.colors = o3d.utility.Vector3dVector(color_img)
 
         if timer is not None: timer.time("frame cloud generation")
 

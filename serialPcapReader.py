@@ -71,7 +71,7 @@ class SerialPcapReader:
     def remove_vehicle(self, frame, cloud = None):
         return self.readers[0].remove_vehicle(frame, cloud)
 
-    def next_frame(self, remove_vehicle:bool = False, timer = None):
+    def next_frame(self, remove_vehicle:bool = False, timer = None, colored = True):
         if self.current_reader_index >= len(self.readers):
             return None
 
@@ -79,7 +79,7 @@ class SerialPcapReader:
         frame = self.readers[self.current_reader_index].next_frame(remove_vehicle, timer)
         if frame is None:
             self._next_reader()
-            return self.next_frame(remove_vehicle, timer)
+            return self.next_frame(remove_vehicle, timer, colored)
 
         return frame
 
