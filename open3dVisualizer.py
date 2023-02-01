@@ -12,18 +12,20 @@ class Open3DVisualizer:
         self._is_non_blocking = False
 
         self.has_been_initialized = False
+        self.add_axes = True
 
     def _initialize(self):
 
         if self.has_been_initialized:
             return
 
-        # Create a simple axis visualization
-        axes = o3d.geometry.TriangleMesh.create_coordinate_frame(1.0)
-
         # initialize visualizer and rendering options
         self.vis.create_window()
-        self.vis.add_geometry(axes)
+
+        # Create a simple axis visualization
+        if self.add_axes:
+            axes = o3d.geometry.TriangleMesh.create_coordinate_frame(1.0)
+            self.vis.add_geometry(axes, True)
 
         ropt = self.vis.get_render_option()
         ropt.point_size = 1.0
