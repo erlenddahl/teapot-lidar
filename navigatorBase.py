@@ -220,6 +220,26 @@ class NavigatorBase:
             self.plot.position_error_3d.append(np.sqrt(dx*dx+dy*dy+dz*dz))
             self.plot.position_age.append(actual_coordinate.age)
 
+    def check_results_saving(self, save_cloud = False):
+
+        results = self.get_results()
+        
+        results["estimated_coordinates"] = [x.json() for x in self.estimated_coordinates]
+        results["actual_coordinates"] = [x.json(True) for x in self.actual_coordinates]
+        
+        if self.save_path is not None:
+
+            self.ensure_dir(os.path.join(self.save_path, "plot.png"))
+            self.plot.save_plot(os.path.join(self.save_path, "plot.png"))
+
+            if save_cloud and self.build_cloud:
+                self.save_cloud_as_las(os.path.join(self.save_path, "cloud.laz"), self.merged_frame)
+                o3d.io.write_point_cloud(os.path.join(self.save_path, "cloud.pcd"), self.merged_frame, compressed=True)
+
+            self.time("results saving")
+            
+            self.save_data(os.path.join(self.save_path, "data.json"), results)
+
     @staticmethod
     def create_parser():
         parser = argparse.ArgumentParser()

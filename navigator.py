@@ -98,24 +98,7 @@ class LidarNavigator(NavigatorBase):
             self.plot.show_plot()
             self.plot.update()
 
-        results = self.get_results()
-        
-        results["estimated_coordinates"] = [x.json() for x in self.estimated_coordinates]
-        results["actual_coordinates"] = [x.json(True) for x in self.actual_coordinates]
-
-        if self.save_path is not None:
-
-            self.ensure_dir(os.path.join(self.save_path, "plot.png"))
-            self.plot.save_plot(os.path.join(self.save_path, "plot.png"))
-
-            if self.build_cloud:
-                self.save_cloud_as_las(os.path.join(self.save_path, "cloud.laz"), self.merged_frame)
-                o3d.io.write_point_cloud(os.path.join(self.save_path, "cloud.pcd"), self.merged_frame, compressed=True)
-
-            self.time("results saving")
-            
-            self.save_data(os.path.join(self.save_path, "data.json"), results)
-
+        self.check_results_saving(True)
         self.finish_plot_and_visualization()
 
         return results

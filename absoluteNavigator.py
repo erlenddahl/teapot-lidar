@@ -135,7 +135,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
             
             try:
 
-                if self.merge_next_frame(plot):
+                if self.merge_next_frame():
 
                     # Refresh the non-blocking visualization
                     if self.preview_always:
@@ -147,7 +147,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
                         self.check_save_screenshot(i)
 
-                    plot.step(self.preview_always)
+                    self.plot.step(self.preview_always)
                     self.time("plot step")
 
             except KeyboardInterrupt:
@@ -156,7 +156,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
                 print("********************************")
                 print("Process aborted. Results so far:")
                 print("********************************")
-                plot.print_summary(self.timer)
+                self.plot.print_summary(self.timer)
                 print("")
                 print("")
 
@@ -169,18 +169,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         self.print_cloud_info("Full cloud", self.full_cloud)
 
-        results = self.get_results(plot)
-
-        if self.save_path is not None:
-            filenameBase = self.save_path.replace("[time]", datetime.now().strftime('%Y-%m-%d_%H-%M-%S_%f%z'))
-            filenameBase = filenameBase.replace("[pcap]", os.path.basename(self.reader.pcap_path).replace(".pcap", ""))
-            self.ensure_dir(filenameBase)
-            plot.save_plot(filenameBase + "_plot.png")
-
-            self.time("results saving")
-            
-            self.save_data(filenameBase + "_data.json", results)
-        
+        self.check_results_saving(True)
         self.finish_plot_and_visualization()
 
         return results
@@ -201,7 +190,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
         target_temp.paint_uniform_color([0, 0.651, 0.929])
         o3d.visualization.draw_geometries([source_temp, target_temp])
 
-    def merge_next_frame(self, plot):
+    def merge_next_frame(self):
         """ Reads the next frame, aligns it with the previous frame, merges them together
         to create a 3D model, and tracks the movement between frames.
         """
