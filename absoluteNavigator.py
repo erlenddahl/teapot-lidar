@@ -124,10 +124,11 @@ class AbsoluteLidarNavigator(NavigatorBase):
             
             self.estimated_position_cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=self.position_cylinder_radius, height=self.position_cylinder_height, resolution=20, split=4)
             self.estimated_position_cylinder.paint_uniform_color([1.0, 0.0, 0.0])
-
-        self.vis = None
+        
+        # Initialize the visualizer
+        self.initialize_plot_and_visualization()        
+        
         self.is_first_frame = True
-        plot = Plotter(self.preview_always)
 
         # Enumerate all frames until the end of the file and run the merge operation.
         for i in tqdm(range(0, self.frame_limit), total=self.frame_limit, ascii=True, initial=0, **self.tqdm_config):
@@ -136,30 +137,11 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
                 if self.merge_next_frame(plot):
 
-                    if self.vis is None:
-                        # Initialize the visualizer
-                        self.vis = Open3DVisualizer()
-
-                        if self.preview_always:
-                            # Initiate non-blocking visualizer window
-                            self.vis.refresh_non_blocking()
-
-                            # Show the first frame and reset the view
-                            self.vis.add_geometry(self.actual_position_cylinder)
-                            self.vis.add_geometry(self.estimated_position_cylinder)
-                            self.vis.set_follow_vehicle_view(self.movements[-1])
-
-                            self.check_save_screenshot(0, True)
-
-                        self.time("navigation preparations")
-
                     # Refresh the non-blocking visualization
                     if self.preview_always:
                         self.vis.refresh_non_blocking()
-                        self.vis.remove_geometry(self.actual_position_cylinder)
-                        self.vis.add_geometry(self.actual_position_cylinder)
-                        self.vis.remove_geometry(self.estimated_position_cylinder)
-                        self.vis.add_geometry(self.estimated_position_cylinder)
+                        self.vis.update_geometry(self.actual_position_cylinder)
+                        self.vis.update_geometry(self.estimated_position_cylinder)
 
                         self.time("visualization refresh")
 
@@ -182,7 +164,8 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         # When everything is finished, print a summary, and save the point cloud and debug data.
         if self.preview_at_end:
-            plot.update()
+            self.plot.show_plot()
+            self.plot.update()
 
         self.print_cloud_info("Full cloud", self.full_cloud)
 
@@ -198,20 +181,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
             
             self.save_data(filenameBase + "_data.json", results)
         
-        if self.print_summary_at_end:
-            plot.print_summary(self.timer)
-
-        # Then continue showing the visualization in a blocking way until the user stops it.
-        if self.preview_at_end:
-            self.vis.remove_geometry(self.movement_path)
-            self.vis.add_geometry(self.movement_path)
-            self.vis.remove_geometry(self.actual_position_cylinder)
-            self.vis.add_geometry(self.actual_position_cylinder)
-            self.vis.reset_view()
-
-            self.vis.run()
-
-        plot.destroy()
+        self.finish_plot_and_visualization()
 
         return results
 
@@ -286,10 +256,10 @@ class AbsoluteLidarNavigator(NavigatorBase):
         # Extract the translation part from the transformation array
         movement = reg.transformation[:3,3]
         
-        plot.timeUsages.append(registration_time)
-        plot.rmses.append(reg.inlier_rmse)
-        plot.fitnesses.append(reg.fitness)
-        plot.distances.append(np.sqrt(np.dot(movement, movement)))
+        self.plot.timeUsages.append(registration_time)
+        self.plot.rmses.append(reg.inlier_rmse)
+        self.plot.fitnesses.append(reg.fitness)
+        self.plot.distances.append(np.sqrt(np.dot(movement, movement)))
 
         # Append the newest movement
         self.movements.append(movement)
@@ -301,11 +271,13 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         # Add the new line
         if len(self.movements) == 2:
-            self.vis.add_geometry(self.movement_path)
+            if self.preview_always:
+                self.vis.add_geometry(self.movement_path)
         if len(self.movements) >= 2:
             self.movement_path.lines.append([len(self.movements) - 2, len(self.movements) - 1])
             self.movement_path.paint_uniform_color([1, 0, 0])
-            self.vis.update_geometry(self.movement_path)
+            if self.preview_always:
+                self.vis.update_geometry(self.movement_path)
 
         self.time("book keeping")
 

@@ -4,7 +4,7 @@ import statistics
 
 class Plotter:
 
-    def __init__(self, showPlot = True):
+    def __init__(self, show_plot = True):
 
         # Initialize plot
         self.plot_x = []
@@ -24,17 +24,25 @@ class Plotter:
         self.position_error_y = []
         self.position_error_z = []
         self.position_age = []
+
+        self.is_showing = False
         
+        if show_plot:
+            self.show_plot()
+
+    def show_plot(self):
         # Enable interactive mode, which redraws plot on change
         plt.ion()
 
         # Show the plot without blocking
         plt.show(block=False)
 
-    def step(self, updatePlot = True):
+        self.is_showing = True
+
+    def step(self, update_plot = True):
         self.plot_x.append(len(self.distances) - 1)
 
-        if updatePlot:
+        if update_plot:
             self.update()
 
     def update(self):
@@ -91,6 +99,8 @@ class Plotter:
 
         nonPerfect = [x for x in self.fitnesses if x <= 0.95]
 
+        has_pos_error = len(self.position_error_x) > 0
+
         lines = [
             ["Number of frames:", len(self.plot_x) + 1],
             ["Total movement distance:", sum(self.distances)],
@@ -108,14 +118,14 @@ class Plotter:
             ["Avg rmse: ", statistics.mean(self.rmses)],
             ["Min rmse: ", min(self.rmses)],
             
-            ["Avg error x: ", statistics.mean(self.position_error_x)],
-            ["Avg error y: ", statistics.mean(self.position_error_y)],
-            ["Avg error z: ", statistics.mean(self.position_error_z)],
-            ["Avg error 2d: ", statistics.mean(self.position_error_2d)],
-            ["Avg error 3d: ", statistics.mean(self.position_error_3d)],
+            ["Avg error x: ", statistics.mean(self.position_error_x) if has_pos_error else float('nan')],
+            ["Avg error y: ", statistics.mean(self.position_error_y) if has_pos_error else float('nan')],
+            ["Avg error z: ", statistics.mean(self.position_error_z) if has_pos_error else float('nan')],
+            ["Avg error 2d: ", statistics.mean(self.position_error_2d) if has_pos_error else float('nan')],
+            ["Avg error 3d: ", statistics.mean(self.position_error_3d) if has_pos_error else float('nan')],
             
-            ["Final error 2d: ", self.position_error_2d[-1]],
-            ["Final error 3d: ", self.position_error_3d[-1]]
+            ["Final error 2d: ", self.position_error_2d[-1] if has_pos_error else float('nan')],
+            ["Final error 3d: ", self.position_error_3d[-1] if has_pos_error else float('nan')]
         ]
 
         if timer is not None:
@@ -140,5 +150,5 @@ class Plotter:
         }
 
     def save_plot(self, path):
-
+        self.fig.canvas.draw()
         self.fig.savefig(path)

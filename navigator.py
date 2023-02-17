@@ -1,6 +1,4 @@
-from open3dVisualizer import Open3DVisualizer
 from navigatorBase import NavigatorBase
-from plotter import Plotter
 import numpy as np
 import os
 from tqdm import tqdm
@@ -58,20 +56,7 @@ class LidarNavigator(NavigatorBase):
         # alignment operation.
         self.previous_frame.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
         
-        # Initialize the visualizer
-        self.vis = Open3DVisualizer()
-
-        if self.preview_always:
-            # Initiate non-blocking visualizer window
-            self.vis.refresh_non_blocking()
-
-            # Show the first frame and reset the view
-            self.vis.show_frame(self.merged_frame)
-            self.vis.set_follow_vehicle_view()
-
-            self.check_save_screenshot(0, True)
-
-        plot = Plotter(self.preview_always)
+        self.initialize_plot_and_visualization()
 
         self.time("navigation preparations")
 
@@ -80,7 +65,7 @@ class LidarNavigator(NavigatorBase):
             
             try:
 
-                if self.merge_next_frame(plot): 
+                if self.merge_next_frame(): 
 
                     # Refresh the non-blocking visualization
                     if self.preview_always:
@@ -90,7 +75,7 @@ class LidarNavigator(NavigatorBase):
 
                         self.check_save_screenshot(i)
 
-                    plot.step(self.preview_always)
+                    self.plot.step(self.preview_always)
                     self.time("plot step")
 
             except KeyboardInterrupt:
@@ -99,7 +84,7 @@ class LidarNavigator(NavigatorBase):
                 print("********************************")
                 print("Process aborted. Results so far:")
                 print("********************************")
-                plot.print_summary(self.timer)
+                self.plot.print_summary(self.timer)
                 print("")
                 print("")
 
@@ -110,9 +95,10 @@ class LidarNavigator(NavigatorBase):
 
         # When everything is finished, print a summary, and save the point cloud and debug data.
         if self.preview_at_end:
-            plot.update()
+            self.plot.show_plot()
+            self.plot.update()
 
-        results = self.get_results(plot)
+        results = self.get_results()
         
         results["estimated_coordinates"] = [x.json() for x in self.estimated_coordinates]
         results["actual_coordinates"] = [x.json(True) for x in self.actual_coordinates]
@@ -120,7 +106,7 @@ class LidarNavigator(NavigatorBase):
         if self.save_path is not None:
 
             self.ensure_dir(os.path.join(self.save_path, "plot.png"))
-            plot.save_plot(os.path.join(self.save_path, "plot.png"))
+            self.plot.save_plot(os.path.join(self.save_path, "plot.png"))
 
             if self.build_cloud:
                 self.save_cloud_as_las(os.path.join(self.save_path, "cloud.laz"), self.merged_frame)
@@ -129,53 +115,10 @@ class LidarNavigator(NavigatorBase):
             self.time("results saving")
             
             self.save_data(os.path.join(self.save_path, "data.json"), results)
-        
-        if self.print_summary_at_end:
-            plot.print_summary(self.timer)
 
-        # Then continue showing the visualization in a blocking way until the user stops it.
-        if self.preview_at_end:
-            self.vis.show_frame(self.merged_frame)
-
-            self.vis.remove_geometry(self.movement_path)
-            self.vis.add_geometry(self.movement_path)
-
-            self.vis.remove_geometry(self.actual_movement_path)
-            self.vis.add_geometry(self.actual_movement_path)
-
-            self.vis.reset_view()
-
-            self.vis.run()
-
-        plot.destroy()
+        self.finish_plot_and_visualization()
 
         return results
-
-    def update_plot(self, plot, reg, registration_time, movement, actual_coordinate):
-        plot.timeUsages.append(registration_time)
-        plot.rmses.append(reg.inlier_rmse)
-        plot.fitnesses.append(reg.fitness)
-        plot.distances.append(np.sqrt(np.dot(movement, movement)))
-        
-        if self.current_coordinate is not None:
-
-            self.actual_coordinates.append(actual_coordinate)
-            self.estimated_coordinates.append(self.current_coordinate.clone())
-
-            self.current_coordinate.x += movement[0] #TODO: Think this is wrong. Should probably use transformed red line in the end to generate all estimated coordinates.
-            self.current_coordinate.y += movement[1]
-            self.current_coordinate.alt += movement[2]
-
-            dx = actual_coordinate.x
-            dy = actual_coordinate.y
-            dz = actual_coordinate.alt
-
-            plot.position_error_x.append(dx)
-            plot.position_error_y.append(dy)
-            plot.position_error_z.append(dz)
-            plot.position_error_2d.append(np.sqrt(dx*dx+dy*dy))
-            plot.position_error_3d.append(np.sqrt(dx*dx+dy*dy+dz*dz))
-            plot.position_age.append(actual_coordinate.age)
 
     def get_current_position(self):
 
@@ -199,7 +142,7 @@ class LidarNavigator(NavigatorBase):
 
         return pos
 
-    def merge_next_frame(self, plot):
+    def merge_next_frame(self):
         """ Reads the next frame, aligns it with the previous frame, merges them together
         to create a 3D model, and tracks the movement between frames.
         """
@@ -229,7 +172,7 @@ class LidarNavigator(NavigatorBase):
         movement = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(reg.transformation).get_center()
         
         actual_coordinate = self.get_current_position() if self.current_coordinate is not None else None
-        self.update_plot(plot, reg, registration_time, movement, actual_coordinate)
+        self.update_plot(reg, registration_time, movement, actual_coordinate)
 
         # Append the newest movement
         self.movements.append(movement)
@@ -241,10 +184,7 @@ class LidarNavigator(NavigatorBase):
         self.movement_path.paint_uniform_color([1, 0, 0])
 
         # Add the new line
-        if len(self.movements) == 2:
-            self.vis.add_geometry(self.movement_path)
-        if len(self.movements) > 2:
-            self.vis.update_geometry(self.movement_path)
+        self.update_live_movement(self.movement_path)
 
         if actual_coordinate is not None:
             
@@ -256,10 +196,7 @@ class LidarNavigator(NavigatorBase):
             self.actual_movement_path.paint_uniform_color([0, 0, 1])
             
             # Add the actual coordinate as a blue line
-            if len(self.movements) == 2:
-                self.vis.add_geometry(self.actual_movement_path)
-            elif len(self.movements) > 2:
-                self.vis.update_geometry(self.actual_movement_path)
+            self.update_live_movement(self.actual_movement_path)
 
 
         self.time("book keeping")
@@ -301,6 +238,14 @@ class LidarNavigator(NavigatorBase):
         # Return True to let the loop continue to the next frame.
         return True
         
+    def update_live_movement(self, path):
+        if not self.preview_always:
+            return
+
+        if len(self.movements) == 2:
+            self.vis.add_geometry(path)
+        if len(self.movements) > 2:
+            self.vis.update_geometry(path)
 
 if __name__ == "__main__":
 

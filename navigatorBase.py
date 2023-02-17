@@ -8,6 +8,8 @@ from datetime import datetime
 from taskTimer import TaskTimer
 from algorithmHelper import AlgorithmHelper
 from pcapReaderHelper import PcapReaderHelper
+from open3dVisualizer import Open3DVisualizer
+from plotter import Plotter
 import argparse
 
 class NavigatorBase:
@@ -22,6 +24,7 @@ class NavigatorBase:
         self.frame_limit = args.frames
         self.preview_always = args.preview == "always"
         self.preview_at_end = args.preview == "always" or args.preview =="end"
+        self.no_preview = self.preview_always == False and self.preview_at_end == False
         self.save_path = args.save_to
         self.downsample_timer = args.downsample_after
         self.downsample_cloud_after_frames = args.downsample_after
@@ -89,8 +92,8 @@ class NavigatorBase:
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-    def get_results(self, plot):
-        data = plot.get_json(self.timer)
+    def get_results(self):
+        data = self.plot.get_json(self.timer)
 
         data["movement"] = np.asarray(self.movement_path.points).tolist()
         data["algorithm"] = self.matcher.name
@@ -151,6 +154,71 @@ class NavigatorBase:
         self.vis.capture_screen_image(screenshot_path)
 
         self.time("saved screenshot")
+
+    def initialize_plot_and_visualization(self):
+        # Initialize the visualizer
+        self.vis = Open3DVisualizer()
+
+        if self.preview_always:
+            # Initiate non-blocking visualizer window
+            self.vis.refresh_non_blocking()
+
+            # Show the first frame and reset the view
+            self.vis.show_frame(self.merged_frame)
+            self.vis.set_follow_vehicle_view()
+
+            self.check_save_screenshot(0, True)
+
+        self.plot = Plotter(self.preview_always)
+
+    def finish_plot_and_visualization(self):
+        
+        if self.print_summary_at_end:
+            self.plot.print_summary(self.timer)
+
+        # Then continue showing the visualization in a blocking way until the user stops it.
+        if self.preview_at_end:
+            self.vis.show_frame(self.merged_frame)
+
+            if self.movement_path is not None:
+                self.vis.remove_geometry(self.movement_path)
+                self.vis.add_geometry(self.movement_path)
+
+            if self.actual_movement_path is not None:
+                self.vis.remove_geometry(self.actual_movement_path)
+                self.vis.add_geometry(self.actual_movement_path)
+
+            self.vis.reset_view()
+
+            self.vis.run()
+
+        self.plot.destroy()
+
+    def update_plot(self, reg, registration_time, movement, actual_coordinate):
+        self.plot.timeUsages.append(registration_time)
+        self.plot.rmses.append(reg.inlier_rmse)
+        self.plot.fitnesses.append(reg.fitness)
+        self.plot.distances.append(np.sqrt(np.dot(movement, movement)))
+
+        if self.current_coordinate is not None:
+
+            self.actual_coordinates.append(actual_coordinate)
+            self.estimated_coordinates.append(self.current_coordinate.clone())
+
+            self.current_coordinate.x += movement[0] #TODO: Think this is wrong. Should probably use transformed red line in the end to generate all estimated coordinates.
+            self.current_coordinate.y += movement[1]
+            self.current_coordinate.alt += movement[2]
+
+            dx = actual_coordinate.x
+            dy = actual_coordinate.y
+            dz = actual_coordinate.alt
+
+            self.plot.position_error_x.append(dx)
+            self.plot.position_error_y.append(dy)
+            self.plot.position_error_z.append(dz)
+            self.plot.position_error_2d.append(np.sqrt(dx*dx+dy*dy))
+            self.plot.position_error_3d.append(np.sqrt(dx*dx+dy*dy+dz*dz))
+            self.plot.position_age.append(actual_coordinate.age)
 
     @staticmethod
     def create_parser():
