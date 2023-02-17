@@ -6,6 +6,7 @@ from tqdm import tqdm
 from pyproj import Transformer
 from datetime import datetime
 import open3d as o3d
+import csv
 
 transformer = Transformer.from_crs(4326, 5972)
 class SbetRow:
@@ -55,6 +56,12 @@ class SbetRow:
             json["age"] = self.age
 
         return json
+
+    def get_csv_headers(self):
+        return ["index", "time", "lat", "lon", "alt", "heading", "x", "y"]
+
+    def get_csv(self):
+        return [self.index, self.sow, self.lat, self.lon, self.alt, self.heading, self.x, self.y]
 
     def translate(self, t):
         self.x -= t[0]
@@ -142,6 +149,7 @@ if __name__ == "__main__":
     parser.add_argument('--sbet', type=str, required=True, help="The path to a corresponding SBET file with GNSS coordinates.")
     parser.add_argument('--gps-week', type=int, default=-1, required=False, help="If given, this GPS week will be used to transform the timestamps to unix and human readable time.")
     parser.add_argument('--sbet-z-offset', type=float, default=0, required=False, help="If the GNSS positions in the SBET file have an altitude offset from the point cloud, this argument will be added/subtracted on the Z coordinates of each SBET coordinate.")
+    parser.add_argument('--out-csv', type=str, required=False, help="If given, coordinates will be saved to this CSV file instead of being visualized.")
     args = parser.parse_args()
 
     # Create and start a visualization
@@ -174,31 +182,45 @@ if __name__ == "__main__":
     print("Initial heading:", parser.rows[0]["heading"])
 
     coords = parser.get_rows()
-    path = o3d.geometry.LineSet(
-        points = o3d.utility.Vector3dVector([[p.x, p.y, p.alt] for p in coords]), lines=o3d.utility.Vector2iVector([[i, i+1] for i in range(len(coords) - 1)])
-    )
-    path.paint_uniform_color([1, 0, 0])
-    
-    coords = parser.get_rotated_rows()
-    transformed_path = o3d.geometry.LineSet(
-        points = o3d.utility.Vector3dVector([[p.x, p.y, p.alt] for p in coords]), lines=o3d.utility.Vector2iVector([[i, i+1] for i in range(len(coords) - 1)])
-    )
-    transformed_path.paint_uniform_color([0, 0, 1])
 
-    position_cylinder_radius = 1
-    position_cylinder_height = 20
-    actual_position_cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=position_cylinder_radius, height=position_cylinder_height, resolution=20, split=4)
-    actual_position_cylinder.paint_uniform_color([0, 0, 1])
+    if args.out_csv is not None:
 
-    vis = Open3DVisualizer()
-    vis.add_axes = False
-    vis.show_frame(transformed_path)
-    vis.add_geometry(path)
-    vis.add_geometry(actual_position_cylinder)
+        with open(args.out_csv, "w") as f:
 
-    for c in tqdm(coords, ascii=True, desc="Animating"):
-        actual_position_cylinder.translate(c.np() + np.array([0, 0, position_cylinder_height / 2]), relative=False)
-        vis.update_geometry(actual_position_cylinder)
-        vis.refresh_non_blocking()
+            writer = csv.writer(f)
 
-    vis.run()
+            writer.writerow(coords[0].get_csv_headers())
+
+            for c in coords:
+                writer.writerow(c.get_csv())
+
+    else:
+
+        path = o3d.geometry.LineSet(
+            points = o3d.utility.Vector3dVector([[p.x, p.y, p.alt] for p in coords]), lines=o3d.utility.Vector2iVector([[i, i+1] for i in range(len(coords) - 1)])
+        )
+        path.paint_uniform_color([1, 0, 0])
+        
+        coords = parser.get_rotated_rows()
+        transformed_path = o3d.geometry.LineSet(
+            points = o3d.utility.Vector3dVector([[p.x, p.y, p.alt] for p in coords]), lines=o3d.utility.Vector2iVector([[i, i+1] for i in range(len(coords) - 1)])
+        )
+        transformed_path.paint_uniform_color([0, 0, 1])
+
+        position_cylinder_radius = 1
+        position_cylinder_height = 20
+        actual_position_cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=position_cylinder_radius, height=position_cylinder_height, resolution=20, split=4)
+        actual_position_cylinder.paint_uniform_color([0, 0, 1])
+
+        vis = Open3DVisualizer()
+        vis.add_axes = False
+        vis.show_frame(transformed_path)
+        vis.add_geometry(path)
+        vis.add_geometry(actual_position_cylinder)
+
+        for c in tqdm(coords, ascii=True, desc="Animating"):
+            actual_position_cylinder.translate(c.np() + np.array([0, 0, position_cylinder_height / 2]), relative=False)
+            vis.update_geometry(actual_position_cylinder)
+            vis.refresh_non_blocking()
+
+        vis.run()
