@@ -185,7 +185,7 @@ class PcapReader:
         if find_bounds or find_count:
             self.save_internal_meta()
 
-    def get_coordinates(self, rotate=True):
+    def get_coordinates(self, rotate=True, show_progress=False):
         """Returns a list of coordinates (SbetRow) corresponding to each LidarPacket in the current Pcap file."""
 
         if "coordinates" in self.internal_meta:
