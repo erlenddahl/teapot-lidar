@@ -190,23 +190,38 @@ class AbsoluteLidarNavigator(NavigatorBase):
         target_temp.paint_uniform_color([0, 0.651, 0.929])
         o3d.visualization.draw_geometries([source_temp, target_temp])
 
+    def get_corrected_heading(self, heading):
+        heading = heading - np.pi/2
+        if heading < 0:
+            heading_corrected = np.absolute(heading)
+        elif heading > 0:
+            heading_corrected = np.pi*2-heading
+        return heading_corrected
+
     def merge_next_frame(self):
         """ Reads the next frame, aligns it with the previous frame, merges them together
         to create a 3D model, and tracks the movement between frames.
         """
 
-        # Fetch the next frame
-        frame = self.reader.next_frame(self.remove_vehicle, self.timer)
-
         # Find the current position, and update the blue (actual) position cylinder
         actual_position = self.get_current_position().clone()
-        self.actual_position_cylinder.translate(actual_position.np() + np.array([0, 0, self.position_cylinder_height / 2]))
+        self.actual_position_cylinder.translate(actual_position.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
 
+        self.estimated_position_cylinder.translate(actual_position.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
         if self.is_first_frame:
-            self.estimated_position_cylinder.translate(actual_position.np() + np.array([0, 0, self.position_cylinder_height / 2]))
             self.is_first_frame = False
 
-        self.time("frame and position extraction")
+        self.time("position extraction")
+
+        # Fetch the next frame
+        frame = self.reader.next_frame(self.remove_vehicle, self.timer, False)
+
+        # Rotate the frame using the current heading
+        #TODO: Should use estimated heading for actual situation!
+        R = frame.get_rotation_matrix_from_xyz((0, 0, self.get_corrected_heading(actual_position.heading)))
+        frame.rotate(R, center=[0,0,0])
+
+        self.time("frame extraction")
 
         # Extract a part of the cloud around the actual position. This is the cloud we are going to register against.
         a = self.full_cloud_np
