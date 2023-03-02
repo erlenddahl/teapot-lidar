@@ -191,15 +191,23 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         # Extract a part of the cloud around the actual position. This is the cloud we are going to register against.
         a = self.full_cloud_np
-        partial_radius = 25
+        partial_radius = 50
         points = a[(a[:, 0] >= actual_position.x - partial_radius) & (a[:, 0] <= actual_position.x + partial_radius) & (a[:, 1] >= actual_position.y - partial_radius) & (a[:, 1] <= actual_position.y + partial_radius)]
+        if len(points) < 10:
+            print("")
+            print("")
+            self.print_cloud_info("Cloud", self.full_cloud, "    ")
+            print("Current position:", actual_position)
+            print("Radius:", partial_radius)
+            raise Exception("The point cloud contains no points around the current position.")
         self.time("partial cloud point extraction")
-        
-        offset = np.amin(points, axis=0)
-        offset += (np.amax(points, axis=0) - offset) / 2
-        points -= offset
+
+        # Move the points so that the actual coordinate is in the origin.
+        # Now, both the current frame and this part of the cloud should be positioned very close to each other around the origin.
+        points -= np.array([actual_position.x, actual_position.y, actual_position.alt])
         self.time("partial cloud point movement")
 
+        # Create an o3d point cloud object from the points
         partial_cloud = o3d.geometry.PointCloud()
         partial_cloud.points = o3d.utility.Vector3dVector(points)
         self.time("partial cloud creation")
@@ -212,10 +220,12 @@ class AbsoluteLidarNavigator(NavigatorBase):
         # Estimate normals for the target frame
         frame.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
 
+        self.time("frame normal estimation")
+
         # For now, estimate normals for the partial cloud as well (to save some time, try to transfer them from the full cloud!)
         partial_cloud.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
 
-        self.time("normal estimation")
+        self.time("partial cloud normal estimation")
 
         # Run the alignment
         reg = self.matcher.match(frame, partial_cloud, 10, None)
