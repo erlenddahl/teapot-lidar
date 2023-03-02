@@ -25,51 +25,17 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
     def load_point_cloud(self, path):
 
-        recreate_cache = True if args is not None and args.recreate_caches else False
-
         cloud_meta_data_path = path.replace(".pcd", "-meta.json")
-        moved_cloud_path = path.replace(".pcd", "-moved-vectored.pcd")
 
         print("Loading point cloud ...")
-        print("    > Recreate cache:", recreate_cache)
-        print("    > Has meta:", os.path.isfile(cloud_meta_data_path))
-        print("    > Has moved:", os.path.isfile(moved_cloud_path))
 
-        if not recreate_cache and os.path.isfile(cloud_meta_data_path) and os.path.isfile(moved_cloud_path):
-            
-            with open(cloud_meta_data_path, "r") as outfile:
-                data = json.load(outfile)
+        with open(cloud_meta_data_path, "r") as outfile:
+            data = json.load(outfile)
 
-            self.full_point_cloud_offset = np.array(data["offset"])
-            self.full_cloud = o3d.io.read_point_cloud(moved_cloud_path)
+        self.full_point_cloud_offset = np.array([data["offset"][0], data["offset"][1], data["offset"][2]])
+        self.full_cloud = o3d.io.read_point_cloud(path)
 
-            print("      > Offset")
-            print("      >", self.full_point_cloud_offset)
-            self.print_cloud_info("Full cloud moved", self.full_cloud, "    ")
-
-        else:
-
-            print("Preparing point cloud:")
-            print("      > Reading ...")
-            self.full_cloud = o3d.io.read_point_cloud(path)
-            print("      > Moving")
-            self.print_cloud_info("Full cloud original", self.full_cloud, "    ")
-            points = np.asarray(self.full_cloud.points)
-            self.full_point_cloud_offset = np.amin(points, axis=0)
-            self.full_point_cloud_offset += (np.amax(points, axis=0) - self.full_point_cloud_offset) / 2
-            print("      > Offset")
-            print("      >", self.full_point_cloud_offset)
-            points -= self.full_point_cloud_offset
-            self.full_cloud = o3d.geometry.PointCloud()
-            self.full_cloud.points = o3d.utility.Vector3dVector(points)
-            self.print_cloud_info("Full cloud moved", self.full_cloud, "    ")
-            print("      > Estimating normals")
-            self.full_cloud.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
-
-            print("      > Writing cache")
-            o3d.io.write_point_cloud(moved_cloud_path, self.full_cloud, compressed=False)
-            with open(cloud_meta_data_path, "w") as outfile:
-                json.dump({ "offset": self.full_point_cloud_offset.tolist() }, outfile)
+        self.print_cloud_info("Cloud", self.full_cloud, "    ")
         
         self.full_cloud.paint_uniform_color([0.3, 0.6, 1.0])
         self.full_cloud_np = np.asarray(self.full_cloud.points)

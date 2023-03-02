@@ -1,4 +1,5 @@
 import os
+import json
 import laspy
 import numpy as np
 import open3d as o3d
@@ -29,6 +30,7 @@ class PointCloud:
         self.location = point_cloud_location
         self.visualizer = Open3DVisualizer()
         self.files = [PointCloudPart(os.path.join(self.location, x)) for x in os.listdir(self.location) if x.lower().endswith(".laz")]
+        self.common_offsets = []
 
     def get_relevant(self, x, y):
 
@@ -38,48 +40,69 @@ class PointCloud:
             else:
                 pass #f.unload()
 
-    def to_absolute(self, vector, min):
-        min = int(min)
-        return min + vector / 1000.0
+    def to_absolute(self, vector, lowest):
+        return int(lowest) + vector / 1000.0
 
     def read_all(self, preview = 'never', max_files = -1):
 
         full_cloud = o3d.geometry.PointCloud()
 
-        files = [x for x in os.listdir(self.location) if x.lower().endswith(".laz")]
+        # List all .laz files in the given directory
+        files = [os.path.join(self.location, x) for x in os.listdir(self.location) if x.lower().endswith(".laz")]
 
         if max_files > 0 and len(files) > max_files:
             files = files[0:max_files]
+
+        offsets = []
+        for file in tqdm(files, "Calculating common offset"):
+            # Use laspy.open to read only the header, and extract the min values.
+            with laspy.open(file) as las:
+                offsets.append([las.header.x_min, las.header.y_min, las.header.z_min])
+
+        x_min_all = min([x[0] for x in offsets])
+        y_min_all = min([x[1] for x in offsets])
+        z_min_all = min([x[2] for x in offsets])
+
+        self.common_offset = [x_min_all, y_min_all, z_min_all]
         
         for file in tqdm(files, "Reading point cloud"):
-            full_path = os.path.join(self.location, file)
-            if os.path.isfile(full_path):
                 
-                # Read the .laz file (which is one part of the total point cloud)
-                las = laspy.read(full_path)
+            # Read the .laz file (which is one part of the total point cloud)
+            las = laspy.read(file)
 
-                # Transform coordinates to fit the actual coordinate system
-                x = self.to_absolute(las.X, las.header.x_min)
-                y = self.to_absolute(las.Y, las.header.y_min)
-                z = self.to_absolute(las.Z, las.header.z_min)
+            # Transform coordinates to fit the actual coordinate system
+            x = self.to_absolute(las.X, las.header.x_min - x_min_all)
+            y = self.to_absolute(las.Y, las.header.y_min - y_min_all)
+            z = self.to_absolute(las.Z, las.header.z_min - z_min_all)
 
-                # Merge X, Y and Z values together to a 3D array
-                point_data = np.stack([x, y, z], axis=0).transpose((1, 0))
+            # Merge X, Y and Z values together to a 3D array
+            point_data = np.stack([x, y, z], axis=0).transpose((1, 0))
 
-                # Create an open3d point cloud
-                partial_cloud = o3d.geometry.PointCloud()
-                partial_cloud.points = o3d.utility.Vector3dVector(point_data)
+            # Create an open3d point cloud
+            partial_cloud = o3d.geometry.PointCloud()
+            partial_cloud.points = o3d.utility.Vector3dVector(point_data)
 
-                full_cloud += partial_cloud
+            full_cloud += partial_cloud
 
-                if preview == 'always':
-                    self.visualizer.show_frame(full_cloud)
-                    self.visualizer.refresh_non_blocking()
+            if preview == 'always':
+                self.visualizer.show_frame(full_cloud)
+                self.visualizer.refresh_non_blocking()
 
         if preview != 'never':
             #self.visualizer.show_frame(full_cloud)
             #self.visualizer.run()
             o3d.visualization.draw_geometries([full_cloud])
+
+        points = np.asarray(full_cloud.points)
+        self.cloud_mins = np.amin(points, axis=0)
+        self.cloud_maxes = np.amax(points, axis=0)
+        self.full_point_cloud_offset = (self.cloud_maxes - self.cloud_mins) / 2
+        
+        points -= self.full_point_cloud_offset
+        full_cloud = o3d.geometry.PointCloud()
+        full_cloud.points = o3d.utility.Vector3dVector(points)
+
+        self.total_offset = [self.common_offset[0] + self.full_point_cloud_offset[0], self.common_offset[1] + self.full_point_cloud_offset[1], self.common_offset[2] + self.full_point_cloud_offset[2]]
 
         return full_cloud
 
@@ -98,6 +121,7 @@ if __name__ == "__main__":
     cloud = reader.read_all(args.preview, args.max_files)
 
     if args.write_to is not None:
-        o3d.io.write_point_cloud(args.write_to, cloud, compressed=False)
         cloud.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
-        o3d.io.write_point_cloud(args.write_to.replace(".pcd", "-with-normals.pcd"), cloud, compressed=False)
+        o3d.io.write_point_cloud(args.write_to, cloud, compressed=False)
+        with open(args.write_to.replace(".pcd", "-meta.json"), "w") as outfile:
+            json.dump({ "offset": reader.total_offset, "common_offset": reader.common_offset, "point_cloud_offset": reader.full_point_cloud_offset.tolist(), "mins": reader.cloud_mins.tolist(), "maxes": reader.cloud_maxes.tolist() }, outfile)
