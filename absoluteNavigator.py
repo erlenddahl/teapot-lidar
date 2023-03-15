@@ -182,6 +182,11 @@ class AbsoluteLidarNavigator(NavigatorBase):
         to create a 3D model, and tracks the movement between frames.
         """
 
+        # Fetch the next frame
+        frame = self.reader.next_frame(self.remove_vehicle, self.timer, False)
+
+        self.time("frame extraction")
+
         # Find the current position, and update the blue (actual) position cylinder
         actual_position = self.get_current_position().clone()
         self.actual_position_cylinder.translate(actual_position.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
@@ -192,15 +197,12 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         self.time("position extraction")
 
-        # Fetch the next frame
-        frame = self.reader.next_frame(self.remove_vehicle, self.timer, False)
-
         # Rotate the frame using the current heading
         #TODO: Should use estimated heading for actual situation!
         R = frame.get_rotation_matrix_from_xyz((0, 0, self.get_corrected_heading(actual_position.heading)))
         frame.rotate(R, center=[0,0,0])
 
-        self.time("frame extraction")
+        self.time("frame rotation")
 
         # Extract a part of the cloud around the actual position. This is the cloud we are going to register against.
         a = self.full_cloud_np
