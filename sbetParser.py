@@ -1,6 +1,7 @@
 from open3dVisualizer import Open3DVisualizer
 from sbetHelpers import read_sbet, filename2gpsweek, timestamp_unix2sow, timestamp_sow2unix
 import os
+import math
 import numpy as np
 from tqdm import tqdm
 from pyproj import Transformer
@@ -62,6 +63,11 @@ class SbetRow:
 
     def get_csv(self):
         return [self.index, self.sow, self.lat, self.lon, self.alt, self.heading, self.x, self.y]
+
+    def distance2d(self, p):
+        dx = p.x - self.x
+        dy = p.y - self.y
+        return math.sqrt(dx*dx + dy*dy)
 
     def translate(self, t):
         self.x += t[0]

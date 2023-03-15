@@ -97,6 +97,9 @@ class AbsoluteLidarNavigator(NavigatorBase):
             self.start_position_cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=self.position_cylinder_radius * 0.6, height=self.position_cylinder_height * 1.3, resolution=20, split=4)
             self.start_position_cylinder.paint_uniform_color([1.0, 1.0, 1.0])
             self.start_position_cylinder.translate(self.actual_coordinates[0].np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
+
+        self.last_extracted_frame_coordinate = None
+        self.last_extracted_frame = None
         
         # Initialize the visualizer
         self.initialize_plot_and_visualization()
@@ -186,6 +189,9 @@ class AbsoluteLidarNavigator(NavigatorBase):
         print("Radius:", partial_radius)
         raise Exception("The point cloud contains no points around the current position.")
 
+    def extract_part(self, cloud, center, radius):
+        return cloud[(cloud[:, 0] >= center.x - radius) & (cloud[:, 0] <= center.x + radius) & (cloud[:, 1] >= center.y - radius) & (cloud[:, 1] <= center.y + radius)]
+
     def merge_next_frame(self):
         """ Reads the next frame, aligns it with the previous frame, merges them together
         to create a 3D model, and tracks the movement between frames.
@@ -218,11 +224,20 @@ class AbsoluteLidarNavigator(NavigatorBase):
         self.time("frame rotation")
 
         # Extract a part of the cloud around the actual position. This is the cloud we are going to register against.
-        a = self.full_cloud_np
         partial_radius = 50
-        points = a[(a[:, 0] >= self.current_coordinate.x - partial_radius) & (a[:, 0] <= self.current_coordinate.x + partial_radius) & (a[:, 1] >= self.current_coordinate.y - partial_radius) & (a[:, 1] <= self.current_coordinate.y + partial_radius)]
+
+        # Keep a slightly larger partial cloud to make it quicker to extract the actual partial cloud
+        if self.last_extracted_frame_coordinate is None or self.last_extracted_frame_coordinate.distance2d(self.current_coordinate) >= partial_radius * 0.8:
+            self.last_extracted_frame = self.extract_part(self.full_cloud_np, self.current_coordinate, partial_radius * 2)
+            self.last_extracted_frame_coordinate = self.current_coordinate.clone()
+            
+            self.time("larger partial cloud point extraction")
+
+        points = self.extract_part(self.last_extracted_frame, self.current_coordinate, partial_radius)
+
         if len(points) < 10:
             self.throw_outside_of_cloud(self.current_coordinate, partial_radius)
+        
         self.time("partial cloud point extraction")
 
         if self.preview_always:
