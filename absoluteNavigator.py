@@ -177,6 +177,14 @@ class AbsoluteLidarNavigator(NavigatorBase):
             heading_corrected = np.pi*2-heading
         return heading_corrected
 
+    def throw_outside_of_cloud(self, actual_position, partial_radius):
+        print("")
+        print("")
+        self.print_cloud_info("Cloud", self.full_cloud, "    ")
+        print("Current position:", actual_position)
+        print("Radius:", partial_radius)
+        raise Exception("The point cloud contains no points around the current position.")
+
     def merge_next_frame(self):
         """ Reads the next frame, aligns it with the previous frame, merges them together
         to create a 3D model, and tracks the movement between frames.
@@ -209,12 +217,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
         partial_radius = 50
         points = a[(a[:, 0] >= actual_position.x - partial_radius) & (a[:, 0] <= actual_position.x + partial_radius) & (a[:, 1] >= actual_position.y - partial_radius) & (a[:, 1] <= actual_position.y + partial_radius)]
         if len(points) < 10:
-            print("")
-            print("")
-            self.print_cloud_info("Cloud", self.full_cloud, "    ")
-            print("Current position:", actual_position)
-            print("Radius:", partial_radius)
-            raise Exception("The point cloud contains no points around the current position.")
+            self.throw_outside_of_cloud(actual_position, partial_radius)
         self.time("partial cloud point extraction")
 
         # Move the points so that the actual coordinate is in the origin.
