@@ -210,10 +210,6 @@ class NavigatorBase:
             self.actual_coordinates.append(actual_coordinate)
             self.estimated_coordinates.append(self.current_coordinate.clone())
 
-            self.current_coordinate.x += movement[0] #TODO: Think this is wrong. Should probably use transformed red line in the end to generate all estimated coordinates.
-            self.current_coordinate.y += movement[1]
-            self.current_coordinate.alt += movement[2]
-
             dx = actual_coordinate.x
             dy = actual_coordinate.y
             dz = actual_coordinate.alt

@@ -54,7 +54,7 @@ class Plotter:
 
         ax1.set_title("Calculation time", fontsize=8)
         ax1.plot(self.plot_x, self.timeUsages, color="blue")
-        
+
         ax2.set_title("Incremental distance", fontsize=8)
         ax2.plot(self.plot_x, self.distances, color="red")
         

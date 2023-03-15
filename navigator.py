@@ -155,6 +155,10 @@ class LidarNavigator(NavigatorBase):
         movement = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(reg.transformation).get_center()
         
         actual_coordinate = self.get_current_position() if self.current_coordinate is not None else None
+
+        if self.current_coordinate is not None:
+            self.current_coordinate.translate(movement) #TODO: Think this is wrong. Should probably use transformed red line in the end to generate all estimated coordinates.
+
         self.update_plot(reg, registration_time, movement, actual_coordinate)
 
         # Append the newest movement

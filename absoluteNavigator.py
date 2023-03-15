@@ -72,6 +72,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
             # therefore no need to rotate them like it is in the visual odometry
             # based navigator.
             self.actual_coordinates = self.reader.get_coordinates(False, show_progress=True)
+            self.estimated_coordinates = []
 
             # Translate all coordinates towards origo with the same offset as
             # the point cloud.
@@ -201,10 +202,9 @@ class AbsoluteLidarNavigator(NavigatorBase):
             return False
 
         # Find the current position, and update the blue (actual) position cylinder
-        actual_position = self.get_current_position().clone()
-        self.actual_position_cylinder.translate(actual_position.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
+        actual_coordinate = self.get_current_position().clone()
+        self.actual_position_cylinder.translate(actual_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
 
-        self.estimated_position_cylinder.translate(actual_position.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
         if self.is_first_frame:
             self.is_first_frame = False
 
@@ -212,7 +212,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         # Rotate the frame using the current heading
         #TODO: Should use estimated heading for actual situation!
-        R = frame.get_rotation_matrix_from_xyz((0, 0, self.get_corrected_heading(actual_position.heading)))
+        R = frame.get_rotation_matrix_from_xyz((0, 0, self.get_corrected_heading(actual_coordinate.heading)))
         frame.rotate(R, center=[0,0,0])
 
         self.time("frame rotation")
@@ -220,9 +220,9 @@ class AbsoluteLidarNavigator(NavigatorBase):
         # Extract a part of the cloud around the actual position. This is the cloud we are going to register against.
         a = self.full_cloud_np
         partial_radius = 50
-        points = a[(a[:, 0] >= actual_position.x - partial_radius) & (a[:, 0] <= actual_position.x + partial_radius) & (a[:, 1] >= actual_position.y - partial_radius) & (a[:, 1] <= actual_position.y + partial_radius)]
+        points = a[(a[:, 0] >= self.current_coordinate.x - partial_radius) & (a[:, 0] <= self.current_coordinate.x + partial_radius) & (a[:, 1] >= self.current_coordinate.y - partial_radius) & (a[:, 1] <= self.current_coordinate.y + partial_radius)]
         if len(points) < 10:
-            self.throw_outside_of_cloud(actual_position, partial_radius)
+            self.throw_outside_of_cloud(self.current_coordinate, partial_radius)
         self.time("partial cloud point extraction")
 
         if self.preview_always:
@@ -230,9 +230,10 @@ class AbsoluteLidarNavigator(NavigatorBase):
             self.vis.add_geometry(partial_cloud_visualization, update=True)
             self.time("partial cloud visualization")
         
-        # Move the points so that the actual coordinate is in the origin.
+        # Move the points so that the current coordinate is in the origin.
         # Now, both the current frame and this part of the cloud should be positioned very close to each other around the origin.
-        points -= actual_position.np()
+        partial_cloud_transform = self.current_coordinate.np()
+        points -= partial_cloud_transform
         self.time("partial cloud point movement")
 
         # Create an o3d point cloud object from the points
@@ -250,18 +251,13 @@ class AbsoluteLidarNavigator(NavigatorBase):
         self.time("partial cloud normal estimation")
 
         # Run the alignment
-        reg = self.matcher.match(frame, partial_cloud, 20)
+        reg = self.matcher.match(frame, partial_cloud, 10)
         self.check_save_frame_pair(partial_cloud, frame, reg)
 
         registration_time = self.time("registration")
 
         # Extract the translation part from the transformation array
         movement = reg.transformation[:3,3]
-        
-        self.plot.timeUsages.append(registration_time)
-        self.plot.rmses.append(reg.inlier_rmse)
-        self.plot.fitnesses.append(reg.fitness)
-        self.plot.distances.append(np.sqrt(np.dot(movement, movement)))
 
         # Append the newest movement
         self.movements.append(movement)
@@ -270,7 +266,10 @@ class AbsoluteLidarNavigator(NavigatorBase):
         self.movement_path.points.append(reg.transformation[:3,3])
 
         # Move the estimated position
-        self.estimated_position_cylinder.transform(reg.transformation)
+        self.current_coordinate.translate(movement)
+        self.estimated_position_cylinder.translate(self.current_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
+
+        self.update_plot(reg, registration_time, movement, actual_coordinate)
 
         # Add the new line
         if len(self.movements) == 2:
@@ -289,10 +288,11 @@ class AbsoluteLidarNavigator(NavigatorBase):
             self.vis.remove_geometry(partial_cloud_visualization)
 
             transformed_frame = frame.transform(reg.transformation) #.voxel_down_sample(voxel_size=0.5)
-            transformed_frame.translate(actual_position.np(), relative=True)
+            transformed_frame.translate(partial_cloud_transform, relative=True)
             transformed_frame.paint_uniform_color([0,1,0])
             self.vis.add_geometry(transformed_frame, update=True)
-            self.vis.run()
+
+            self.vis.set_follow_vehicle_view(self.current_coordinate.np())
 
             self.time("visualization")
 
