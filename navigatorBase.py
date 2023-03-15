@@ -168,6 +168,9 @@ class NavigatorBase:
                 self.vis.show_frame(self.merged_frame)
             self.vis.set_follow_vehicle_view()
 
+            if self.actual_movement_path is not None:
+                self.vis.add_geometry(self.actual_movement_path)
+
             self.check_save_screenshot(0, True)
 
         self.plot = Plotter(self.preview_always)

@@ -94,8 +94,14 @@ class AbsoluteLidarNavigator(NavigatorBase):
             self.estimated_position_cylinder.paint_uniform_color([1.0, 0.0, 0.0])
         
         # Initialize the visualizer
-        self.initialize_plot_and_visualization()        
-        
+        self.initialize_plot_and_visualization()
+
+        if self.preview_always:
+            self.vis.refresh_non_blocking()
+            self.vis.show_frame(self.full_cloud)
+            self.vis.add_geometry(self.actual_position_cylinder)
+            self.vis.add_geometry(self.estimated_position_cylinder)
+
         self.is_first_frame = True
 
         # Enumerate all frames until the end of the file and run the merge operation.
