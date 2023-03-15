@@ -224,7 +224,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
         self.time("frame rotation")
 
         # Extract a part of the cloud around the actual position. This is the cloud we are going to register against.
-        partial_radius = 50
+        partial_radius = 30
 
         # Keep a slightly larger partial cloud to make it quicker to extract the actual partial cloud
         if self.last_extracted_frame_coordinate is None or self.last_extracted_frame_coordinate.distance2d(self.current_coordinate) >= partial_radius * 0.8:
@@ -266,7 +266,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
         self.time("partial cloud normal estimation")
 
         # Run the alignment
-        reg = self.matcher.match(frame, partial_cloud, 10)
+        reg = self.matcher.match(frame, partial_cloud, 5)
         self.check_save_frame_pair(partial_cloud, frame, reg)
 
         registration_time = self.time("registration")
