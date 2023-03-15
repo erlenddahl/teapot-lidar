@@ -90,8 +90,12 @@ class AbsoluteLidarNavigator(NavigatorBase):
             self.actual_position_cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=self.position_cylinder_radius, height=self.position_cylinder_height, resolution=20, split=4)
             self.actual_position_cylinder.paint_uniform_color([0.0, 0.0, 1.0])
             
-            self.estimated_position_cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=self.position_cylinder_radius, height=self.position_cylinder_height, resolution=20, split=4)
+            self.estimated_position_cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=self.position_cylinder_radius * 0.8, height=self.position_cylinder_height * 1.2, resolution=20, split=4)
             self.estimated_position_cylinder.paint_uniform_color([1.0, 0.0, 0.0])
+            
+            self.start_position_cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=self.position_cylinder_radius * 0.6, height=self.position_cylinder_height * 1.3, resolution=20, split=4)
+            self.start_position_cylinder.paint_uniform_color([1.0, 1.0, 1.0])
+            self.start_position_cylinder.translate(self.actual_coordinates[0].np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
         
         # Initialize the visualizer
         self.initialize_plot_and_visualization()
@@ -101,6 +105,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
             self.vis.show_frame(self.full_cloud)
             self.vis.add_geometry(self.actual_position_cylinder)
             self.vis.add_geometry(self.estimated_position_cylinder)
+            self.vis.add_geometry(self.start_position_cylinder)
 
         self.is_first_frame = True
 
