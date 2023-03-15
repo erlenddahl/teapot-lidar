@@ -223,8 +223,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
         self.time("partial cloud point movement")
 
         # Create an o3d point cloud object from the points
-        partial_cloud = o3d.geometry.PointCloud()
-        partial_cloud.points = o3d.utility.Vector3dVector(points)
+        partial_cloud = self.to_cloud(points)
         self.time("partial cloud creation")
 
         # If it is empty, that (usually) means we have reached the end of
