@@ -195,6 +195,11 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         self.time("frame extraction")
 
+        # If it is empty, that (usually) means we have reached the end of
+        # the file. Return False to stop the loop.
+        if frame is None:
+            return False
+
         # Find the current position, and update the blue (actual) position cylinder
         actual_position = self.get_current_position().clone()
         self.actual_position_cylinder.translate(actual_position.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
@@ -228,11 +233,6 @@ class AbsoluteLidarNavigator(NavigatorBase):
         # Create an o3d point cloud object from the points
         partial_cloud = self.to_cloud(points)
         self.time("partial cloud creation")
-
-        # If it is empty, that (usually) means we have reached the end of
-        # the file. Return False to stop the loop.
-        if frame is None:
-            return False
 
         # Estimate normals for the target frame
         frame.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
