@@ -85,6 +85,9 @@ class Open3DVisualizer:
         If this is a numpy array, it will be converted to a point cloud.
         """
 
+        if frame is None:
+            raise Exception("Cannot show None!")
+
         self._initialize()
 
         if remove_previous and self._current_geometry is not None:
@@ -105,14 +108,20 @@ class Open3DVisualizer:
         return True
 
     def add_geometry(self, geometry, reset_bounding_box = False):
+        if geometry is None:
+            raise Exception("Cannot add None!")
         self._initialize()
         self.vis.add_geometry(geometry, reset_bounding_box)
 
     def update_geometry(self, geometry):
+        if geometry is None:
+            raise Exception("Cannot update None!")
         self._initialize()
         self.vis.update_geometry(geometry)
 
     def remove_geometry(self, geometry):
+        if geometry is None:
+            raise Exception("Cannot remove None!")
         self._initialize()
         self.vis.remove_geometry(geometry, False)
 
