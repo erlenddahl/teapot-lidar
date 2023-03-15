@@ -164,7 +164,8 @@ class NavigatorBase:
             self.vis.refresh_non_blocking()
 
             # Show the first frame and reset the view
-            self.vis.show_frame(self.merged_frame)
+            if self.merged_frame is not None:
+                self.vis.show_frame(self.merged_frame)
             self.vis.set_follow_vehicle_view()
 
             self.check_save_screenshot(0, True)
@@ -178,7 +179,8 @@ class NavigatorBase:
 
         # Then continue showing the visualization in a blocking way until the user stops it.
         if self.preview_at_end:
-            self.vis.show_frame(self.merged_frame)
+            if self.merged_frame is not None:
+                self.vis.show_frame(self.merged_frame)
 
             if self.movement_path is not None:
                 self.vis.remove_geometry(self.movement_path)

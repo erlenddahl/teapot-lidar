@@ -23,6 +23,8 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         NavigatorBase.__init__(self, args, 0)
 
+        self.merged_frame = None
+
     def load_point_cloud(self, path):
 
         cloud_meta_data_path = path.replace(".pcd", "-meta.json")
@@ -75,7 +77,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
             # the point cloud.
             for c in self.actual_coordinates:
                 c.translate(self.full_point_cloud_offset)
-
+            
             self.current_coordinate = self.actual_coordinates[0].clone()
             self.initial_coordinate = self.actual_coordinates[0].clone()
 
