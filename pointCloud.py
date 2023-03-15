@@ -107,17 +107,23 @@ class PointCloud:
         return full_cloud
 
 
-if __name__ == "__main__":
+def load_point_cloud(path):
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--point-cloud', type=str, required=True, help="A directory containing the point cloud as .laz files.")
-    parser.add_argument('--preview', type=str, default="never", choices=['always', 'end', 'never'], help="Show constantly updated point cloud and data plot previews while processing ('always'), show them only at the end ('end'), or don't show them at all ('never').")
-    parser.add_argument('--max-files', type=int, default=-1, help="Stop reading after the given number of files.")
-    parser.add_argument('--write-to', type=str, default=None, help="Write the assembled point cloud to this location.")
+    full_cloud = o3d.io.read_point_cloud(path)
+    full_cloud.paint_uniform_color([0.3, 0.6, 1.0])
 
-    args = parser.parse_args()
+    o3d.visualization.draw_geometries([full_cloud])
 
-    reader = PointCloud(args.point_cloud)
+def process_args(args):
+    if args.show is not None:
+        load_point_cloud(args.show)
+        return
+
+    if args.create_from is None or args.create_from == "":
+        raise Exception("The following arguments are required unless --show is given: --create-from")
+        return
+
+    reader = PointCloud(args.create_from)
     cloud = reader.read_all(args.preview, args.max_files)
 
     if args.write_to is not None:
@@ -125,3 +131,16 @@ if __name__ == "__main__":
         o3d.io.write_point_cloud(args.write_to, cloud, compressed=False)
         with open(args.write_to.replace(".pcd", "-meta.json"), "w") as outfile:
             json.dump({ "offset": reader.total_offset, "common_offset": reader.common_offset, "point_cloud_offset": reader.full_point_cloud_offset.tolist(), "mins": reader.cloud_mins.tolist(), "maxes": reader.cloud_maxes.tolist() }, outfile)
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--create-from', type=str, help="A directory containing the point cloud as .laz files.")
+    parser.add_argument('--preview', type=str, default="never", choices=['always', 'end', 'never'], help="Show constantly updated point cloud and data plot previews while processing ('always'), show them only at the end ('end'), or don't show them at all ('never').")
+    parser.add_argument('--max-files', type=int, default=-1, help="Stop reading after the given number of files.")
+    parser.add_argument('--write-to', type=str, default=None, help="Write the assembled point cloud to this location.")
+    parser.add_argument("--show", type=str, help="A .pcd file to show -- will not do any processing, just show it.")
+
+    args = parser.parse_args()
+
+    process_args(args)
