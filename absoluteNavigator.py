@@ -225,9 +225,14 @@ class AbsoluteLidarNavigator(NavigatorBase):
             self.throw_outside_of_cloud(actual_position, partial_radius)
         self.time("partial cloud point extraction")
 
+        if self.preview_always:
+            partial_cloud_visualization = self.to_cloud(points, translate=[0,0,0.1], voxel_size=0.5, color=[1,0,0])
+            self.vis.add_geometry(partial_cloud_visualization, update=True)
+            self.time("partial cloud visualization")
+        
         # Move the points so that the actual coordinate is in the origin.
         # Now, both the current frame and this part of the cloud should be positioned very close to each other around the origin.
-        points -= np.array([actual_position.x, actual_position.y, actual_position.alt])
+        points -= actual_position.np()
         self.time("partial cloud point movement")
 
         # Create an o3d point cloud object from the points
@@ -245,7 +250,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
         self.time("partial cloud normal estimation")
 
         # Run the alignment
-        reg = self.matcher.match(frame, partial_cloud, 10, None)
+        reg = self.matcher.match(frame, partial_cloud, 20)
         self.check_save_frame_pair(partial_cloud, frame, reg)
 
         registration_time = self.time("registration")
@@ -264,6 +269,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
         # Append the new movement to the path
         self.movement_path.points.append(reg.transformation[:3,3])
 
+        # Move the estimated position
         self.estimated_position_cylinder.transform(reg.transformation)
 
         # Add the new line
@@ -278,42 +284,17 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         self.time("book keeping")
 
-        self.previous_transformation = reg.transformation
-
-        # Combine the points from the merged visualization with the points from the next frame
-        transformed_frame = copy.deepcopy(frame)
-        print("Movement", movement)
-        print("Transformation:")
-        print(reg.transformation)
-        transformed_frame.transform(reg.transformation)
-
         # Update the visualization
-        if self.preview_always and self.vis is not None:
-            # TODO: cylinder stuff
+        if self.preview_always:
+            self.vis.remove_geometry(partial_cloud_visualization)
+
+            transformed_frame = frame.transform(reg.transformation) #.voxel_down_sample(voxel_size=0.5)
+            transformed_frame.translate(actual_position.np(), relative=True)
+            transformed_frame.paint_uniform_color([0,1,0])
+            self.vis.add_geometry(transformed_frame, update=True)
+            self.vis.run()
+
             self.time("visualization")
-
-        # The following lines are a temporary debugging visualization
-
-        partial_cloud.paint_uniform_color([1,0,0])
-        frame.paint_uniform_color([0,1,0])
-        transformed_frame.paint_uniform_color([0,0,1])
-
-        self.print_cloud_info("Full cloud (bright blue)", self.full_cloud)
-        self.print_cloud_info("Partial cloud (red)", partial_cloud)
-        self.print_cloud_info("Current frame (green)", frame)
-        self.print_cloud_info("Transformed frame (blue)", transformed_frame)
-
-        vis = Open3DVisualizer()
-        vis.show_frame(self.full_cloud)
-        vis.add_geometry(self.actual_movement_path)
-        vis.add_geometry(partial_cloud)
-        vis.add_geometry(frame)
-        vis.add_geometry(transformed_frame)
-        vis.add_geometry(self.actual_position_cylinder)
-        vis.add_geometry(self.estimated_position_cylinder)
-        vis.reset_view()
-        vis.run()
-        afdsajhuiCRASH
 
         # Return True to let the loop continue to the next frame.
         return True

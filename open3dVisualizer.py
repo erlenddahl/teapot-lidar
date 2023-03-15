@@ -73,9 +73,14 @@ class Open3DVisualizer:
         
         self._initialize()
 
+        self._refresh_non_blocking_internal()
+
+        self._is_non_blocking = True
+
+    def _refresh_non_blocking_internal(self):
+        
         self.vis.poll_events()
         self.vis.update_renderer()
-        self._is_non_blocking = True
 
     def stop(self):
         self.vis.destroy_window()
@@ -107,23 +112,32 @@ class Open3DVisualizer:
 
         return True
 
-    def add_geometry(self, geometry, reset_bounding_box = False):
+    def add_geometry(self, geometry, reset_bounding_box = False, update=False):
         if geometry is None:
             raise Exception("Cannot add None!")
         self._initialize()
         self.vis.add_geometry(geometry, reset_bounding_box)
+        
+        if self._is_non_blocking and update:
+            self._refresh_non_blocking_internal()
 
-    def update_geometry(self, geometry):
+    def update_geometry(self, geometry, update=False):
         if geometry is None:
             raise Exception("Cannot update None!")
         self._initialize()
         self.vis.update_geometry(geometry)
 
-    def remove_geometry(self, geometry):
+        if self._is_non_blocking and update:
+            self._refresh_non_blocking_internal()
+
+    def remove_geometry(self, geometry, update=False):
         if geometry is None:
             raise Exception("Cannot remove None!")
         self._initialize()
         self.vis.remove_geometry(geometry, False)
+
+        if self._is_non_blocking and update:
+            self._refresh_non_blocking_internal()
 
     def capture_screen_image(self, path):
         self.vis.capture_screen_image(path)
