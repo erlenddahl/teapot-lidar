@@ -76,7 +76,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
             # Translate all coordinates towards origo with the same offset as
             # the point cloud.
             for c in self.actual_coordinates:
-                c.translate(self.full_point_cloud_offset)
+                c.translate(-self.full_point_cloud_offset)
             
             self.current_coordinate = self.actual_coordinates[0].clone()
             self.initial_coordinate = self.actual_coordinates[0].clone()

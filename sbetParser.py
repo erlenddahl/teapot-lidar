@@ -64,9 +64,9 @@ class SbetRow:
         return [self.index, self.sow, self.lat, self.lon, self.alt, self.heading, self.x, self.y]
 
     def translate(self, t):
-        self.x -= t[0]
-        self.y -= t[1]
-        self.alt -= t[2]
+        self.x += t[0]
+        self.y += t[1]
+        self.alt += t[2]
 
     def np(self):
         return np.array([self.x, self.y, self.alt])
