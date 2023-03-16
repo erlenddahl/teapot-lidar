@@ -149,8 +149,6 @@ class AbsoluteLidarNavigator(NavigatorBase):
             self.plot.show_plot()
             self.plot.update()
 
-        self.print_cloud_info("Full cloud", self.full_cloud)
-
         results = self.check_results_saving(True)
         self.finish_plot_and_visualization()
 
