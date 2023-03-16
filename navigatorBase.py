@@ -205,6 +205,9 @@ class NavigatorBase:
         self.plot.fitnesses.append(reg.fitness)
         self.plot.distances.append(np.sqrt(np.dot(movement, movement)))
 
+        # Append the newest movement
+        self.movements.append(movement)
+
         if self.current_coordinate is not None:
 
             self.actual_coordinates.append(actual_coordinate)

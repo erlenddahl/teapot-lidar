@@ -37,8 +37,6 @@ class AbsoluteLidarNavigator(NavigatorBase):
         self.full_point_cloud_offset = np.array([data["offset"][0], data["offset"][1], data["offset"][2]])
         self.full_cloud = o3d.io.read_point_cloud(path)
 
-        self.print_cloud_info("Cloud", self.full_cloud, "    ")
-        
         self.full_cloud.paint_uniform_color([0.3, 0.6, 1.0])
 
         print("    > Cloud loaded")
@@ -264,9 +262,6 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         # Extract the translation part from the transformation array
         movement = reg.transformation[:3,3]
-
-        # Append the newest movement
-        self.movements.append(movement)
 
         # Append the new movement to the path
         self.movement_path.points.append(reg.transformation[:3,3])

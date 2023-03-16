@@ -161,9 +161,6 @@ class LidarNavigator(NavigatorBase):
 
         self.update_plot(reg, registration_time, movement, actual_coordinate)
 
-        # Append the newest movement
-        self.movements.append(movement)
-
         # Append the new movement to the path
         self.movement_path = self.movement_path.transform(reg.transformation)
         self.movement_path.points.append([0,0,0])
