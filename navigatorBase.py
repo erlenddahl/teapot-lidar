@@ -258,6 +258,41 @@ class NavigatorBase:
 
         return cloud
 
+    def add_to_merged_frame(self, frame, handle_visualization=False):
+
+        if not self.build_cloud:
+            return
+
+        if self.merged_frame is None:
+            self.merged_frame = frame
+            if handle_visualization:
+                self.vis.add_geometry(self.merged_frame)
+            
+            return
+
+        # Add the frame to the generated point cloud (unless we should skip some frames)
+        self.build_cloud_timer -= 1
+        if self.build_cloud_timer <= 0:
+
+            # Combine the points from the merged visualization with the points from the next frame
+            self.merged_frame += frame
+            self.merged_frame_is_dirty = True
+            self.build_cloud_timer = self.build_cloud_after
+
+            self.time("cloud merging")
+
+            # Downsample the merged visualization to make it faster to work with.
+            # Otherwise it would grow extremely large, as it would contain all points
+            # from all processed point clouds.
+            # Don't do this on every frame, as it takes a lot of time.
+            self.downsample_timer -= 1
+            if self.downsample_timer <= 0:
+                self.ensure_merged_frame_is_downsampled()
+                self.downsample_timer = self.downsample_cloud_after_frames
+
+            if handle_visualization:
+                self.vis.update_geometry(self.merged_frame)
+
     @staticmethod
     def create_parser():
         parser = argparse.ArgumentParser()

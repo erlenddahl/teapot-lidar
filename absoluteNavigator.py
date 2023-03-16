@@ -292,15 +292,16 @@ class AbsoluteLidarNavigator(NavigatorBase):
         # Update the visualization
         if self.preview_always:
             self.vis.remove_geometry(partial_cloud_visualization)
+            self.time("visualization")
 
-            transformed_frame = frame.transform(reg.transformation) #.voxel_down_sample(voxel_size=0.5)
+        if self.build_cloud:
+            transformed_frame = frame.transform(reg.transformation)
             transformed_frame.translate(partial_cloud_transform, relative=True)
             transformed_frame.paint_uniform_color([0,1,0])
-            self.vis.add_geometry(transformed_frame, update=True)
+
+            self.add_to_merged_frame(transformed_frame, handle_visualization=True)
 
             self.vis.set_follow_vehicle_view(self.current_coordinate.np())
-
-            self.time("visualization")
 
         # Return True to let the loop continue to the next frame.
         return True
