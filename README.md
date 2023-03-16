@@ -20,16 +20,11 @@ _[This part is not yet started.]_
 ### Requirements
 The code is implemented and tested with Python 3.6 because of limitations with some of the libraries. 
 
-Create a new Anaconda environment (or use an existing, or venv, or whatever):
+Create a new Anaconda environment (or use an existing, or venv, or whatever), and install the requirements:
 ```
-conda create -n teapot python=3.6
+conda create --name teapot310 python=3.10.9
 conda activate teapot
-```
-
-Install the Python requirements using pip:
-
-```
-pip install -r requirements.txt
+pip install open3d numpy matplotlib tqdm laspy[laszip] ouster-sdk[examples] tabulate probreg pyproj
 ```
 
 ### Incremental navigation
