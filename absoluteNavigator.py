@@ -40,7 +40,6 @@ class AbsoluteLidarNavigator(NavigatorBase):
         self.print_cloud_info("Cloud", self.full_cloud, "    ")
         
         self.full_cloud.paint_uniform_color([0.3, 0.6, 1.0])
-        self.full_cloud_np = np.asarray(self.full_cloud.points)
 
         print("    > Cloud loaded")
 
@@ -189,9 +188,6 @@ class AbsoluteLidarNavigator(NavigatorBase):
         print("Radius:", partial_radius)
         raise Exception("The point cloud contains no points around the current position.")
 
-    def extract_part(self, cloud, center, radius):
-        return cloud[(cloud[:, 0] >= center.x - radius) & (cloud[:, 0] <= center.x + radius) & (cloud[:, 1] >= center.y - radius) & (cloud[:, 1] <= center.y + radius)]
-
     def merge_next_frame(self):
         """ Reads the next frame, aligns it with the previous frame, merges them together
         to create a 3D model, and tracks the movement between frames.
@@ -225,45 +221,42 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         # Extract a part of the cloud around the actual position. This is the cloud we are going to register against.
         partial_radius = 30
+        pr = np.array([partial_radius, partial_radius, partial_radius])
 
         # Keep a slightly larger partial cloud to make it quicker to extract the actual partial cloud
+        # This reduced time usage from 27 to 9 seconds on first 20 frames of a random file.
+        c = self.current_coordinate.np()
         if self.last_extracted_frame_coordinate is None or self.last_extracted_frame_coordinate.distance2d(self.current_coordinate) >= partial_radius * 0.8:
-            self.last_extracted_frame = self.extract_part(self.full_cloud_np, self.current_coordinate, partial_radius * 2)
+
+            bbox = o3d.geometry.AxisAlignedBoundingBox(min_bound=c - pr * 2, max_bound=c + pr * 2)
+            self.last_extracted_frame = self.full_cloud.crop(bbox)
             self.last_extracted_frame_coordinate = self.current_coordinate.clone()
-            
+           
             self.time("larger partial cloud point extraction")
 
-        points = self.extract_part(self.last_extracted_frame, self.current_coordinate, partial_radius)
+        bbox = o3d.geometry.AxisAlignedBoundingBox(min_bound=c - pr, max_bound=c + pr)
+        partial_cloud = self.last_extracted_frame.crop(bbox)
 
-        if len(points) < 10:
+        if len(partial_cloud.points) < 10:
             self.throw_outside_of_cloud(self.current_coordinate, partial_radius)
         
         self.time("partial cloud point extraction")
 
         if self.preview_always:
-            partial_cloud_visualization = self.to_cloud(points, translate=[0,0,0.1], voxel_size=0.5, color=[1,0,0])
+            partial_cloud_visualization = self.to_cloud(np.array(partial_cloud.points), translate=[0,0,0.1], voxel_size=0.5, color=[1,0,0])
             self.vis.add_geometry(partial_cloud_visualization, update=True)
             self.time("partial cloud visualization")
         
         # Move the points so that the current coordinate is in the origin.
         # Now, both the current frame and this part of the cloud should be positioned very close to each other around the origin.
         partial_cloud_transform = self.current_coordinate.np()
-        points -= partial_cloud_transform
+        partial_cloud.translate(partial_cloud_transform, relative = True)
         self.time("partial cloud point movement")
-
-        # Create an o3d point cloud object from the points
-        partial_cloud = self.to_cloud(points)
-        self.time("partial cloud creation")
 
         # Estimate normals for the target frame
         frame.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
 
         self.time("frame normal estimation")
-
-        # For now, estimate normals for the partial cloud as well (to save some time, try to transfer them from the full cloud!)
-        partial_cloud.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
-
-        self.time("partial cloud normal estimation")
 
         # Run the alignment
         reg = self.matcher.match(frame, partial_cloud, 5)
