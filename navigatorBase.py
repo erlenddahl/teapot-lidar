@@ -241,20 +241,17 @@ class NavigatorBase:
             
             self.save_data(os.path.join(self.save_path, "data.json"), results)
 
-    def to_cloud(self, points, translate=None, voxel_size=None, color=None):
-        """ Creates an Open3D PointCloud object (o3d.geometry.PointCloud) from a given numpy array of points.
-        Supports various regularly used ways of transforming the cloud.
+        return results
+
+    def modify_cloud(self, cloud, translate=None, translate_relative=True, voxel_size=None, color=None):
+        """ Modifies an Open3D PointCloud object (o3d.geometry.PointCloud) with the given transformations.
         """
-
-        cloud = o3d.geometry.PointCloud()
-
-        if translate is not None:
-            points += np.array(translate)
-
-        cloud.points = o3d.utility.Vector3dVector(points)
 
         if voxel_size is not None:
             cloud = cloud.voxel_down_sample(voxel_size=voxel_size)
+
+        if translate is not None:
+            cloud.translate(np.array(translate), relative=translate_relative)
 
         if color is not None:
             cloud.paint_uniform_color(color)

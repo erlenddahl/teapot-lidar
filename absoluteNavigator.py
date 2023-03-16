@@ -243,7 +243,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
         self.time("partial cloud point extraction")
 
         if self.preview_always:
-            partial_cloud_visualization = self.to_cloud(np.array(partial_cloud.points), translate=[0,0,0.1], voxel_size=0.5, color=[1,0,0])
+            partial_cloud_visualization = self.modify_cloud(partial_cloud, translate=[0,0,0.1], voxel_size=0.5, color=[1,0,0])
             self.vis.add_geometry(partial_cloud_visualization, update=True)
             self.time("partial cloud visualization")
         
