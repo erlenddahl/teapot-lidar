@@ -28,7 +28,7 @@ class PcapReader:
 
         self.source = pcap.Pcap(pcap_path, self.metadata)
 
-        self.channels = [c for c in client.ChanField]
+        self.channels = [c for c in client.ChanField.values]
 
         # If 0, every frame will be read. If 1, every second frame, etc.
         self.skip_frames = skip_frames
@@ -273,7 +273,7 @@ class PcapReader:
         if timer is not None: timer.time("frame reshaping")
 
         if colored:
-            key = scan.field(self.channels[1])
+            key = scan.field(self.channels[4]) # Channel REFLECTIVITY
 
             # apply colormap to field values
             key_img = normalize(key)
