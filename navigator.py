@@ -98,7 +98,7 @@ class LidarNavigator(NavigatorBase):
             self.plot.show_plot()
             self.plot.update()
 
-        self.check_results_saving(True)
+        results = self.check_results_saving(True)
         self.finish_plot_and_visualization()
 
         return results
