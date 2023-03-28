@@ -245,8 +245,8 @@ class AbsoluteLidarNavigator(NavigatorBase):
         
         # Move the points so that the current coordinate is in the origin.
         # Now, both the current frame and this part of the cloud should be positioned very close to each other around the origin.
-        partial_cloud_transform = self.current_coordinate.np()
-        partial_cloud.translate(partial_cloud_transform, relative = True)
+        partial_cloud_transform = c
+        partial_cloud.translate(-partial_cloud_transform, relative = True)
         self.time("partial cloud point movement")
 
         # Estimate normals for the target frame
