@@ -103,7 +103,7 @@ class LidarNavigator(NavigatorBase):
 
         return results
 
-    def get_current_position(self):
+    def get_current_position(self, transformed):
 
         # Retrieve the index of the currently processed frame
         ix = self.reader.get_current_frame_index()
@@ -111,6 +111,9 @@ class LidarNavigator(NavigatorBase):
         # Retrieve the SBET data for this frame 
         # This is the original location and time info from the SBET file.
         sbet = self.actual_coordinates[ix]
+
+        if not transformed:
+            return sbet
 
         # Retrieve the transformed coordinates for this frame from the o3d movement line,
         # which has been transformed after each registration in order to follow the red line.
@@ -154,7 +157,7 @@ class LidarNavigator(NavigatorBase):
         # the calculated transformation
         movement = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(reg.transformation).get_center()
         
-        actual_coordinate = self.get_current_position() if self.current_coordinate is not None else None
+        actual_coordinate = self.get_current_position(False) if self.current_coordinate is not None else None
 
         if self.current_coordinate is not None:
             self.current_coordinate.translate(movement) #TODO: Think this is wrong. Should probably use transformed red line in the end to generate all estimated coordinates.
@@ -171,6 +174,8 @@ class LidarNavigator(NavigatorBase):
         self.update_live_movement(self.movement_path)
 
         if actual_coordinate is not None:
+
+            actual_coordinate = self.get_current_position(True)
             
             if len(self.movements) >= 2:
                 line_count = len(self.actual_movement_path.lines)
