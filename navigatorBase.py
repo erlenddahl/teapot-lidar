@@ -1,5 +1,6 @@
 import numpy as np
 import json
+import math
 import os
 from tqdm import tqdm
 import open3d as o3d
@@ -199,6 +200,25 @@ class NavigatorBase:
 
         self.plot.destroy()
 
+    def calculate_distance_between_points(self, x1, y1, x2, y2, heading):
+        """ Calculates the distances between the two given points along and
+        across the given heading.
+        """
+
+        # Calculate the straight distance between the points
+        dx = x1-x2;
+        dy = y1-y2;
+        c = math.sqrt(dx*dx + dy*dy);
+        
+        # Calculate the angle between the X axis and the straight line between the points
+        xAngle = math.atan(dy/dx);
+        
+        # The angle in the triangle formed by C and the along/across distances is PI/2 minus the heading and the xAngle
+        alpha = math.pi/2 + heading + xAngle;
+        
+        # Now we can calculate the two remaining sides:
+        return (c * math.cos(alpha), c * math.sin(alpha))
+
     def update_plot(self, reg, registration_time, movement, actual_coordinate):
         self.plot.timeUsages.append(registration_time)
         self.plot.rmses.append(reg.inlier_rmse)
@@ -213,10 +233,14 @@ class NavigatorBase:
             self.actual_coordinates.append(actual_coordinate)
             self.estimated_coordinates.append(self.current_coordinate.clone())
 
-            dx = actual_coordinate.x
-            dy = actual_coordinate.y
-            dz = actual_coordinate.alt
+            dx = abs(self.current_coordinate.x - actual_coordinate.x)
+            dy = abs(self.current_coordinate.y - actual_coordinate.y)
+            dz = abs(self.current_coordinate.alt - actual_coordinate.alt)
 
+            dist = self.calculate_distance_between_points(self.current_coordinate.x, self.current_coordinate.y, actual_coordinate.x, actual_coordinate.y, actual_coordinate.heading)
+
+            self.plot.position_error_along_heading.append(dist[0])
+            self.plot.position_error_across_heading.append(dist[1])
             self.plot.position_error_x.append(dx)
             self.plot.position_error_y.append(dy)
             self.plot.position_error_z.append(dz)
