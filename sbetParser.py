@@ -11,6 +11,10 @@ import csv
 
 transformer = Transformer.from_crs(4326, 5972)
 class SbetRow:
+    """
+    A data row from an SBET file. Contains the original coordinates as lat/lon, and transformed (to 5972) as x and y. The heading is in radians,
+    0 means straight north, positive PI/2 means straight east, negative PI/2 straight west.
+    """
 
     def __init__(self, row, sow=0, index=0, original=None, z_offset=0):
 
