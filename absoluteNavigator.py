@@ -263,12 +263,15 @@ class AbsoluteLidarNavigator(NavigatorBase):
         # Extract the translation part from the transformation array
         movement = reg.transformation[:3,3]
 
-        # Append the new movement to the path
-        self.movement_path.points.append(reg.transformation[:3,3])
-
         # Move the estimated position
         self.current_coordinate.translate(movement)
         self.estimated_position_cylinder.translate(self.current_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
+
+        # Append the new movement to the path
+        self.movement_path.points.append(self.current_coordinate.np())
+
+        print("Heading")
+        print(actual_coordinate.heading)
 
         self.update_plot(reg, registration_time, movement, actual_coordinate)
 

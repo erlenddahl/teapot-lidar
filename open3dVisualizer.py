@@ -52,7 +52,7 @@ class Open3DVisualizer:
 
         """Reset the view to the axis center"""
         self.ctr.set_zoom(0.05)
-        self.ctr.set_lookat([0, 0, 0.5] if vehicle_location is None else vehicle_location)
+        self.ctr.set_lookat([600, 0, 0.5] if vehicle_location is None else vehicle_location)
         self.ctr.set_up([0.35, 0, 0.94])
     
     def register_key_callback(self, key_code, callback):
