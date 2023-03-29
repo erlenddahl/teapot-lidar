@@ -9,8 +9,8 @@ class Plotter:
         # Initialize plot
         self.plot_x = []
 
-        self.fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(6, sharex=True, sharey=False)
-        self.axes = [ax1, ax2, ax3, ax4, ax5, ax6]
+        self.fig, (ax1, ax2, ax3, ax4, ax5, ax6, ax7) = plt.subplots(7, sharex=True, sharey=False)
+        self.axes = [ax1, ax2, ax3, ax4, ax5, ax6, ax7]
 
         # Initialize value arrays
         self.distances = []
@@ -20,6 +20,9 @@ class Plotter:
         
         self.position_error_2d = []
         self.position_error_3d = []
+        self.position_error_along_heading = []
+        self.position_error_across_heading = []
+        self.position_error_y = []
         self.position_error_x = []
         self.position_error_y = []
         self.position_error_z = []
@@ -47,7 +50,7 @@ class Plotter:
 
     def update(self):
 
-        (ax1, ax2, ax3, ax4, ax5, ax6) = self.axes
+        (ax1, ax2, ax3, ax4, ax5, ax6, ax7) = self.axes
 
         for ax in self.axes:
             ax.clear()
@@ -77,14 +80,21 @@ class Plotter:
             
             ax6.set_title("Actual coordinate age", fontsize=8)
             ax6.plot(self.plot_x, self.position_age, color="purple")
+            
+            ax7.set_title("Positioning errors along/across heading, combined axes", fontsize=8)
+            ax7.plot(self.plot_x, self.position_error_along_heading, color="blue", label="along")
+            ax7.plot(self.plot_x, self.position_error_across_heading, color="red", label="across")
+            ax7.plot(self.plot_x, self.position_error_z, color="green", label="z")
+            ax7.legend(loc="upper left")
         
         ax1.set_ylabel("Seconds")
         ax2.set_ylabel("Meters")
         ax4.set_ylabel("Meters")
         ax5.set_ylabel("Meters")
         ax6.set_ylabel("Seconds")
+        ax7.set_ylabel("Meters")
         
-        ax6.set_xlabel("Frame index")
+        ax7.set_xlabel("Frame index")
 
         self.fig.canvas.draw()
 
@@ -125,7 +135,10 @@ class Plotter:
             ["Avg error 3d: ", statistics.mean(self.position_error_3d) if has_pos_error else float('nan')],
             
             ["Final error 2d: ", self.position_error_2d[-1] if has_pos_error else float('nan')],
-            ["Final error 3d: ", self.position_error_3d[-1] if has_pos_error else float('nan')]
+            ["Final error 3d: ", self.position_error_3d[-1] if has_pos_error else float('nan')],
+            
+            ["Final error along heading: ", self.position_error_along_heading[-1] if has_pos_error else float('nan')],
+            ["Final error across heading: ", self.position_error_across_heading[-1] if has_pos_error else float('nan')]
         ]
 
         if timer is not None:
@@ -143,6 +156,8 @@ class Plotter:
             "timeUsages": self.timeUsages,
             "rmses": self.rmses,
             "fitnesses": self.fitnesses,
+            "position_error_along_heading": self.position_error_along_heading,
+            "position_error_across_heading": self.position_error_across_heading,
             "position_error_x": self.position_error_x,
             "position_error_y": self.position_error_y,
             "position_error_z": self.position_error_z,
