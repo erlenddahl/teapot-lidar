@@ -270,9 +270,6 @@ class AbsoluteLidarNavigator(NavigatorBase):
         # Append the new movement to the path
         self.movement_path.points.append(self.current_coordinate.np())
 
-        print("Heading")
-        print(actual_coordinate.heading)
-
         self.update_plot(reg, registration_time, movement, actual_coordinate)
 
         # Add the new line
