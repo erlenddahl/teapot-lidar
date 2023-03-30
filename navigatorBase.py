@@ -203,6 +203,9 @@ class NavigatorBase:
     def calculate_distance_between_points(self, x1, y1, x2, y2, heading):
         """ Calculates the distances between the two given points along and
         across the given heading.
+        Returns (along, across).
+        Along: positive means p1 is ahead of p2.
+        Across: positive means p1 is to the left of the movement vector of p2.
         """
 
         # Calculate the straight distance between the points
@@ -230,15 +233,18 @@ class NavigatorBase:
 
         if self.current_coordinate is not None:
 
-            self.actual_coordinates.append(actual_coordinate)
+            # Add the current coordinate to the list of estimations
             self.estimated_coordinates.append(self.current_coordinate.clone())
 
+            # Calculate differences between the estimate and the actual coordinate
             dx = abs(self.current_coordinate.x - actual_coordinate.x)
             dy = abs(self.current_coordinate.y - actual_coordinate.y)
-            dz = abs(self.current_coordinate.alt - actual_coordinate.alt)
+            dz = self.current_coordinate.alt - actual_coordinate.alt
 
+            # Calculate distances along and across of the movement vector (heading)
             dist = self.calculate_distance_between_points(self.current_coordinate.x, self.current_coordinate.y, actual_coordinate.x, actual_coordinate.y, actual_coordinate.heading)
 
+            # Save all values in the plot collection
             self.plot.position_error_along_heading.append(dist[0])
             self.plot.position_error_across_heading.append(dist[1])
             self.plot.position_error_x.append(dx)
