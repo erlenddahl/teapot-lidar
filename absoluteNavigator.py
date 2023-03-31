@@ -55,6 +55,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
         # Initialize the list of movements as well as the merged frame, and the first 
         # source frame.
         self.movements = []
+        self.registration_configs = []
 
         self.movement_path = o3d.geometry.LineSet(
             points = o3d.utility.Vector3dVector([]), lines=o3d.utility.Vector2iVector([])
@@ -262,6 +263,11 @@ class AbsoluteLidarNavigator(NavigatorBase):
             threshold += 2
             reg = self.matcher.match(frame, partial_cloud, threshold)
         
+        self.registration_configs.append({
+            "threshold": threshold, 
+            "frame_ix": self.reader.get_current_frame_index()
+        })
+
         self.check_save_frame_pair(partial_cloud, frame, reg)
 
         registration_time = self.time("registration")

@@ -27,6 +27,7 @@ class LidarNavigator(NavigatorBase):
         # Initialize the list of movements as well as the merged frame, and the first 
         # source frame.
         self.movements = []
+        self.registration_configs = []
         self.estimated_coordinates = []
         self.actual_coordinates = []
         self.sbet_coordinates = []
@@ -149,7 +150,10 @@ class LidarNavigator(NavigatorBase):
         self.time("normal estimation")
 
         # Run the alignment
-        reg = self.matcher.match(self.previous_frame, frame)
+        threshold = 1
+        reg = self.matcher.match(self.previous_frame, frame, threshold)
+        self.registration_configs.append({"threshold": threshold})
+
         self.check_save_frame_pair(self.previous_frame, frame, reg)
 
         registration_time = self.time("registration")

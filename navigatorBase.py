@@ -264,6 +264,7 @@ class NavigatorBase:
         results["estimated_coordinates"] = [x.json() for x in self.estimated_coordinates]
         results["actual_coordinates"] = [x.json(True) for x in self.actual_coordinates]
         results["sbet_coordinates"] = [x.json(True) for x in self.sbet_coordinates]
+        results["registration_configs"] = self.registration_configs
 
         results["args"] = vars(self.args)
         
