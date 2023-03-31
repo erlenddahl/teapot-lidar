@@ -235,6 +235,7 @@ class NavigatorBase:
 
             # Add the current coordinate to the list of estimations
             self.estimated_coordinates.append(self.current_coordinate.clone())
+            self.actual_coordinates.append(actual_coordinate.clone())
 
             # Calculate differences between the estimate and the actual coordinate
             dx = abs(self.current_coordinate.x - actual_coordinate.x)
@@ -260,6 +261,7 @@ class NavigatorBase:
         
         results["estimated_coordinates"] = [x.json() for x in self.estimated_coordinates]
         results["actual_coordinates"] = [x.json(True) for x in self.actual_coordinates]
+        results["sbet_coordinates"] = [x.json(True) for x in self.sbet_coordinates]
         
         if self.save_path is not None:
 

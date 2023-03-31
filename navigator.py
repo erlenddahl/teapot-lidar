@@ -29,6 +29,7 @@ class LidarNavigator(NavigatorBase):
         self.movements = []
         self.estimated_coordinates = []
         self.actual_coordinates = []
+        self.sbet_coordinates = []
         self.actual_movement_path = None
 
         self.movement_path = o3d.geometry.LineSet(
@@ -36,13 +37,13 @@ class LidarNavigator(NavigatorBase):
         )
 
         if args.sbet is not None:
-            self.actual_coordinates = self.reader.get_coordinates()
+            self.sbet_coordinates = self.reader.get_coordinates()
 
-            self.current_coordinate = self.actual_coordinates[0].clone()
-            self.initial_coordinate = self.actual_coordinates[0].clone()
+            self.current_coordinate = self.sbet_coordinates[0].clone()
+            self.initial_coordinate = self.sbet_coordinates[0].clone()
 
             self.actual_movement_path = o3d.geometry.LineSet(
-                points = o3d.utility.Vector3dVector([[p.x - self.initial_coordinate.x, p.y - self.initial_coordinate.y, p.alt - self.initial_coordinate.alt] for p in self.actual_coordinates]), 
+                points = o3d.utility.Vector3dVector([[p.x - self.initial_coordinate.x, p.y - self.initial_coordinate.y, p.alt - self.initial_coordinate.alt] for p in self.sbet_coordinates]), 
                 lines = o3d.utility.Vector2iVector()
             )
 
@@ -110,7 +111,7 @@ class LidarNavigator(NavigatorBase):
 
         # Retrieve the SBET data for this frame 
         # This is the original location and time info from the SBET file.
-        sbet = self.actual_coordinates[ix]
+        sbet = self.sbet_coordinates[ix]
 
         if not transformed:
             return sbet

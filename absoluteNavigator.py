@@ -68,20 +68,21 @@ class AbsoluteLidarNavigator(NavigatorBase):
             # and the actual coordinates of the frames are in UTM, and there is
             # therefore no need to rotate them like it is in the visual odometry
             # based navigator.
-            self.actual_coordinates = self.reader.get_coordinates(False, show_progress=True)
+            self.sbet_coordinates = self.reader.get_coordinates(False, show_progress=True)
+            self.actual_coordinates = []
             self.estimated_coordinates = []
 
             # Translate all coordinates towards origo with the same offset as
             # the point cloud.
-            for c in self.actual_coordinates:
+            for c in self.sbet_coordinates:
                 c.translate(-self.full_point_cloud_offset)
             
-            self.current_coordinate = self.actual_coordinates[0].clone()
-            self.initial_coordinate = self.actual_coordinates[0].clone()
+            self.current_coordinate = self.sbet_coordinates[0].clone()
+            self.initial_coordinate = self.sbet_coordinates[0].clone()
 
             self.actual_movement_path = o3d.geometry.LineSet(
-                points = o3d.utility.Vector3dVector([[p.x, p.y, p.alt] for p in self.actual_coordinates]), 
-                lines = o3d.utility.Vector2iVector([[i, i+1] for i in range(len(self.actual_coordinates) - 1)])
+                points = o3d.utility.Vector3dVector([[p.x, p.y, p.alt] for p in self.sbet_coordinates]), 
+                lines = o3d.utility.Vector2iVector([[i, i+1] for i in range(len(self.sbet_coordinates) - 1)])
             )
             self.actual_movement_path.paint_uniform_color([0, 0, 1])
             
@@ -93,7 +94,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
             
             self.start_position_cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=self.position_cylinder_radius * 0.6, height=self.position_cylinder_height * 1.3, resolution=20, split=4)
             self.start_position_cylinder.paint_uniform_color([1.0, 1.0, 1.0])
-            self.start_position_cylinder.translate(self.actual_coordinates[0].np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
+            self.start_position_cylinder.translate(self.sbet_coordinates[0].np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
 
         self.last_extracted_frame_coordinate = None
         self.last_extracted_frame = None
@@ -159,7 +160,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         # Retrieve the SBET data for this frame, which has
         # already been transformed to fit the point cloud.
-        return self.actual_coordinates[ix]
+        return self.sbet_coordinates[ix]
 
     def draw_registration_result(self, source, target):
         source_temp = copy.deepcopy(source)
