@@ -18,6 +18,8 @@ class NavigatorBase:
     def __init__(self, args, min_frame_limit = 1):
         self.timer = TaskTimer()
 
+        self.args = args
+
         self.reader = PcapReaderHelper.from_lists(args.pcap, args.json, args.skip_every_frame, args=args)
         self.voxel_size = args.voxel_size
         self.matcher = AlgorithmHelper.get_algorithm(args.algorithm)
@@ -262,6 +264,8 @@ class NavigatorBase:
         results["estimated_coordinates"] = [x.json() for x in self.estimated_coordinates]
         results["actual_coordinates"] = [x.json(True) for x in self.actual_coordinates]
         results["sbet_coordinates"] = [x.json(True) for x in self.sbet_coordinates]
+
+        results["args"] = vars(self.args)
         
         if self.save_path is not None:
 

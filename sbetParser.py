@@ -60,6 +60,7 @@ class SbetRow:
         if actual:
             json["age"] = self.age
             json["heading"] = self.heading
+            json["index"] = self.index
 
         return json
 
