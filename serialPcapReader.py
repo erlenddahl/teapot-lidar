@@ -53,14 +53,9 @@ class SerialPcapReader:
         return SbetParser.rotate_points(coordinates, coordinates[0].heading - np.pi / 2) if rotate else coordinates
 
     def get_current_frame_index(self):
-        ix = 0
 
-        for i, reader in enumerate(self.readers):
-            if reader == self.readers[self.current_reader_index]:
-                ix += reader.get_current_frame_index()
-                break
-            else:
-                ix += self.readers_first_coordinate_index[i]
+        ix = self.readers_first_coordinate_index[self.current_reader_index]
+        ix += self.readers[self.current_reader_index].get_current_frame_index()
 
         return ix
 
