@@ -256,7 +256,12 @@ class AbsoluteLidarNavigator(NavigatorBase):
         self.time("frame normal estimation")
 
         # Run the alignment
-        reg = self.matcher.match(frame, partial_cloud, 5)
+        threshold = 2
+        reg = self.matcher.match(frame, partial_cloud, threshold)
+        while reg.fitness < 0.9 and threshold < 10:
+            threshold += 2
+            reg = self.matcher.match(frame, partial_cloud, threshold)
+        
         self.check_save_frame_pair(partial_cloud, frame, reg)
 
         registration_time = self.time("registration")
