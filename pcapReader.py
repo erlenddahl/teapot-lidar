@@ -48,11 +48,14 @@ class PcapReader:
                 self.internal_meta = {}
 
         self.frame_coordinates = None
-        if args is not None and args.sbet is not None:
-            self.sbet = SbetParser(args.sbet, args.sbet_z_offset)
-            self.gps_week = self.sbet.get_gps_week(pcap_path = self.pcap_path)
-        else:
-            self.sbet = None
+        self.sbet = None
+        self.skip_last_frame_in_pcap_file = False
+        if args is not None:
+            if args.sbet is not None:
+                self.sbet = SbetParser(args.sbet, args.sbet_z_offset)
+                self.gps_week = self.sbet.get_gps_week(pcap_path = self.pcap_path)
+            if args.skip_last_frame_in_pcap_file:
+                self.skip_last_frame_in_pcap_file = True
 
         self.reset()
 
@@ -270,6 +273,9 @@ class PcapReader:
         if timer is not None: timer.time("frame retrieval")
 
         if scan is None:
+            return None
+
+        if self.last_read_frame_ix_including_skips >= self.internal_meta["frame_count"] - 1:
             return None
             
         # Prepare the frame for visualization
