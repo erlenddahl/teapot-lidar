@@ -259,13 +259,14 @@ class AbsoluteLidarNavigator(NavigatorBase):
         # Run the alignment
         threshold = 2
         reg = self.matcher.match(frame, partial_cloud, threshold)
-        while reg.fitness < 0.9 and threshold < 10:
-            threshold += 2
+        while reg.fitness < 0.85 and threshold < 10:
+            threshold *= 2
             reg = self.matcher.match(frame, partial_cloud, threshold)
         
         self.registration_configs.append({
             "threshold": threshold, 
-            "frame_ix": self.reader.get_current_frame_index()
+            "frame_ix": self.reader.get_current_frame_index(),
+            "pcap": self.reader.get_pcap_path()
         })
 
         self.check_save_frame_pair(partial_cloud, frame, reg)
@@ -308,7 +309,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
             self.add_to_merged_frame(transformed_frame, handle_visualization=True)
 
-            self.vis.set_follow_vehicle_view(self.current_coordinate.np())
+            #self.vis.set_follow_vehicle_view(self.current_coordinate.np())
 
         # Return True to let the loop continue to the next frame.
         return True

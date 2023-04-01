@@ -56,6 +56,9 @@ class PcapReader:
 
         self.reset()
 
+    def get_pcap_path(self):
+        return self.pcap_path
+
     def count_frames(self, show_progress = False):
         if "frame_count" not in self.internal_meta:
             if show_progress:

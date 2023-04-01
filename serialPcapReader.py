@@ -78,6 +78,9 @@ class SerialPcapReader:
 
         return frame
 
+    def get_pcap_path(self):
+        return self.readers[self.current_reader_index].get_pcap_path()
+
     def read_all_frames(self, remove_vehicle:bool = False):
 
         frames = []
