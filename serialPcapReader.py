@@ -89,3 +89,6 @@ class SerialPcapReader:
             if frame is None:
                 return frames
             frames.append(frame)
+
+    def is_first_frame_in_file(self):
+        return self.readers[self.current_reader_index].is_first_frame_in_file()

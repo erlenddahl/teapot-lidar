@@ -218,6 +218,9 @@ class PcapReader:
     def get_current_frame_index(self):
         return self.last_read_frame_ix
 
+    def is_first_frame_in_file(self):
+        return self.last_read_frame_ix == 0
+
     def get_current_frame_index_including_skips(self):
         return self.last_read_frame_ix_including_skips
 

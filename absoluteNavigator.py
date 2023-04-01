@@ -205,6 +205,23 @@ class AbsoluteLidarNavigator(NavigatorBase):
         actual_coordinate = self.get_current_position().clone()
         self.actual_position_cylinder.translate(actual_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
 
+        # If this is the first frame in a new file (but not in the very first file), we want to move the 
+        # current position to avoid the results getting messed up by the (relatively) large gap between files.
+        if self.reader.is_first_frame_in_file() and not self.is_first_frame:
+            
+            # Extract the last estimated and actual coordinates
+            last_estimate = self.estimated_coordinates[-1]
+            last_actual = self.actual_coordinates[-1]
+
+            # Calculate the current estimation offset
+            dx = last_estimate.x - last_actual.x
+            dy = last_estimate.y - last_actual.y
+            dz = last_estimate.alt - last_actual.alt
+
+            # Now just move the estimate so that it is offset with the same amount, but from the
+            # first coordinate in the new file instead of the last coordinate in the last file.
+            self.current_coordinate = actual_coordinate.clone().translate([dx, dy, dz])
+
         if self.is_first_frame:
             self.is_first_frame = False
 

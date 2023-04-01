@@ -79,6 +79,7 @@ class SbetRow:
         self.x += t[0]
         self.y += t[1]
         self.alt += t[2]
+        return self
 
     def np(self):
         return np.array([self.x, self.y, self.alt])
