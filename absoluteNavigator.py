@@ -112,6 +112,8 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         self.is_first_frame = True
 
+        navigation_exception = None
+
         # Enumerate all frames until the end of the file and run the merge operation.
         for i in tqdm(range(0, self.frame_limit), total=self.frame_limit, ascii=True, initial=0, **self.tqdm_config):
             
@@ -132,17 +134,11 @@ class AbsoluteLidarNavigator(NavigatorBase):
                     self.plot.step(self.preview_always)
                     self.time("plot step")
 
-            except KeyboardInterrupt:
-                
-                print("")
-                print("********************************")
-                print("Process aborted. Results so far:")
-                print("********************************")
-                self.plot.print_summary(self.timer)
-                print("")
-                print("")
+            except Exception as e:
 
-                raise
+                navigation_exception = e
+                
+                break
 
         # When everything is finished, print a summary, and save the point cloud and debug data.
         if self.preview_at_end:
@@ -151,6 +147,9 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         results = self.check_results_saving(True)
         self.finish_plot_and_visualization()
+
+        if navigation_exception is not None:
+            raise navigation_exception
 
         return results
 
