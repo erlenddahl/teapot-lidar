@@ -40,6 +40,7 @@ class NavigatorBase:
         self.build_cloud_timer = args.build_cloud_after
         self.build_cloud_after = args.build_cloud_after
         self.build_cloud = args.build_cloud_after > 0
+        self.raise_on_error = args.raise_on_error
         
         self.tqdm_config = {}
         self.print_summary_at_end = False
@@ -259,6 +260,9 @@ class NavigatorBase:
 
         self.plot.step(self.preview_always)
         self.time("plot step")
+        
+        if self.raise_on_error > 0 and self.plot.position_error_3d[-1] > self.raise_on_error:
+            raise Exception("The navigation error is larger than the given limit (--raise-on-error).")
 
     def check_results_saving(self, save_cloud = False):
 
@@ -357,6 +361,7 @@ class NavigatorBase:
         parser.add_argument('--save-frame-pairs-to', type=str, default=None, required=False, help="If given, frame pairs with a registered fitness below --save-frame-pair-threshold will be saved to the given directory for manual inspection.")
         parser.add_argument('--save-frame-pair-threshold', type=float, default=0.97, required=False, help="If --save-frame-pairs-to is given, frame pairs with a registered fitness value below this value will be saved.")
         parser.add_argument('--skip-last-frame-in-pcap-file', type=bool, default=True, required=False, help="The last frame in each PCAP file is often corrupted. This flag makes the pcap reader skip the last frame in each file.")
+        parser.add_argument('--raise-on-error', type=float, default=200, required=False, help="The frame processing will raise exception will be raised if the distance between the actual and the estimated position is larger than this number. Set to 0 or lower to deactivate.")
 
         args = parser.parse_args()
 
