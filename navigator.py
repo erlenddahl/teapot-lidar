@@ -77,9 +77,6 @@ class LidarNavigator(NavigatorBase):
 
                         self.check_save_screenshot(i)
 
-                    self.plot.step(self.preview_always)
-                    self.time("plot step")
-
             except KeyboardInterrupt:
                 
                 print("")

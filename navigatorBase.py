@@ -257,6 +257,9 @@ class NavigatorBase:
             self.plot.position_error_3d.append(np.sqrt(dx*dx+dy*dy+dz*dz))
             self.plot.position_age.append(actual_coordinate.age)
 
+        self.plot.step(self.preview_always)
+        self.time("plot step")
+
     def check_results_saving(self, save_cloud = False):
 
         results = self.get_results()
