@@ -1,3 +1,7 @@
+Summary
+Four sites, two data collections, 6-8 trips each time.
+Collected LiDAR data using an X, stored as PCAP files, and GNSS coordinates using a Y, stored as SBET files. Coordinates from the SBET files were matched against LiDAR frames in the PCAP files using their timestamps.
+
 Differences 10hz vs 20hz
 20hz approximately 0.135 meters between frames (depends on driving speed).
 10hz approximately 0.300 meters between frames.
