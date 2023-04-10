@@ -131,6 +131,8 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
                         self.check_save_screenshot(i)
 
+                    self.check_wait()
+
             except Exception as e:
 
                 navigation_exception = e

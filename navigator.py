@@ -77,6 +77,8 @@ class LidarNavigator(NavigatorBase):
 
                         self.check_save_screenshot(i)
 
+                    self.check_wait()
+
             except KeyboardInterrupt:
                 
                 print("")

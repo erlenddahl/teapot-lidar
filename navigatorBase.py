@@ -1,6 +1,7 @@
 import numpy as np
 import json
 import math
+import time
 import os
 from tqdm import tqdm
 import open3d as o3d
@@ -41,6 +42,8 @@ class NavigatorBase:
         self.build_cloud_after = args.build_cloud_after
         self.build_cloud = args.build_cloud_after > 0
         self.raise_on_error = args.raise_on_error
+        self.has_waited = False
+        self.wait_after_initial_frame = args.wait_after_initial_frame
         
         self.tqdm_config = {}
         self.print_summary_at_end = False
@@ -260,7 +263,7 @@ class NavigatorBase:
 
         self.plot.step(self.preview_always)
         self.time("plot step")
-        
+
         if self.raise_on_error > 0 and self.plot.position_error_3d[-1] > self.raise_on_error:
             raise Exception("The navigation error is larger than the given limit (--raise-on-error).")
 
@@ -304,6 +307,18 @@ class NavigatorBase:
             cloud.paint_uniform_color(color)
 
         return cloud
+
+    def check_wait(self):
+        if self.has_waited:
+            return
+
+        print("")
+        print("Waiting for", self.wait_after_initial_frame, "seconds to allow visualization adjustments ...")
+        end_at = time.time() + self.wait_after_initial_frame
+        while time.time() < end_at:
+            self.vis.refresh_non_blocking()
+
+        self.has_waited = True
 
     def add_to_merged_frame(self, frame, handle_visualization=False):
 
@@ -362,6 +377,7 @@ class NavigatorBase:
         parser.add_argument('--save-frame-pair-threshold', type=float, default=0.97, required=False, help="If --save-frame-pairs-to is given, frame pairs with a registered fitness value below this value will be saved.")
         parser.add_argument('--skip-last-frame-in-pcap-file', type=bool, default=True, required=False, help="The last frame in each PCAP file is often corrupted. This flag makes the pcap reader skip the last frame in each file.")
         parser.add_argument('--raise-on-error', type=float, default=200, required=False, help="The frame processing will raise exception will be raised if the distance between the actual and the estimated position is larger than this number. Set to 0 or lower to deactivate.")
+        parser.add_argument('--wait-after-initial-frame', type=int, default=0, required=False, help="If given, the analysis will wait for this many seconds after the first frame to allow the visualization to be manually adjusted (zooming, panning, etc).")
 
         args = parser.parse_args()
 
