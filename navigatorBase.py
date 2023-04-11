@@ -154,6 +154,14 @@ class NavigatorBase:
         cylinder.paint_uniform_color(color)
         return cylinder
 
+    def create_line(self, points, color=[0,0,1]):
+        line = o3d.geometry.LineSet(
+            points = o3d.utility.Vector3dVector(points), 
+            lines = o3d.utility.Vector2iVector([[i, i+1] for i in range(len(points) - 1)])
+        )
+        line.paint_uniform_color(color)
+        return line
+
     @staticmethod
     def print_cloud_info(title, cloud, prefix = ""):
         mf = np.asarray(cloud.points)

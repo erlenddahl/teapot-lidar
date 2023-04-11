@@ -49,11 +49,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
         
         self.initialize_navigation(rotate_sbet=False)
 
-        self.actual_movement_path = o3d.geometry.LineSet(
-            points = o3d.utility.Vector3dVector([[p.x, p.y, p.alt] for p in self.sbet_coordinates]), 
-            lines = o3d.utility.Vector2iVector([[i, i+1] for i in range(len(self.sbet_coordinates) - 1)])
-        )
-        self.actual_movement_path.paint_uniform_color([0, 0, 1])
+        self.actual_movement_path = self.create_line([[p.x, p.y, p.alt] for p in self.sbet_coordinates], color=[0, 0, 1])
 
         self.actual_position_cylinder = self.create_cylinder(size_ratio=1, color=[0,0,1])
         self.estimated_position_cylinder = self.create_cylinder(size_ratio=0.8, color=[1,0,0])
