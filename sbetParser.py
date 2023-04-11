@@ -16,7 +16,19 @@ class SbetRow:
     0 means straight north, positive PI/2 means straight east, negative PI/2 straight west.
     """
 
-    def __init__(self, row, sow=0, index=0, original=None, z_offset=0):
+    def __init__(self, row, sow=0, index=0, original=None, z_offset=0, x=None, y=None):
+
+        if row is None and x is not None and y is not None:
+            self.x = x
+            self.y = y
+            self.alt = 0
+            self.sow = 0
+            self.lat = 0
+            self.lon = 0
+            self.age = 0
+            self.index = 0
+            self.heading = 0
+            return
 
         if original is not None:
 
