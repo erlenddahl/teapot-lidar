@@ -77,9 +77,10 @@ class AbsoluteLidarNavigator(NavigatorBase):
             # the point cloud.
             for c in self.sbet_coordinates:
                 c.translate(-self.full_point_cloud_offset)
-            
-            self.current_coordinate = self.sbet_coordinates[0].clone()
-            self.initial_coordinate = self.sbet_coordinates[0].clone()
+
+            # Also translate the "skip until" circle 
+            if not self.has_entered_skip_until_circle:
+                self.skip_until_circle_center.translate(-self.full_point_cloud_offset)
 
             self.actual_movement_path = o3d.geometry.LineSet(
                 points = o3d.utility.Vector3dVector([[p.x, p.y, p.alt] for p in self.sbet_coordinates]), 
@@ -95,7 +96,8 @@ class AbsoluteLidarNavigator(NavigatorBase):
             
             self.start_position_cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=self.position_cylinder_radius * 0.6, height=self.position_cylinder_height * 1.3, resolution=20, split=4)
             self.start_position_cylinder.paint_uniform_color([1.0, 1.0, 1.0])
-            self.start_position_cylinder.translate(self.sbet_coordinates[0].np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
+
+            self.current_coordinate = None
 
         self.last_extracted_frame_coordinate = None
         self.last_extracted_frame = None
@@ -126,6 +128,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
                         self.vis.refresh_non_blocking()
                         self.vis.update_geometry(self.actual_position_cylinder)
                         self.vis.update_geometry(self.estimated_position_cylinder)
+                        self.vis.update_geometry(self.start_position_cylinder)
 
                         self.time("visualization refresh")
 
@@ -203,6 +206,15 @@ class AbsoluteLidarNavigator(NavigatorBase):
         actual_coordinate = self.get_current_position().clone()
         self.actual_position_cylinder.translate(actual_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
 
+        # Check if we have entered the "start analysing" circle (if given). If we haven't, skip this frame.
+        if self.skip_until_circle(actual_coordinate):
+            return True
+
+        if self.current_coordinate is None:
+            self.current_coordinate = actual_coordinate.clone()
+            self.initial_coordinate = actual_coordinate.clone()
+            self.start_position_cylinder.translate(self.initial_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
+
         # If this is the first frame in a new file (but not in the very first file), we want to move the 
         # current position to avoid the results getting messed up by the (relatively) large gap between files.
         if self.reader.is_first_frame_in_file() and not self.is_first_frame:
@@ -277,7 +289,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
         while reg.fitness < 0.85 and threshold < 10:
             threshold *= 2
             reg = self.matcher.match(frame, partial_cloud, threshold)
-        
+
         self.registration_configs.append({
             "threshold": threshold, 
             "frame_ix": self.reader.get_current_frame_index(),

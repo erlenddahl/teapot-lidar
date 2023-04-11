@@ -141,6 +141,13 @@ class LidarNavigator(NavigatorBase):
         # the file. Return False to stop the loop.
         if frame is None:
             return False
+        
+        # Retrieve the actual coordinate
+        actual_coordinate = self.get_current_position(False) if self.current_coordinate is not None else None
+
+        # Check if we have entered the "start analysing" circle (if given). If we haven't, skip this frame.
+        if self.skip_until_circle(actual_coordinate):
+            return True
 
         # Estimate normals for the target frame (the source frame will always have
         # normals from the previous step).
@@ -160,8 +167,6 @@ class LidarNavigator(NavigatorBase):
         # Calculate how much the center point has moved by transforming [0,0,0] with
         # the calculated transformation
         movement = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(reg.transformation).get_center()
-        
-        actual_coordinate = self.get_current_position(False) if self.current_coordinate is not None else None
 
         if self.current_coordinate is not None:
             self.current_coordinate.translate(movement) #TODO: Think this is wrong. Should probably use transformed red line in the end to generate all estimated coordinates.

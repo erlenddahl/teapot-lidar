@@ -12,6 +12,7 @@ from algorithmHelper import AlgorithmHelper
 from pcapReaderHelper import PcapReaderHelper
 from open3dVisualizer import Open3DVisualizer
 from plotter import Plotter
+from sbetParser import SbetRow
 import argparse
 
 class NavigatorBase:
@@ -44,6 +45,11 @@ class NavigatorBase:
         self.raise_on_error = args.raise_on_error
         self.has_waited = False
         self.wait_after_initial_frame = args.wait_after_initial_frame
+
+        self.has_entered_skip_until_circle = True
+        if self.args.skip_until_radius > 0 and self.args.skip_until_x is not None and self.args.skip_until_x is not None:
+            self.skip_until_circle_center = SbetRow(None, x=self.args.skip_until_x, y=self.args.skip_until_y)
+            self.has_entered_skip_until_circle = False
         
         self.tqdm_config = {}
         self.print_summary_at_end = False
@@ -57,10 +63,34 @@ class NavigatorBase:
             self.time("frame counting")
 
     def skip_initial_frames(self):
+        """ Skips frames at the beginning of the given pcap file(s). The number of skipped frames is given by the
+        --skip-start argument.
+        """
+        
         if self.skip_start > 0:
             self.frame_limit -= self.skip_start
             for _ in tqdm(range(0, self.skip_start), ascii=True, desc="Skipping frames", **self.tqdm_config):
                 self.reader.next_frame(False, self.timer)
+
+    def skip_until_circle(self, position):
+        """ The "skip until" circle is used to skip frames until the actual position has entered a circle given by the 
+        --skip-until-x, --skip-until-y, and --skip-until-radius arguments. It is intended as a simple way of creating
+        sub routes that start at the exact same point, even though pcap files start and stop at different points for 
+        different trips.
+
+        The function returns False if a skip-until circle hasn't been provided, or if we have already entered it.
+        The function returns True if a circle has been provided, but we have not yet entered it.
+        """
+
+        if self.has_entered_skip_until_circle:
+            return False
+
+        distance = self.skip_until_circle_center.distance2d(position)
+        if distance > self.args.skip_until_radius:
+            return True
+
+        self.has_entered_skip_until_circle = True
+        return False
 
     @staticmethod
     def print_cloud_info(title, cloud, prefix = ""):
@@ -367,6 +397,9 @@ class NavigatorBase:
         parser.add_argument('--frames', type=int, default=-1, required=False, help="If given a number larger than 1, only this many frames will be read from the PCAP file.")
         parser.add_argument('--build-cloud-after', type=int, default=1, required=False, help="How often registered frames should be added to the generated point cloud. 0 or lower deactivates the generated point cloud. 1 or higher generates a point cloud with details (and time usage) decreasing with higher numbers.")
         parser.add_argument('--skip-every-frame', type=int, default=0, required=False, help="If given a positive number larger than 0, this many frames will be skipped between every frame read from the PCAP file.")
+        parser.add_argument('--skip-until-radius', type=int, default=20, required=False, help="If given together with --skip-until-x and --skip-until-y, the analysis will skip frames until the actual position enters the circle given by these three parameters.")
+        parser.add_argument('--skip-until-x', type=float, default=None, required=False, help="If given together with --skip-until-x and --skip-until-radius, the analysis will skip frames until the actual position enters the circle given by these three parameters.")
+        parser.add_argument('--skip-until-y', type=float, default=None, required=False, help="If given together with --skip-until-y and --skip-until-radius, the analysis will skip frames until the actual position enters the circle given by these three parameters.")
         parser.add_argument('--skip-start', type=int, default=0, required=False, help="If given a positive number larger than 0, this many frames will be skipped before starting processing frames.")
         parser.add_argument('--voxel-size', type=float, default=0.1, required=False, help="The voxel size used for cloud downsampling. If less than or equal to zero, downsampling will be disabled.")
         parser.add_argument('--downsample-after', type=int, default=10, required=False, help="The cloud will be downsampled (which is an expensive operation for large clouds, so don't do it too often) after this many registered frames have been added. If this number is higher than the number of frames being read, it will be downsampled once at the end of the process (unless downsampling is disabled, see --voxel-size).")
