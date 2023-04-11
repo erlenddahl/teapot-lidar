@@ -7,10 +7,10 @@ from tqdm import tqdm
 import open3d as o3d
 import laspy
 from datetime import datetime
-from taskTimer import TaskTimer
+from utils.taskTimer import TaskTimer
 from algorithmHelper import AlgorithmHelper
 from pcapReaderHelper import PcapReaderHelper
-from open3dVisualizer import Open3DVisualizer
+from utils.open3dVisualizer import Open3DVisualizer
 from plotter import Plotter
 from sbetParser import SbetRow
 import argparse

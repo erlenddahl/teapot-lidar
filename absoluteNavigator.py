@@ -1,4 +1,3 @@
-from open3dVisualizer import Open3DVisualizer
 from navigatorBase import NavigatorBase
 from plotter import Plotter
 import numpy as np
