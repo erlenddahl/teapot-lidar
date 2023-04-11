@@ -1,5 +1,5 @@
 from utils.open3dVisualizer import Open3DVisualizer
-from sbetHelpers import read_sbet, filename2gpsweek, timestamp_unix2sow, timestamp_sow2unix
+from sbet.sbetHelpers import read_sbet, filename2gpsweek, timestamp_unix2sow, timestamp_sow2unix
 import os
 import math
 import numpy as np
