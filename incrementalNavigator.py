@@ -29,10 +29,7 @@ class LidarNavigator(NavigatorBase):
             self.current_coordinate = self.sbet_coordinates[0].clone()
             self.initial_coordinate = self.sbet_coordinates[0].clone()
 
-            self.actual_movement_path = o3d.geometry.LineSet(
-                points = o3d.utility.Vector3dVector([[p.x - self.initial_coordinate.x, p.y - self.initial_coordinate.y, p.alt - self.initial_coordinate.alt] for p in self.sbet_coordinates]), 
-                lines = o3d.utility.Vector2iVector()
-            )
+            self.actual_movement_path = self.create_line([[p.x - self.initial_coordinate.x, p.y - self.initial_coordinate.y, p.alt - self.initial_coordinate.alt] for p in self.sbet_coordinates], color=[0,0,1])
 
         self.merged_frame = self.reader.next_frame(self.remove_vehicle, self.timer)
 
@@ -161,21 +158,6 @@ class LidarNavigator(NavigatorBase):
 
         # Add the new line
         self.update_live_movement(self.movement_path)
-
-        if actual_coordinate is not None:
-
-            actual_coordinate = self.get_current_position(True)
-            
-            if len(self.movements) >= 2:
-                line_count = len(self.actual_movement_path.lines)
-                self.actual_movement_path.lines.append([line_count, line_count + 1])
-
-            self.actual_movement_path = self.actual_movement_path.transform(reg.transformation)
-            self.actual_movement_path.paint_uniform_color([0, 0, 1])
-            
-            # Add the actual coordinate as a blue line
-            self.update_live_movement(self.actual_movement_path)
-
 
         self.time("book keeping")
 
