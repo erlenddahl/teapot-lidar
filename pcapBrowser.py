@@ -1,5 +1,5 @@
-from bufferedPcapReader import BufferedPcapReader
-from pcapReaderHelper import PcapReaderHelper
+from pcap.bufferedPcapReader import BufferedPcapReader
+from pcap.pcapReaderHelper import PcapReaderHelper
 from utils.open3dVisualizer import Open3DVisualizer
 import argparse
 import open3d as o3d

@@ -1,7 +1,8 @@
 from ouster import client, pcap
 import open3d as o3d
-from colormaps import colorize, normalize
-from sbetParser import SbetParser, SbetRow
+from pcap.colormaps import colorize, normalize
+from sbet.sbetParser import SbetParser
+from sbet.sbetRow import SbetRow
 import numpy as np
 import os
 import json

@@ -1,8 +1,8 @@
 import os
 import argparse
 
-from pcapReader import PcapReader
-from serialPcapReader import SerialPcapReader
+from pcap.pcapReader import PcapReader
+from pcap.serialPcapReader import SerialPcapReader
 
 class PcapReaderHelper:
 

@@ -9,10 +9,10 @@ import laspy
 from datetime import datetime
 from utils.taskTimer import TaskTimer
 from algorithmHelper import AlgorithmHelper
-from pcapReaderHelper import PcapReaderHelper
+from pcap.pcapReaderHelper import PcapReaderHelper
 from utils.open3dVisualizer import Open3DVisualizer
 from utils.plotter import Plotter
-from sbetParser import SbetRow
+from sbet.sbetParser import SbetRow
 import argparse
 
 class NavigatorBase:

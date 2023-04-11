@@ -1,9 +1,10 @@
 import argparse
 from itertools import chain
-from pcapReader import PcapReader   
 from tqdm import tqdm  
 import os
 from glob import glob
+
+from pcap.pcapReader import PcapReader
 
 if __name__ == "__main__":
 

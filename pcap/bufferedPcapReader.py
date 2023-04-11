@@ -1,9 +1,9 @@
 from ouster import client, pcap
 import open3d as o3d
-from colormaps import colorize, normalize
 import argparse
 
-from pcapReader import PcapReader
+from pcap.colormaps import colorize, normalize
+from pcap.pcapReader import PcapReader
 
 class BufferedPcapReader(PcapReader):
 

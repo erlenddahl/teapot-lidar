@@ -1,6 +1,6 @@
-from pcapReader import PcapReader
+from pcap.pcapReader import PcapReader
 from tqdm import tqdm
-from sbetParser import SbetParser
+from sbet.sbetParser import SbetParser
 import numpy as np
 
 class SerialPcapReader:
