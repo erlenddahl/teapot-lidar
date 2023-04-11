@@ -43,6 +43,7 @@ class NavigatorBase:
         self.build_cloud_after = args.build_cloud_after
         self.build_cloud = args.build_cloud_after > 0
         self.raise_on_error = args.raise_on_error
+        self.raise_on_movement = args.raise_on_movement
         self.has_waited = False
         self.wait_after_initial_frame = args.wait_after_initial_frame
 
@@ -66,7 +67,7 @@ class NavigatorBase:
         """ Skips frames at the beginning of the given pcap file(s). The number of skipped frames is given by the
         --skip-start argument.
         """
-        
+
         if self.skip_start > 0:
             self.frame_limit -= self.skip_start
             for _ in tqdm(range(0, self.skip_start), ascii=True, desc="Skipping frames", **self.tqdm_config):
@@ -297,6 +298,9 @@ class NavigatorBase:
         if self.raise_on_error > 0 and self.plot.position_error_3d[-1] > self.raise_on_error:
             raise Exception("The navigation error is larger than the given limit (--raise-on-error).")
 
+        if self.raise_on_movement > 0 and self.plot.distances[-1] > self.raise_on_movement:
+            raise Exception("The movement between the last two frames was larger than the given limit (--raise-on-movement).")           
+
     def check_results_saving(self, save_cloud = False):
 
         results = self.get_results()
@@ -409,7 +413,8 @@ class NavigatorBase:
         parser.add_argument('--save-frame-pairs-to', type=str, default=None, required=False, help="If given, frame pairs with a registered fitness below --save-frame-pair-threshold will be saved to the given directory for manual inspection.")
         parser.add_argument('--save-frame-pair-threshold', type=float, default=0.97, required=False, help="If --save-frame-pairs-to is given, frame pairs with a registered fitness value below this value will be saved.")
         parser.add_argument('--skip-last-frame-in-pcap-file', type=bool, default=True, required=False, help="The last frame in each PCAP file is often corrupted. This flag makes the pcap reader skip the last frame in each file.")
-        parser.add_argument('--raise-on-error', type=float, default=200, required=False, help="The frame processing will raise exception will be raised if the distance between the actual and the estimated position is larger than this number. Set to 0 or lower to deactivate.")
+        parser.add_argument('--raise-on-error', type=float, default=200, required=False, help="The frame processing will raise an exception if the distance between the actual and the estimated position is larger than this number. Set to 0 or lower to deactivate.")
+        parser.add_argument('--raise-on-movement', type=float, default=100, required=False, help="The frame processing will raise an exception if the distance between two last estimated positions is larger than this number. Set to 0 or lower to deactivate.")
         parser.add_argument('--wait-after-initial-frame', type=int, default=0, required=False, help="If given, the analysis will wait for this many seconds after the first frame to allow the visualization to be manually adjusted (zooming, panning, etc).")
 
         args = parser.parse_args()
