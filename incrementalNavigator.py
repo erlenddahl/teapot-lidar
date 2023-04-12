@@ -22,33 +22,14 @@ class LidarNavigator(NavigatorBase):
         to show the driving route.
         """
         
-        self.timer.reset()
+        self.initialize_navigation(initial_movement=[[0,0,0]], rotate_sbet=True)
 
-        # Initialize the list of movements as well as the merged frame, and the first 
-        # source frame.
-        self.movements = []
-        self.registration_configs = []
-        self.estimated_coordinates = []
-        self.actual_coordinates = []
-        self.sbet_coordinates = []
-        self.actual_movement_path = None
-
-        self.movement_path = o3d.geometry.LineSet(
-            points = o3d.utility.Vector3dVector([[0,0,0]]), lines=o3d.utility.Vector2iVector([])
-        )
-
-        if args.sbet is not None:
-            self.sbet_coordinates = self.reader.get_coordinates()
+        if self.args.sbet is not None:
 
             self.current_coordinate = self.sbet_coordinates[0].clone()
             self.initial_coordinate = self.sbet_coordinates[0].clone()
 
-            self.actual_movement_path = o3d.geometry.LineSet(
-                points = o3d.utility.Vector3dVector([[p.x - self.initial_coordinate.x, p.y - self.initial_coordinate.y, p.alt - self.initial_coordinate.alt] for p in self.sbet_coordinates]), 
-                lines = o3d.utility.Vector2iVector()
-            )
-
-        self.skip_initial_frames()
+            self.actual_movement_path = self.create_line([[p.x - self.initial_coordinate.x, p.y - self.initial_coordinate.y, p.alt - self.initial_coordinate.alt] for p in self.sbet_coordinates], color=[0,0,1])
 
         self.merged_frame = self.reader.next_frame(self.remove_vehicle, self.timer)
 
@@ -61,6 +42,8 @@ class LidarNavigator(NavigatorBase):
         self.initialize_plot_and_visualization()
 
         self.time("navigation preparations")
+
+        navigation_exception = None
 
         # Enumerate all frames until the end of the file and run the merge operation.
         for i in tqdm(range(1, self.frame_limit), total=self.frame_limit, ascii=True, initial=1, **self.tqdm_config):
@@ -94,15 +77,7 @@ class LidarNavigator(NavigatorBase):
         # Ensure the final cloud has been downsampled
         self.ensure_merged_frame_is_downsampled()
 
-        # When everything is finished, print a summary, and save the point cloud and debug data.
-        if self.preview_at_end:
-            self.plot.show_plot()
-            self.plot.update()
-
-        results = self.check_results_saving(True)
-        self.finish_plot_and_visualization()
-
-        return results
+        return self.finalize_navigation(navigation_exception)
 
     def get_current_position(self, transformed):
 
@@ -136,6 +111,8 @@ class LidarNavigator(NavigatorBase):
 
         # Fetch the next frame
         frame = self.reader.next_frame(self.remove_vehicle, self.timer)
+
+        self.time("frame extraction")
 
         # If it is empty, that (usually) means we have reached the end of
         # the file. Return False to stop the loop.
@@ -181,21 +158,6 @@ class LidarNavigator(NavigatorBase):
 
         # Add the new line
         self.update_live_movement(self.movement_path)
-
-        if actual_coordinate is not None:
-
-            actual_coordinate = self.get_current_position(True)
-            
-            if len(self.movements) >= 2:
-                line_count = len(self.actual_movement_path.lines)
-                self.actual_movement_path.lines.append([line_count, line_count + 1])
-
-            self.actual_movement_path = self.actual_movement_path.transform(reg.transformation)
-            self.actual_movement_path.paint_uniform_color([0, 0, 1])
-            
-            # Add the actual coordinate as a blue line
-            self.update_live_movement(self.actual_movement_path)
-
 
         self.time("book keeping")
 

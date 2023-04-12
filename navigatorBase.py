@@ -7,12 +7,12 @@ from tqdm import tqdm
 import open3d as o3d
 import laspy
 from datetime import datetime
-from taskTimer import TaskTimer
+from utils.taskTimer import TaskTimer
 from algorithmHelper import AlgorithmHelper
-from pcapReaderHelper import PcapReaderHelper
-from open3dVisualizer import Open3DVisualizer
-from plotter import Plotter
-from sbetParser import SbetRow
+from pcap.pcapReaderHelper import PcapReaderHelper
+from utils.open3dVisualizer import Open3DVisualizer
+from utils.plotter import Plotter
+from sbet.sbetParser import SbetRow
 import argparse
 
 class NavigatorBase:
@@ -46,6 +46,7 @@ class NavigatorBase:
         self.raise_on_movement = args.raise_on_movement
         self.has_waited = False
         self.wait_after_initial_frame = args.wait_after_initial_frame
+        self.full_point_cloud_offset = None
 
         self.has_entered_skip_until_circle = True
         if self.args.skip_until_radius > 0 and self.args.skip_until_x is not None and self.args.skip_until_x is not None:
@@ -56,6 +57,9 @@ class NavigatorBase:
         self.print_summary_at_end = False
 
         self.current_coordinate = None
+        
+        self.position_cylinder_radius = 1
+        self.position_cylinder_height = 20
         
         self.time("setup")
 
@@ -92,6 +96,71 @@ class NavigatorBase:
 
         self.has_entered_skip_until_circle = True
         return False
+
+    def initialize_navigation(self, initial_movement=[], rotate_sbet=False):
+        self.timer.reset()
+        self.skip_initial_frames()
+
+        # Initialize the list of movements as well as the merged frame, and the first 
+        # source frame.
+        self.movements = []
+        self.registration_configs = []
+        self.actual_coordinates = []
+        self.estimated_coordinates = []
+        self.sbet_coordinates = []
+        self.actual_movement_path = None
+
+        self.movement_path = o3d.geometry.LineSet(
+            points = o3d.utility.Vector3dVector(initial_movement), lines=o3d.utility.Vector2iVector([])
+        )
+
+        if self.args.sbet is not None:
+
+            # Read the coordinates from all frames in the PCAP file(s).
+            # We set the rotate-argument to False, since we're working with
+            # the same coordinate system here -- both the georeferenced point cloud
+            # and the actual coordinates of the frames are in UTM, and there is
+            # therefore no need to rotate them like it is in the visual odometry
+            # based navigator.
+            self.sbet_coordinates = self.reader.get_coordinates(rotate=rotate_sbet, show_progress=True)
+
+            if self.full_point_cloud_offset is not None:
+                # Translate all coordinates towards origo with the same offset as
+                # the point cloud.
+                for c in self.sbet_coordinates:
+                    c.translate(-self.full_point_cloud_offset)
+
+                # Also translate the "skip until" circle 
+                if not self.has_entered_skip_until_circle:
+                    self.skip_until_circle_center.translate(-self.full_point_cloud_offset)
+
+    def finalize_navigation(self, navigation_exception):
+
+        # When everything is finished, print a summary, and save the point cloud and debug data.
+        if self.preview_at_end:
+            self.plot.show_plot()
+            self.plot.update()
+
+        results = self.check_results_saving(True)
+        self.finish_plot_and_visualization()
+
+        if navigation_exception is not None:
+            raise navigation_exception
+
+        return results
+
+    def create_cylinder(self, size_ratio=1, color=[0,0,1]):
+        cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=self.position_cylinder_radius * size_ratio, height=self.position_cylinder_height * (2 - size_ratio), resolution=20, split=4)
+        cylinder.paint_uniform_color(color)
+        return cylinder
+
+    def create_line(self, points, color=[0,0,1]):
+        line = o3d.geometry.LineSet(
+            points = o3d.utility.Vector3dVector(points), 
+            lines = o3d.utility.Vector2iVector([[i, i+1] for i in range(len(points) - 1)])
+        )
+        line.paint_uniform_color(color)
+        return line
 
     @staticmethod
     def print_cloud_info(title, cloud, prefix = ""):

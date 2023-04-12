@@ -1,6 +1,4 @@
-from open3dVisualizer import Open3DVisualizer
 from navigatorBase import NavigatorBase
-from plotter import Plotter
 import numpy as np
 import os
 from tqdm import tqdm
@@ -15,13 +13,13 @@ class AbsoluteLidarNavigator(NavigatorBase):
         """Initialize an AbsoluteLidarNavigator by reading metadata and setting
         up a package source from the pcap file.
         """
-        
-        self.position_cylinder_radius = 1
-        self.position_cylinder_height = 20
 
         self.load_point_cloud(args.point_cloud)
 
         NavigatorBase.__init__(self, args, 0)
+
+        if self.args.sbet is None:
+            raise Exception("Absolute navigation must have SBET coordinates (--sbet).")
 
         self.merged_frame = None
 
@@ -49,55 +47,13 @@ class AbsoluteLidarNavigator(NavigatorBase):
         to show the driving route.
         """
         
-        self.timer.reset()
-        self.skip_initial_frames()
+        self.initialize_navigation(rotate_sbet=False)
 
-        # Initialize the list of movements as well as the merged frame, and the first 
-        # source frame.
-        self.movements = []
-        self.registration_configs = []
+        self.actual_movement_path = self.create_line([[p.x, p.y, p.alt] for p in self.sbet_coordinates], color=[0, 0, 1])
 
-        self.movement_path = o3d.geometry.LineSet(
-            points = o3d.utility.Vector3dVector([]), lines=o3d.utility.Vector2iVector([])
-        )
-
-        if args.sbet is not None:
-
-            # Read the coordinates from all frames in the PCAP file(s).
-            # We set the rotate-argument to False, since we're working with
-            # the same coordinate system here -- both the georeferenced point cloud
-            # and the actual coordinates of the frames are in UTM, and there is
-            # therefore no need to rotate them like it is in the visual odometry
-            # based navigator.
-            self.sbet_coordinates = self.reader.get_coordinates(False, show_progress=True)
-            self.actual_coordinates = []
-            self.estimated_coordinates = []
-
-            # Translate all coordinates towards origo with the same offset as
-            # the point cloud.
-            for c in self.sbet_coordinates:
-                c.translate(-self.full_point_cloud_offset)
-
-            # Also translate the "skip until" circle 
-            if not self.has_entered_skip_until_circle:
-                self.skip_until_circle_center.translate(-self.full_point_cloud_offset)
-
-            self.actual_movement_path = o3d.geometry.LineSet(
-                points = o3d.utility.Vector3dVector([[p.x, p.y, p.alt] for p in self.sbet_coordinates]), 
-                lines = o3d.utility.Vector2iVector([[i, i+1] for i in range(len(self.sbet_coordinates) - 1)])
-            )
-            self.actual_movement_path.paint_uniform_color([0, 0, 1])
-            
-            self.actual_position_cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=self.position_cylinder_radius, height=self.position_cylinder_height, resolution=20, split=4)
-            self.actual_position_cylinder.paint_uniform_color([0.0, 0.0, 1.0])
-            
-            self.estimated_position_cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=self.position_cylinder_radius * 0.8, height=self.position_cylinder_height * 1.2, resolution=20, split=4)
-            self.estimated_position_cylinder.paint_uniform_color([1.0, 0.0, 0.0])
-            
-            self.start_position_cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=self.position_cylinder_radius * 0.6, height=self.position_cylinder_height * 1.3, resolution=20, split=4)
-            self.start_position_cylinder.paint_uniform_color([1.0, 1.0, 1.0])
-
-            self.current_coordinate = None
+        self.actual_position_cylinder = self.create_cylinder(size_ratio=1, color=[0,0,1])
+        self.estimated_position_cylinder = self.create_cylinder(size_ratio=0.8, color=[1,0,0])
+        self.start_position_cylinder = self.create_cylinder(size_ratio=0.6, color=[1,1,1])
 
         self.last_extracted_frame_coordinate = None
         self.last_extracted_frame = None
@@ -141,19 +97,8 @@ class AbsoluteLidarNavigator(NavigatorBase):
                 navigation_exception = e
                 
                 break
-
-        # When everything is finished, print a summary, and save the point cloud and debug data.
-        if self.preview_at_end:
-            self.plot.show_plot()
-            self.plot.update()
-
-        results = self.check_results_saving(True)
-        self.finish_plot_and_visualization()
-
-        if navigation_exception is not None:
-            raise navigation_exception
-
-        return results
+        
+        return self.finalize_navigation(navigation_exception)
 
     def get_current_position(self):
 

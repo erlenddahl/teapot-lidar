@@ -1,9 +1,10 @@
 import argparse
 from itertools import chain
-from pcapReader import PcapReader   
 from tqdm import tqdm  
 import os
 from glob import glob
+
+from pcap.pcapReader import PcapReader
 
 if __name__ == "__main__":
 
@@ -11,7 +12,7 @@ if __name__ == "__main__":
     parser.add_argument('--root-directory', type=str, required=True, help="Recreate caches for all pcap files found recursively under the given root directory.")
     parser.add_argument('--sbet', type=str, required=False, help="The path to a corresponding SBET file with GNSS coordinates.")
     parser.add_argument('--sbet-z-offset', type=float, default=0, required=False, help="If the GNSS positions in the SBET file have an altitude offset from the point cloud, this argument will be added/subtracted on the Z coordinates of each SBET coordinate.")
-    parser.add_argument('--recreate-caches', action='store_true')
+    parser.add_argument('--recreate-caches', action='store_true', required=False, help="If True, existing caches will be re-created. If False, files with existing caches will be skipped.")
     args = parser.parse_args()
 
     # The PCAP reader expects this argument, but it's not relevant here, so we always set it to False.

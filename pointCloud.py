@@ -6,7 +6,7 @@ import open3d as o3d
 import argparse
 
 from tqdm import tqdm
-from open3dVisualizer import Open3DVisualizer
+from utils.open3dVisualizer import Open3DVisualizer
 
 class PointCloudPart:
 
