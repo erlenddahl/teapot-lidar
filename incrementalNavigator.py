@@ -122,10 +122,6 @@ class LidarNavigator(NavigatorBase):
         # Retrieve the actual coordinate
         actual_coordinate = self.get_current_position(False) if self.current_coordinate is not None else None
 
-        # Check if we have entered the "start analysing" circle (if given). If we haven't, skip this frame.
-        if self.skip_until_circle(actual_coordinate):
-            return True
-
         # Estimate normals for the target frame (the source frame will always have
         # normals from the previous step).
         frame.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))

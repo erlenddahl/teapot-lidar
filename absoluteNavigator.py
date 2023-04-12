@@ -55,6 +55,10 @@ class AbsoluteLidarNavigator(NavigatorBase):
         self.estimated_position_cylinder = self.create_cylinder(size_ratio=0.8, color=[1,0,0])
         self.start_position_cylinder = self.create_cylinder(size_ratio=0.6, color=[1,1,1])
 
+        self.initial_coordinate = self.get_current_position().clone()
+        self.current_coordinate = self.initial_coordinate.clone()
+        self.start_position_cylinder.translate(self.initial_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
+
         self.last_extracted_frame_coordinate = None
         self.last_extracted_frame = None
         
@@ -150,15 +154,6 @@ class AbsoluteLidarNavigator(NavigatorBase):
         # Find the current position, and update the blue (actual) position cylinder
         actual_coordinate = self.get_current_position().clone()
         self.actual_position_cylinder.translate(actual_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
-
-        # Check if we have entered the "start analysing" circle (if given). If we haven't, skip this frame.
-        if self.skip_until_circle(actual_coordinate):
-            return True
-
-        if self.current_coordinate is None:
-            self.current_coordinate = actual_coordinate.clone()
-            self.initial_coordinate = actual_coordinate.clone()
-            self.start_position_cylinder.translate(self.initial_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
 
         # If this is the first frame in a new file (but not in the very first file), we want to move the 
         # current position to avoid the results getting messed up by the (relatively) large gap between files.

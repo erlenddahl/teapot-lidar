@@ -48,10 +48,12 @@ class NavigatorBase:
         self.wait_after_initial_frame = args.wait_after_initial_frame
         self.full_point_cloud_offset = None
 
-        self.has_entered_skip_until_circle = True
+        self.skip_until_circle_center = None
         if self.args.skip_until_radius > 0 and self.args.skip_until_x is not None and self.args.skip_until_x is not None:
             self.skip_until_circle_center = SbetRow(None, x=self.args.skip_until_x, y=self.args.skip_until_y)
-            self.has_entered_skip_until_circle = False
+
+        if args.skip_start > 0 and self.skip_until_circle_center is not None:
+            raise Exception("Cannot use both --skip-start and --skip-until-[x/y/radius] at the same time!")
         
         self.tqdm_config = {}
         self.print_summary_at_end = False
@@ -72,30 +74,37 @@ class NavigatorBase:
         --skip-start argument.
         """
 
-        if self.skip_start > 0:
-            self.frame_limit -= self.skip_start
-            for _ in tqdm(range(0, self.skip_start), ascii=True, desc="Skipping frames", **self.tqdm_config):
-                self.reader.next_frame(False, self.timer)
+        if self.skip_start <= 0:
+            return
 
-    def skip_until_circle(self, position):
+        self.skip_to_frame(self.skip_start, "Skipping frames")
+
+    def skip_to_frame(self, frame_index, desc):
+        self.frame_limit -= frame_index
+        for _ in tqdm(range(0, frame_index), ascii=True, desc=desc, **self.tqdm_config):
+            self.reader.next_frame(False, self.timer)
+
+    def skip_until_circle(self):
         """ The "skip until" circle is used to skip frames until the actual position has entered a circle given by the 
         --skip-until-x, --skip-until-y, and --skip-until-radius arguments. It is intended as a simple way of creating
         sub routes that start at the exact same point, even though pcap files start and stop at different points for 
         different trips.
-
-        The function returns False if a skip-until circle hasn't been provided, or if we have already entered it.
-        The function returns True if a circle has been provided, but we have not yet entered it.
         """
 
-        if self.has_entered_skip_until_circle:
-            return False
+        if self.skip_until_circle_center is None:
+            return
 
-        distance = self.skip_until_circle_center.distance2d(position)
-        if distance > self.args.skip_until_radius:
-            return True
+        skip_until = -1
+        for (ix, position) in enumerate(self.sbet_coordinates):
+            distance = self.skip_until_circle_center.distance2d(position)
+            if distance <= self.args.skip_until_radius:
+                skip_until = ix
+                break
 
-        self.has_entered_skip_until_circle = True
-        return False
+        if skip_until < 0:
+            raise Exception("The actual position never entered the circle given by --skip-until-[x/y/radius].")
+
+        self.skip_to_frame(skip_until, "Skipping until entering circle")
 
     def initialize_navigation(self, initial_movement=[], rotate_sbet=False):
         self.timer.reset()
@@ -131,8 +140,10 @@ class NavigatorBase:
                     c.translate(-self.full_point_cloud_offset)
 
                 # Also translate the "skip until" circle 
-                if not self.has_entered_skip_until_circle:
+                if self.skip_until_circle_center is not None:
                     self.skip_until_circle_center.translate(-self.full_point_cloud_offset)
+        
+        self.skip_until_circle()
 
     def finalize_navigation(self, navigation_exception):
 
