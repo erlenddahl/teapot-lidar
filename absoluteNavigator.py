@@ -14,9 +14,9 @@ class AbsoluteLidarNavigator(NavigatorBase):
         up a package source from the pcap file.
         """
 
-        self.load_point_cloud(args.point_cloud)
-
         NavigatorBase.__init__(self, args, 0)
+
+        self.load_point_cloud(args.point_cloud)
 
         if self.args.sbet is None:
             raise Exception("Absolute navigation must have SBET coordinates (--sbet).")
