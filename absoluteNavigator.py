@@ -229,14 +229,17 @@ class AbsoluteLidarNavigator(NavigatorBase):
         self.time("frame normal estimation")
 
         # Run the alignment
-        threshold = 2
-        reg = self.matcher.match(frame, partial_cloud, threshold)
-        while reg.fitness < 0.85 and threshold < 10:
-            threshold *= 2
-            reg = self.matcher.match(frame, partial_cloud, threshold)
+        iterations = 100
+        transformation_matrix = np.identity(4)
+        for i in range(10):
+            reg = self.matcher.match(frame, partial_cloud, trans_init=transformation_matrix, threshold=1, max_iterations=iterations)
+
+            # If the calculated transformation matrix is (almost) identical to the one we sent in, we are happy.
+            if np.abs(np.mean(reg.transformation[0:3, 3]-transformation_matrix[0:3, 3])) < 1e-5:
+                break
 
         self.registration_configs.append({
-            "threshold": threshold, 
+            "iterations": iterations, 
             "frame_ix": self.reader.get_current_frame_index(),
             "pcap": self.reader.get_pcap_path()
         })
