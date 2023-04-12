@@ -137,7 +137,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--create-from', type=str, help="A directory containing the point cloud as .laz files.")
     parser.add_argument('--preview', type=str, default="never", choices=['always', 'end', 'never'], help="Show constantly updated point cloud and data plot previews while processing ('always'), show them only at the end ('end'), or don't show them at all ('never').")
-    parser.add_argument('--max-files', type=int, default=-1, help="Stop reading after the given number of files.")
+    parser.add_argument('--max-files', type=int, default=-1, help="Stop reading after the given number of files (useful for saving time while testing).")
     parser.add_argument('--write-to', type=str, default=None, help="Write the assembled point cloud to this location.")
     parser.add_argument("--show", type=str, help="A .pcd file to show -- will not do any processing, just show it.")
 
