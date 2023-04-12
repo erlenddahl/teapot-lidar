@@ -27,17 +27,17 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         cloud_meta_data_path = path.replace(".pcd", "-meta.json")
 
-        print("Loading point cloud ...")
+        with tqdm(total=1, desc="Loading point cloud", **self.tqdm_config) as pbar:
 
-        with open(cloud_meta_data_path, "r") as outfile:
-            data = json.load(outfile)
+            with open(cloud_meta_data_path, "r") as outfile:
+                data = json.load(outfile)
 
-        self.full_point_cloud_offset = np.array([data["offset"][0], data["offset"][1], data["offset"][2]])
-        self.full_cloud = o3d.io.read_point_cloud(path)
+            self.full_point_cloud_offset = np.array([data["offset"][0], data["offset"][1], data["offset"][2]])
+            self.full_cloud = o3d.io.read_point_cloud(path)
 
-        self.full_cloud.paint_uniform_color([0.3, 0.6, 1.0])
+            self.full_cloud.paint_uniform_color([0.3, 0.6, 1.0])
 
-        print("    > Cloud loaded")
+            pbar.update(1)
 
     def navigate_through_file(self):
         """ Runs through each frame in the file. For each pair of frames, use NICP
@@ -77,7 +77,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
         navigation_exception = None
 
         # Enumerate all frames until the end of the file and run the merge operation.
-        for i in tqdm(range(0, self.frame_limit), total=self.frame_limit, ascii=True, initial=0, **self.tqdm_config):
+        for i in tqdm(range(0, self.frame_limit), total=self.frame_limit, initial=0, **self.tqdm_config):
             
             try:
 

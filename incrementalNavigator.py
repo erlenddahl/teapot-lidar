@@ -46,7 +46,7 @@ class LidarNavigator(NavigatorBase):
         navigation_exception = None
 
         # Enumerate all frames until the end of the file and run the merge operation.
-        for i in tqdm(range(1, self.frame_limit), total=self.frame_limit, ascii=True, initial=1, **self.tqdm_config):
+        for i in tqdm(range(1, self.frame_limit), total=self.frame_limit, initial=1, **self.tqdm_config):
             
             try:
 

@@ -55,7 +55,7 @@ class NavigatorBase:
         if args.skip_start > 0 and self.skip_until_circle_center is not None:
             raise Exception("Cannot use both --skip-start and --skip-until-[x/y/radius] at the same time!")
         
-        self.tqdm_config = {}
+        self.tqdm_config = { "ascii": True }
         self.print_summary_at_end = False
 
         self.current_coordinate = None
@@ -81,7 +81,7 @@ class NavigatorBase:
 
     def skip_to_frame(self, frame_index, desc):
         self.frame_limit -= frame_index
-        for _ in tqdm(range(0, frame_index), ascii=True, desc=desc, **self.tqdm_config):
+        for _ in tqdm(range(0, frame_index), desc=desc, **self.tqdm_config):
             self.reader.next_frame(False, self.timer)
 
     def skip_until_circle(self):
@@ -423,14 +423,15 @@ class NavigatorBase:
         return cloud
 
     def check_wait(self):
-        if self.has_waited:
+        if self.has_waited or self.wait_after_initial_frame <= 0:
             return
 
-        print("")
-        print("Waiting for", self.wait_after_initial_frame, "seconds to allow visualization adjustments ...")
         end_at = time.time() + self.wait_after_initial_frame
-        while time.time() < end_at:
-            self.vis.refresh_non_blocking()
+        with tqdm(desc="Waiting for vis. adjustment", total=self.wait_after_initial_frame, **self.tqdm_config) as pbar:
+            while time.time() < end_at:
+                self.vis.refresh_non_blocking()
+                pbar.n = int(self.wait_after_initial_frame - end_at + time.time())
+                pbar.refresh()
 
         self.has_waited = True
 
