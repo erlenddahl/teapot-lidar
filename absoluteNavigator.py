@@ -226,7 +226,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
         # Run the alignment
         iterations = 100
         transformation_matrix = np.identity(4)
-        for i in range(10):
+        for i in range(3):
             reg = self.matcher.match(frame, partial_cloud, trans_init=transformation_matrix, threshold=1, max_iterations=iterations)
 
             # If the calculated transformation matrix is (almost) identical to the one we sent in, we are happy.
@@ -234,7 +234,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
                 break
 
         self.registration_configs.append({
-            "iterations": iterations, 
+            "iterations": iterations * i, 
             "frame_ix": self.reader.get_current_frame_index(),
             "pcap": self.reader.get_pcap_path()
         })
