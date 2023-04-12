@@ -3,8 +3,8 @@ This repo will contain relevant code for working with [lidar](https://en.wikiped
 
 In this project we will investigate if the lidar data can be used to improve or replace GNSS navigation in two different ways: a) by "incremental navigation", that is by calculating vehicle movements by the difference between sequential lidar frames, and b) by using a georeferenced point cloud to locate a lidar frame.
 
-## Incremental navigation
-Incremental navigation works by using [point cloud registration](https://en.wikipedia.org/wiki/Point_set_registration) to calculate a transformation to align two sequential frames from a lidar dataset. This transformation can then be used to calculate how far and in which direction the vehicle moved between these two frames. By doing this for every frame pair in a lidar dataset, we can calculate the total movement. Given an initial GNSS position, the idea is that we can calculate updated GNSS positions throughout the movement without any more GNSS data.
+## Incremental navigation (visual odometry)
+Incremental navigation works by using [point cloud registration](https://en.wikipedia.org/wiki/Point_set_registration) to calculate a transformation to align two sequential frames from a lidar dataset. This transformation can then be used to calculate how far and in which direction the vehicle moved between these two frames. By doing this for every frame pair in a lidar dataset, we can calculate the total movement. Given an initial GNSS position, the idea is that we can calculate updated GNSS positions throughout the movement without any more GNSS data. This is equal to a simple visual odometry.
 
 | Two sequential frames with a visible difference are aligned by point cloud registration | An animation showing the alignment process frame by frame | The final point cloud with a movement path (red line)
 |-----|-----|-----
@@ -15,19 +15,52 @@ More details can be found in the [notes](./notes/notes.md).
 ## Georeferenced point cloud navigation
 _[This part is not yet started.]_
 
-## Running the code
+# Running the code
 
-### Requirements
+## Requirements
 The code is implemented and tested with Python 3.6 because of limitations with some of the libraries. 
 
 Create a new Anaconda environment (or use an existing, or venv, or whatever), and install the requirements:
 ```
 conda create --name teapot310 python=3.10.9
-conda activate teapot
+conda activate teapot310
 pip install open3d numpy matplotlib tqdm laspy[laszip] ouster-sdk[examples] tabulate probreg pyproj
 ```
 
-### Incremental navigation
+## Utilities
+
+### Point cloud generation
+The pointCloud.py script reads a folder of .laz files, and combines them into one large point cloud, which is saved as a Open3D .pcd file. Due to float rounding issues, the .laz files are first read once (header only) to generate a common minimum, and then all .laz files are translated towards the origin using this minimum so that the absolute value of all point coordinates are low numbers, thus less vulnerable to float rounding imprecision. Because of this, an additional metadata file is stored with information about how much the cloud was translated (this can be used to convert the "origin-local" coordinates back to original coordinates while running navigation).
+
+**Example of combining .laz files into a single .pcd:**
+```
+python pointCloud.py --create-from "folder-with-laz-files" --preview never --write-to "full-point-cloud.pcd"
+```
+
+**Example of visualizing a .pcd point cloud:**
+```
+python pointCloud.py --show "full-point-cloud.pcd"
+```
+
+**Full argument description:**
+```
+usage: pointCloud.py [-h] [--create-from CREATE_FROM] [--preview {always,end,never}] [--max-files MAX_FILES]
+                     [--write-to WRITE_TO] [--show SHOW]
+
+options:
+  -h, --help            show this help message and exit
+  --create-from CREATE_FROM
+                        A directory containing the point cloud as .laz files.
+  --preview {always,end,never}
+                        Show constantly updated point cloud and data plot previews while processing ('always'), show
+                        them only at the end ('end'), or don't show them at all ('never').
+  --max-files MAX_FILES
+                        Stop reading after the given number of files (useful for saving time while testing).
+  --write-to WRITE_TO   Write the assembled point cloud to this location.
+  --show SHOW           A .pcd file to show -- will not do any processing, just show it.
+```
+
+## Incremental navigation
 navigator.py runs through all frames the given PCAP file, and uses the selected registration algorithm to place all frames in the same coordinate system. The vehicle's movements between frames are calculated and visualized as a red line in the final point cloud. Data can be previewed using the --preview argument, and/or saved using the --save-to argument. For debugging, the --frames argument sets a maximum number of frames to be read before finishing, and the --skip-frames argument allows for simulating lower frequencies.
 
 **Example with default preview and no saving:**
@@ -91,7 +124,7 @@ optional arguments:
                         'always'.
 ```
 
-### Browsing PCAP files
+## Browsing PCAP files
 pcapBrowser.py is a very simple open3d based tool for visualizing the frames in a PCAP file. It allows you to browse the frames using the arrow keys on the keyboard, and can be run like this:
 
 ```
