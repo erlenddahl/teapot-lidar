@@ -97,9 +97,6 @@ Pyoints had some dependencies that were hard to install, including GDAL and Pypr
 
 As open3d was chosen over Pyoints, all Pyoints source code was eventually removed from the repository.
 
-## Pyproj
-When installing Pyproj in the environment, the ouster-sdk stops working. It has therefore been avoided.
-
 # Future work
-Test limiting point clouds; max 15 meters from origo?
-Test probreg: https://github.com/neka-nat/probreg
+ - Test limiting point clouds; max 15 meters from origo?
+ - Test probreg: https://github.com/neka-nat/probreg
