@@ -3,7 +3,7 @@ import open3d as o3d
 
 class NicpMatcher:
 
-    def match(self, source, target, threshold = 1, trans_init = None, max_iterations=100):
+    def match(self, source, target, threshold=1, trans_init=None, max_iterations=100):
 
         # Initialize an initial transformation. This is meant to be a
         # rough transformation to align the frames, but as lidar frames
