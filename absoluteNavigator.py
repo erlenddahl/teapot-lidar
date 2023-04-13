@@ -188,7 +188,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
         self.time("frame rotation")
 
         # Extract a part of the cloud around the actual position. This is the cloud we are going to register against.
-        partial_radius = 30
+        partial_radius = self.args.cloud_part_radius
         pr = np.array([partial_radius, partial_radius, partial_radius])
 
         # Keep a slightly larger partial cloud to make it quicker to extract the actual partial cloud
@@ -294,6 +294,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--point-cloud', type=str, required=True, help="An Open3D point cloud file to use for absolute navigation.")
     parser.add_argument('--hide-point-cloud', dest='hide_point_cloud', default=False, action='store_true', help="If set to true, the full point cloud will not be displayed in the visualization. Can be useful for a visualization performance boost, or if the frames drawn together with the cloud gets too chaotic.")
+    parser.add_argument('--cloud-part-radius', type=float, default=30, required=False, help="The radius of the part of the cloud that is extracted for local registration.")
     
     args = NavigatorBase.add_standard_and_parse_args(parser)
 
