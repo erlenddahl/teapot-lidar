@@ -62,17 +62,11 @@ class LidarNavigator(NavigatorBase):
 
                     self.check_wait()
 
-            except KeyboardInterrupt:
+            except Exception as e:
                 
-                print("")
-                print("********************************")
-                print("Process aborted. Results so far:")
-                print("********************************")
-                self.plot.print_summary(self.timer)
-                print("")
-                print("")
-
-                raise
+                navigation_exception = e
+                
+                break
 
         # Ensure the final cloud has been downsampled
         self.ensure_merged_frame_is_downsampled()
