@@ -2,6 +2,7 @@ from sbet.sbetHelpers import read_sbet, filename2gpsweek, timestamp_unix2sow, ti
 import os
 import numpy as np
 import open3d as o3d
+import csv
 
 from sbet.sbetRow import SbetRow
 
@@ -9,14 +10,19 @@ class SbetParser:
 
     def __init__(self, filename, z_offset):
         self.z_offset = z_offset
-        self.rows = SbetParser.read_latlon(filename, filename.replace(".out", "-smrmsg.out"))
+
+        if filename.lower().endswith(".csv"):
+            self.rows = SbetParser.read_csv(filename)
+        else:
+            self.rows = SbetParser.read_latlon(filename, filename.replace(".out", "-smrmsg.out"))
+
         self.current_index = 0
         self.row_count = len(self.rows)
 
     def reset(self):
         self.current_index = 0
 
-    def get_position(self, timestamp = None, pcap_filename = None, pcap_path = None, gps_week = None, continue_from_previous = False):
+    def get_position(self, timestamp=None, pcap_filename=None, pcap_path=None, gps_week=None, continue_from_previous=False):
 
         if gps_week is None:
             gps_week = self.get_gps_week(pcap_path, pcap_filename)
@@ -40,9 +46,26 @@ class SbetParser:
         return filename2gpsweek(pcap_filename)
 
     @staticmethod
+    def read_csv(filename):
+        # Can also read CSV files with the headers index,time,lat,lon,alt,heading (since some SBET files didn't work with this reader).
+        rows = []
+        with open(filename, newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                row["index"] = int(row["index"])
+                row["time"] = float(row["time"])
+                row["lat"] = float(row["lat"])
+                row["lon"] = float(row["lon"])
+                row["alt"] = float(row["alt"])
+                row["heading"] = float(row["heading"])
+                rows.append(row)
+        return rows
+
+
+    @staticmethod
     def read_latlon(sbet_filename, smrmsg_filename):
 
-        (sbet, _) = read_sbet(sbet_filename, smrmsg_filename)
+        (sbet, mmr) = read_sbet(sbet_filename, smrmsg_filename)
         sbet = sbet[["time", "lat", "lon", "alt", "heading"]]
         sbet["lat"] = sbet["lat"] * 180 / np.pi
         sbet["lon"] = sbet["lon"] * 180 / np.pi

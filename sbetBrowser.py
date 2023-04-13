@@ -10,7 +10,7 @@ if __name__ == "__main__":
 
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--sbet', type=str, required=True, help="The path to a corresponding SBET file with GNSS coordinates.")
+    parser.add_argument('--sbet', type=str, required=True, help="The path to a corresponding SBET file with GNSS coordinates. Can also read CSV files with the headers Index,GpsTime,Lat,Lon,Elevation,Azimuth (since some SBET files didn't work with this reader).")
     parser.add_argument('--gps-week', type=int, default=-1, required=False, help="If given, this GPS week will be used to transform the timestamps to unix and human readable time.")
     parser.add_argument('--sbet-z-offset', type=float, default=0, required=False, help="If the GNSS positions in the SBET file have an altitude offset from the point cloud, this argument will be added/subtracted on the Z coordinates of each SBET coordinate.")
     parser.add_argument('--out-csv', type=str, required=False, help="If given, coordinates will be saved to this CSV file instead of being visualized.")
@@ -45,16 +45,15 @@ if __name__ == "__main__":
 
     print("Initial heading:", parser.rows[0]["heading"])
 
+    print(parser.rows[0])
+
     coords = parser.get_rows()
 
     if args.out_csv is not None:
 
-        with open(args.out_csv, "w") as f:
-
+        with open(args.out_csv, "w", newline='') as f:
             writer = csv.writer(f)
-
             writer.writerow(coords[0].get_csv_headers())
-
             for c in coords:
                 writer.writerow(c.get_csv())
 
