@@ -1,4 +1,11 @@
 data
-validation
+validation/_gnss
+validation/*/*/navigation
+validation/*/*/pcap
+validation/*/*/pointcloud
+validation/*/*/video
+validation/*/results/*/*/*.laz
+validation/*/results/*/*/*.pcd
+validation/*/*/*.txt
 __pycache__
 .vscode
