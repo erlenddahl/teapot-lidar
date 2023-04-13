@@ -1,6 +1,6 @@
-python navigator.py --pcap "validation\Lillehammer\211021\pcap\7_20hz\OS-1-128_992035000186_1024x20_20211021_211813.pcap" --save-to "validation\Lillehammer\211021\results\7_20hz" --preview always --sbet "validation\Lillehammer\211021\navigation\sbet-output-UTC-1000.out" --build-cloud-after 100
+python navigator.py --pcap "validation\Lillehammer\2021-10-21\pcap\7_20hz\OS-1-128_992035000186_1024x20_202021-10-21_211813.pcap" --save-to "validation\Lillehammer\2021-10-21\results\7_20hz" --preview always --sbet "validation\Lillehammer\2021-10-21\navigation\sbet-output-UTC-1000.out" --build-cloud-after 100
 
-python navigator.py --pcap "validation\Lillehammer\220216\pcap\5_20hz\OS-1-128_992035000186_1024x20_20220216_205217.pcap" --save-to "validation\Lillehammer\220216\results\7_20hz" --preview always --sbet "validation\Lillehammer\220216\navigasjon\sbet-output.out" --build-cloud-after 100
+python navigator.py --pcap "validation\Lillehammer\2022-02-16\pcap\5_20hz\OS-1-128_992035000186_1024x20_202022-02-16_205217.pcap" --save-to "validation\Lillehammer\2022-02-16\results\7_20hz" --preview always --sbet "validation\Lillehammer\2022-02-16\navigasjon\sbet-output.out" --build-cloud-after 100
 
 
 
@@ -16,21 +16,21 @@ python navigator.py --pcap "validation\Lismarka\211022\pcap\3_vest_20hz\OS-1-128
 
 
 
-python absoluteNavigator.py --pcap "validation\Lillehammer\211021\pcap\7_20hz\OS-1-128_992035000186_1024x20_20211021_211813.pcap" --preview always --sbet "validation\Lillehammer\211021\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd"
+python absoluteNavigator.py --pcap "validation\Lillehammer\2021-10-21\pcap\7_20hz\OS-1-128_992035000186_1024x20_202021-10-21_211813.pcap" --preview always --sbet "validation\Lillehammer\2021-10-21\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd"
 
 
 conda activate teapot310
 G:
 cd "G:\2021-10-21 - Kartverket, LIDAR"
-python absoluteNavigator.py --pcap "validation\Lillehammer\211021\pcap\4_10hz\OS-1-128_992035000186_1024x10_20211021_200205.pcap" --preview always --sbet "validation\Lillehammer\211021\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --skip-start 0 --build-cloud-after 0 --save-to "validation\results\testing"
+python absoluteNavigator.py --pcap "validation\Lillehammer\2021-10-21\pcap\4_10hz\OS-1-128_992035000186_1024x10_202021-10-21_200205.pcap" --preview always --sbet "validation\Lillehammer\2021-10-21\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --skip-start 0 --build-cloud-after 0 --save-to "validation\results\testing"
 
-python navigator.py --pcap "validation\Lillehammer\211021\pcap\4_10hz\OS-1-128_992035000186_1024x10_20211021_200205.pcap" --preview always --sbet "validation\Lillehammer\211021\navigation\sbet-output-UTC-1000.out" --skip-start 0 --build-cloud-after 10
+python navigator.py --pcap "validation\Lillehammer\2021-10-21\pcap\4_10hz\OS-1-128_992035000186_1024x10_202021-10-21_200205.pcap" --preview always --sbet "validation\Lillehammer\2021-10-21\navigation\sbet-output-UTC-1000.out" --skip-start 0 --build-cloud-after 10
 
-(teapot) G:\2021-10-21 - Kartverket, LIDAR>python navigator.py --pcap "validation\Lillehammer\211021\pcap\7_20hz" --preview never
+(teapot) G:\2021-10-21 - Kartverket, LIDAR>python navigator.py --pcap "validation\Lillehammer\2021-10-21\pcap\7_20hz" --preview never
 
-python sbetParser.py --sbet "validation\Lillehammer\211021\navigation\sbet-output-UTC-1000.out"
+python sbetParser.py --sbet "validation\Lillehammer\2021-10-21\navigation\sbet-output-UTC-1000.out"
 
-python pointCloud.py --create-from "validation\Lillehammer\Punktsky_211021\Referansepunktsky" --preview never --write-to "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd"
+python pointCloud.py --create-from "validation\Lillehammer\Punktsky_2021-10-21\Referansepunktsky" --preview never --write-to "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd"
 python pointCloud.py --create-from "validation\Lillehammer\Punktsky_2022-02-16-run2" --preview never --write-to "validation\Lillehammer\2022-02-16\pointcloud\combined.pcd"
 
 
@@ -49,40 +49,40 @@ Lillehammer
 
 		ABSOLUTE MOT 21-punktsky
 
-			python absoluteNavigator.py --pcap "validation\Lillehammer\211021\pcap\3_10hz" --preview always --sbet "validation\Lillehammer\211021\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --build-cloud-after 0 --save-to "validation\Lillehammer\results\ABS, PCAP2021, PC2021\3_10hz" --skip-until-x 579490.13 --skip-until-y 6776060.22
+			python absoluteNavigator.py --pcap "validation\Lillehammer\2021-10-21\pcap\3_10hz" --preview always --sbet "validation\Lillehammer\2021-10-21\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --build-cloud-after 0 --save-to "validation\Lillehammer\results\ABS, PCAP2021, PC2021\3_10hz" --skip-until-x 579490.13 --skip-until-y 6776060.22
 
-			python absoluteNavigator.py --pcap "validation\Lillehammer\211021\pcap\4_10hz" --preview always --sbet "validation\Lillehammer\211021\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --build-cloud-after 0 --save-to "validation\Lillehammer\results\ABS, PCAP2021, PC2021\4_10hz" --skip-until-x 579490.13 --skip-until-y 6776060.22
+			python absoluteNavigator.py --pcap "validation\Lillehammer\2021-10-21\pcap\4_10hz" --preview always --sbet "validation\Lillehammer\2021-10-21\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --build-cloud-after 0 --save-to "validation\Lillehammer\results\ABS, PCAP2021, PC2021\4_10hz" --skip-until-x 579490.13 --skip-until-y 6776060.22
 
-			python absoluteNavigator.py --pcap "validation\Lillehammer\211021\pcap\5_20hz" --preview always --sbet "validation\Lillehammer\211021\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --build-cloud-after 0 --save-to "validation\Lillehammer\results\ABS, PCAP2021, PC2021\5_20hz" --skip-until-x 579490.13 --skip-until-y 6776060.22
+			python absoluteNavigator.py --pcap "validation\Lillehammer\2021-10-21\pcap\5_20hz" --preview always --sbet "validation\Lillehammer\2021-10-21\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --build-cloud-after 0 --save-to "validation\Lillehammer\results\ABS, PCAP2021, PC2021\5_20hz" --skip-until-x 579490.13 --skip-until-y 6776060.22
 
-			python absoluteNavigator.py --pcap "validation\Lillehammer\211021\pcap\5_20hz" --preview always --sbet "validation\Lillehammer\211021\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --build-cloud-after 0 --save-to "validation\Lillehammer\results\ABS, PCAP2021, PC2021\5_sim10hz" --skip-every-frame 1 --skip-until-x 579490.13 --skip-until-y 6776060.22
+			python absoluteNavigator.py --pcap "validation\Lillehammer\2021-10-21\pcap\5_20hz" --preview always --sbet "validation\Lillehammer\2021-10-21\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --build-cloud-after 0 --save-to "validation\Lillehammer\results\ABS, PCAP2021, PC2021\5_sim10hz" --skip-every-frame 1 --skip-until-x 579490.13 --skip-until-y 6776060.22
 
-			python absoluteNavigator.py --pcap "validation\Lillehammer\211021\pcap\6_20hz" --preview always --sbet "validation\Lillehammer\211021\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --build-cloud-after 0 --save-to "validation\Lillehammer\results\ABS, PCAP2021, PC2021\6_20hz" --skip-until-x 579490.13 --skip-until-y 6776060.22
+			python absoluteNavigator.py --pcap "validation\Lillehammer\2021-10-21\pcap\6_20hz" --preview always --sbet "validation\Lillehammer\2021-10-21\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --build-cloud-after 0 --save-to "validation\Lillehammer\results\ABS, PCAP2021, PC2021\6_20hz" --skip-until-x 579490.13 --skip-until-y 6776060.22
 
-			python absoluteNavigator.py --pcap "validation\Lillehammer\211021\pcap\6_20hz" --preview always --sbet "validation\Lillehammer\211021\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --build-cloud-after 0 --save-to "validation\Lillehammer\results\ABS, PCAP2021, PC2021\6_sim10hz" --skip-every-frame 1 --skip-until-x 579490.13 --skip-until-y 6776060.22
+			python absoluteNavigator.py --pcap "validation\Lillehammer\2021-10-21\pcap\6_20hz" --preview always --sbet "validation\Lillehammer\2021-10-21\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --build-cloud-after 0 --save-to "validation\Lillehammer\results\ABS, PCAP2021, PC2021\6_sim10hz" --skip-every-frame 1 --skip-until-x 579490.13 --skip-until-y 6776060.22
 
 		ABSOLUTE MOT 22-punktsky
 
-			python absoluteNavigator.py --pcap "validation\Lillehammer\211021\pcap\3_10hz" --preview always --sbet "validation\Lillehammer\211021\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Lillehammer\2022-02-16\pointcloud\combined.pcd" --sbet-z-offset -39.416 --build-cloud-after 0 --save-to "validation\Lillehammer\results\ABS, PCAP2022, PC2022\3_10hz" --skip-until-x 579490.13 --skip-until-y 6776060.22
+			python absoluteNavigator.py --pcap "validation\Lillehammer\2021-10-21\pcap\3_10hz" --preview always --sbet "validation\Lillehammer\2021-10-21\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Lillehammer\2022-02-16\pointcloud\combined.pcd" --sbet-z-offset -39.416 --build-cloud-after 0 --save-to "validation\Lillehammer\results\ABS, PCAP2022, PC2022\3_10hz" --skip-until-x 579490.13 --skip-until-y 6776060.22
 
 		INCREMENTAL
 
-			python incrementalNavigator.py --pcap "validation\Lillehammer\211021\pcap\3_10hz" --preview always --sbet "validation\Lillehammer\211021\navigation\sbet-output-UTC-1000.out" --build-cloud-after 0 --save-to "validation\results\incremental\Lillehammer\211021\3_10hz" --skip-until-x 579490.13 --skip-until-y 6776060.22
+			python incrementalNavigator.py --pcap "validation\Lillehammer\2021-10-21\pcap\3_10hz" --preview always --sbet "validation\Lillehammer\2021-10-21\navigation\sbet-output-UTC-1000.out" --build-cloud-after 3 --save-to "validation\Lillehammer\results\INC, PCAP2021\3_10hz" --skip-until-x 579490.13 --skip-until-y 6776060.22
 
 	2022-02-16
 
 		ABSOLUTE MOT 21-punktsky
 
-			python absoluteNavigator.py --pcap "validation\Lillehammer\220216\pcap\1_10hz" --preview always --sbet "validation\Lillehammer\220216\navigasjon\sbet-output.out" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --save-to "validation\Lillehammer\results\ABS, PCAP2022, PC2021\1_10hz" --build-cloud-after 0 --skip-until-x 579490.13 --skip-until-y 6776060.22 --recreate-caches --wait-after-initial-frame 60
+			python absoluteNavigator.py --pcap "validation\Lillehammer\2022-02-16\pcap\1_10hz" --preview always --sbet "validation\Lillehammer\2022-02-16\navigation\sbet_teapot.csv" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --save-to "validation\Lillehammer\results\ABS, PCAP2022, PC2021\1_10hz" --build-cloud-after 5 --skip-until-x 579490.13 --skip-until-y 6776060.22 --recreate-caches --max-frame-radius 25 --wait-after-initial-frame 0 --hide-point-cloud
 
-			python absoluteNavigator.py --pcap "validation\Lillehammer\220216\pcap\2_10hz" --preview always --sbet "validation\Lillehammer\220216\navigasjon\sbet-output.out" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --save-to "validation\Lillehammer\results\ABS, PCAP2022, PC2021\2_10hz" --build-cloud-after 0 --skip-until-x 579490.13 --skip-until-y 6776060.22 --recreate-caches
+			python absoluteNavigator.py --pcap "validation\Lillehammer\2022-02-16\pcap\2_10hz" --preview always --sbet "validation\Lillehammer\2022-02-16\navigation\sbet_teapot.csv" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --save-to "validation\Lillehammer\results\ABS, PCAP2022, PC2021\2_10hz" --build-cloud-after 5 --skip-until-x 579490.13 --skip-until-y 6776060.22 --recreate-caches --max-frame-radius 25 --wait-after-initial-frame 0 --hide-point-cloud
 
-			python absoluteNavigator.py --pcap "validation\Lillehammer\220216\pcap\3_20hz" --preview always --sbet "validation\Lillehammer\220216\navigasjon\sbet-output.out" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --save-to "validation\Lillehammer\results\ABS, PCAP2022, PC2021\3_20hz" --build-cloud-after 0 --skip-until-x 579490.13 --skip-until-y 6776060.22 --recreate-caches
+			python absoluteNavigator.py --pcap "validation\Lillehammer\2022-02-16\pcap\3_20hz" --preview always --sbet "validation\Lillehammer\2022-02-16\navigation\sbet_teapot.csv" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --save-to "validation\Lillehammer\results\ABS, PCAP2022, PC2021\3_20hz" --build-cloud-after 5 --skip-until-x 579490.13 --skip-until-y 6776060.22 --recreate-caches --max-frame-radius 25 --wait-after-initial-frame 0 --hide-point-cloud
 
-			python absoluteNavigator.py --pcap "validation\Lillehammer\220216\pcap\4_20hz" --preview always --sbet "validation\Lillehammer\220216\navigasjon\sbet-output.out" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --save-to "validation\Lillehammer\results\ABS, PCAP2022, PC2021\4_20hz" --build-cloud-after 0 --skip-until-x 579490.13 --skip-until-y 6776060.22 --recreate-caches
+			python absoluteNavigator.py --pcap "validation\Lillehammer\2022-02-16\pcap\4_20hz" --preview always --sbet "validation\Lillehammer\2022-02-16\navigation\sbet_teapot.csv" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --save-to "validation\Lillehammer\results\ABS, PCAP2022, PC2021\4_20hz" --build-cloud-after 5 --skip-until-x 579490.13 --skip-until-y 6776060.22 --recreate-caches --max-frame-radius 25 --wait-after-initial-frame 0 --hide-point-cloud
 
-			python absoluteNavigator.py --pcap "validation\Lillehammer\220216\pcap\5_20hz" --preview always --sbet "validation\Lillehammer\220216\navigasjon\sbet-output.out" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --save-to "validation\Lillehammer\results\ABS, PCAP2022, PC2021\5_20hz" --build-cloud-after 0 --skip-until-x 579490.13 --skip-until-y 6776060.22 --recreate-caches
+			python absoluteNavigator.py --pcap "validation\Lillehammer\2022-02-16\pcap\5_20hz" --preview always --sbet "validation\Lillehammer\2022-02-16\navigation\sbet_teapot.csv" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --save-to "validation\Lillehammer\results\ABS, PCAP2022, PC2021\5_20hz" --build-cloud-after 5 --skip-until-x 579490.13 --skip-until-y 6776060.22 --recreate-caches --max-frame-radius 25 --wait-after-initial-frame 0 --hide-point-cloud
 
 		ABSOLUTE MOT 22-punktsky
 
-			python absoluteNavigator.py --pcap "validation\Lillehammer\220216\pcap\2_10hz" --preview always --sbet "validation\Lillehammer\220216\navigasjon\sbet-output.out" --point-cloud "validation\Lillehammer\2022-02-16\pointcloud\combined.pcd" --sbet-z-offset -39.416 --save-to "validation\Lillehammer\results\ABS, PCAP2022, PC2021\2_10hz" --build-cloud-after 0 --skip-until-x 579490.13 --skip-until-y 6776060.22 --recreate-caches
+			python absoluteNavigator.py --pcap "validation\Lillehammer\2022-02-16\pcap\2_10hz" --preview always --sbet "validation\Lillehammer\2022-02-16\navigation\sbet_teapot.csv" --point-cloud "validation\Lillehammer\2022-02-16\pointcloud\combined.pcd" --sbet-z-offset -39.416 --save-to "validation\Lillehammer\results\ABS, PCAP2022, PC2021\2_10hz" --build-cloud-after 5 --skip-until-x 579490.13 --skip-until-y 6776060.22 --recreate-caches
