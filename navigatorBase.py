@@ -275,19 +275,21 @@ class NavigatorBase:
 
     def initialize_plot_and_visualization(self):
         # Initialize the visualizer
-        self.vis = Open3DVisualizer()
+        self.vis = Open3DVisualizer(add_axes=False)
 
         if self.preview_always:
+
             # Initiate non-blocking visualizer window
             self.vis.refresh_non_blocking()
 
             # Show the first frame and reset the view
             if self.merged_frame is not None:
                 self.vis.show_frame(self.merged_frame)
+            
             self.vis.set_follow_vehicle_view()
 
             if self.actual_movement_path is not None:
-                self.vis.add_geometry(self.actual_movement_path)
+                self.vis.add_geometry(self.actual_movement_path, True)
 
             self.check_save_screenshot(0, True)
 

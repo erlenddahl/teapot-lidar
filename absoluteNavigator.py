@@ -67,7 +67,10 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         if self.preview_always:
             self.vis.refresh_non_blocking()
-            self.vis.show_frame(self.full_cloud)
+
+            if not self.args.hide_point_cloud:
+                self.vis.show_frame(self.full_cloud)
+            
             self.vis.add_geometry(self.actual_position_cylinder)
             self.vis.add_geometry(self.estimated_position_cylinder)
             self.vis.add_geometry(self.start_position_cylinder)
@@ -290,6 +293,7 @@ if __name__ == "__main__":
     parser = NavigatorBase.create_parser()
 
     parser.add_argument('--point-cloud', type=str, required=True, help="An Open3D point cloud file to use for absolute navigation.")
+    parser.add_argument('--hide-point-cloud', dest='hide_point_cloud', default=False, action='store_true', help="If set to true, the full point cloud will not be displayed in the visualization. Can be useful for a visualization performance boost, or if the frames drawn together with the cloud gets too chaotic.")
     
     args = NavigatorBase.add_standard_and_parse_args(parser)
 

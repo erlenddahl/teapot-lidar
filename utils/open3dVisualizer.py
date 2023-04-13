@@ -3,7 +3,7 @@ import numpy as np
 
 class Open3DVisualizer:
 
-    def __init__(self):
+    def __init__(self, add_axes=True):
         self._is_initial_geometry = True
 
         self.vis = o3d.visualization.VisualizerWithKeyCallback()
@@ -12,7 +12,7 @@ class Open3DVisualizer:
         self._is_non_blocking = False
 
         self.has_been_initialized = False
-        self.add_axes = True
+        self.add_axes = add_axes
 
     def _initialize(self):
 
