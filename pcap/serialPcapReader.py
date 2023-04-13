@@ -5,10 +5,9 @@ import numpy as np
 
 class SerialPcapReader:
 
-    def __init__(self, pcap_paths, meta_data_paths, skip_frames = 0, args=None):
+    def __init__(self, pcap_paths, meta_data_paths, skip_frames=0, args=None):
         self.readers = [PcapReader(x[0], x[1], skip_frames, args=args) for x in zip(pcap_paths, meta_data_paths)]
         self.current_reader_index = 0
-        self.max_distance = None
         self._set_metadata()
 
     def count_frames(self, show_progress):
@@ -32,7 +31,6 @@ class SerialPcapReader:
         if self.current_reader_index >= len(self.readers):
             return None
 
-        self.readers[self.current_reader_index].max_distance = self.max_distance
         frame = self.readers[self.current_reader_index].skip_and_get(iterator)
         if frame is None:
             self._next_reader()
@@ -59,29 +57,28 @@ class SerialPcapReader:
 
         return ix
 
-    def print_info(self, frame_index = None, printFunc = print):
+    def print_info(self, frame_index=None, print_func=print):
         for reader in self.readers:
-            reader.print_info(frame_index, printFunc)
+            reader.print_info(frame_index, print_func)
 
-    def remove_vehicle(self, frame, cloud = None):
+    def remove_vehicle(self, frame, cloud=None):
         return self.readers[0].remove_vehicle(frame, cloud)
 
-    def next_frame(self, remove_vehicle:bool = False, timer = None, colored = True):
+    def next_frame(self, remove_vehicle:bool=False, timer=None, colored=True, max_distance=None):
         if self.current_reader_index >= len(self.readers):
             return None
 
-        self.readers[self.current_reader_index].max_distance = self.max_distance
-        frame = self.readers[self.current_reader_index].next_frame(remove_vehicle, timer)
+        frame = self.readers[self.current_reader_index].next_frame(remove_vehicle, timer, colored, max_distance)
         if frame is None:
             self._next_reader()
-            return self.next_frame(remove_vehicle, timer, colored)
+            return self.next_frame(remove_vehicle, timer, colored, max_distance)
 
         return frame
 
     def get_pcap_path(self):
         return self.readers[self.current_reader_index].get_pcap_path()
 
-    def read_all_frames(self, remove_vehicle:bool = False):
+    def read_all_frames(self, remove_vehicle:bool=False):
 
         frames = []
         while True:
