@@ -186,18 +186,18 @@ class NavigatorBase:
     def print_cloud_info(title, cloud, prefix = ""):
         mf = np.asarray(cloud.points)
 
-        print(prefix + title + ":")
+        tqdm.write(prefix + title + ":")
 
         if len(mf) < 1:
-            print("    > Empty array")
+            tqdm.write("    > Empty array")
             return
 
         mins = np.amin(mf, axis=0)
         maxs = np.amax(mf, axis=0)
 
-        print(prefix + "    > X: {:.2f} - {:.2f}".format(mins[0], maxs[0]))
-        print(prefix + "    > Y: {:.2f} - {:.2f}".format(mins[1], maxs[1]))
-        print(prefix + "    > Z: {:.2f} - {:.2f}".format(mins[2], maxs[2]))
+        tqdm.write(prefix + "    > X: {:.2f} - {:.2f}".format(mins[0], maxs[0]))
+        tqdm.write(prefix + "    > Y: {:.2f} - {:.2f}".format(mins[1], maxs[1]))
+        tqdm.write(prefix + "    > Z: {:.2f} - {:.2f}".format(mins[2], maxs[2]))
 
     def ensure_merged_frame_is_downsampled(self):
 
