@@ -29,8 +29,6 @@ class LidarNavigator(NavigatorBase):
             self.current_coordinate = self.sbet_coordinates[0].clone()
             self.initial_coordinate = self.sbet_coordinates[0].clone()
 
-            self.actual_movement_path = self.create_line([[p.x - self.initial_coordinate.x, p.y - self.initial_coordinate.y, p.alt - self.initial_coordinate.alt] for p in self.sbet_coordinates], color=[0,0,1])
-
         self.merged_frame = self.reader.next_frame(self.remove_vehicle, self.timer)
 
         self.previous_frame = self.merged_frame

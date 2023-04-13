@@ -49,8 +49,6 @@ class AbsoluteLidarNavigator(NavigatorBase):
         
         self.initialize_navigation(rotate_sbet=False)
 
-        self.actual_movement_path = self.create_line([[p.x, p.y, p.alt] for p in self.sbet_coordinates], color=[0, 0, 1])
-
         self.actual_position_cylinder = self.create_cylinder(size_ratio=1, color=[0,0,1])
         self.estimated_position_cylinder = self.create_cylinder(size_ratio=0.8, color=[1,0,0])
         self.start_position_cylinder = self.create_cylinder(size_ratio=0.6, color=[1,1,1])

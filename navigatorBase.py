@@ -133,16 +133,25 @@ class NavigatorBase:
             # based navigator.
             self.sbet_coordinates = self.reader.get_coordinates(rotate=rotate_sbet, show_progress=True)
 
-            if self.full_point_cloud_offset is not None:
-                # Translate all coordinates towards origo with the same offset as
-                # the point cloud.
-                for c in self.sbet_coordinates:
-                    c.translate(-self.full_point_cloud_offset)
+            # If there is no point cloud offset here (incremental navigation), create an
+            # offset based on the SBET coordinates instead
+            if self.full_point_cloud_offset is None:
+                points = [[x.x, x.y, x.alt] for x in self.sbet_coordinates]
+                mins = np.amin(points, axis=0)
+                maxes = np.amax(points, axis=0)
+                self.full_point_cloud_offset = mins + (maxes - mins) / 2
 
-                # Also translate the "skip until" circle 
-                if self.skip_until_circle_center is not None:
-                    self.skip_until_circle_center.translate(-self.full_point_cloud_offset)
+            # Translate all coordinates towards origo with the same offset as
+            # the point cloud.
+            for c in self.sbet_coordinates:
+                c.translate(-self.full_point_cloud_offset)
+
+            # Also translate the "skip until" circle 
+            if self.skip_until_circle_center is not None:
+                self.skip_until_circle_center.translate(-self.full_point_cloud_offset)
         
+        self.actual_movement_path = self.create_line([[p.x, p.y, p.alt] for p in self.sbet_coordinates], color=[0, 0, 1])
+
         self.skip_until_circle()
 
     def finalize_navigation(self, navigation_exception):
