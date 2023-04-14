@@ -49,6 +49,7 @@ class NavigatorBase:
         self.full_point_cloud_offset = None
 
         self.skip_until_circle_center = None
+        self.skip_until_circle_center_cylinder = None
         if self.args.skip_until_radius > 0 and self.args.skip_until_x is not None and self.args.skip_until_x is not None:
             self.skip_until_circle_center = SbetRow(None, x=self.args.skip_until_x, y=self.args.skip_until_y)
 
@@ -136,10 +137,20 @@ class NavigatorBase:
             # If there is no point cloud offset here (incremental navigation), create an
             # offset based on the SBET coordinates instead
             if self.full_point_cloud_offset is None:
-                points = [[x.x, x.y, x.alt] for x in self.sbet_coordinates]
+                points = [[c.x, c.y, c.alt] for c in self.sbet_coordinates]
                 mins = np.amin(points, axis=0)
                 maxes = np.amax(points, axis=0)
                 self.full_point_cloud_offset = mins + (maxes - mins) / 2
+                tqdm.write("Using offset " + str(self.full_point_cloud_offset) + " (calculated from SBET)")
+
+                # Set a reasonable altitude on the skip-circle to allow it to be visualized together with 
+                # the movement paths.
+                if self.skip_until_circle_center is not None:
+                    self.skip_until_circle_center.alt = self.full_point_cloud_offset[2]
+                    tqdm.write("Skip-circle: " + str(self.skip_until_circle_center.np()))
+
+            else:
+                tqdm.write("Using offset " + str(self.full_point_cloud_offset) + " (from point cloud metadata)")
 
             # Translate all coordinates towards origo with the same offset as
             # the point cloud.
@@ -149,6 +160,8 @@ class NavigatorBase:
             # Also translate the "skip until" circle 
             if self.skip_until_circle_center is not None:
                 self.skip_until_circle_center.translate(-self.full_point_cloud_offset)
+                self.skip_until_circle_center_cylinder = self.create_cylinder_exact(self.args.skip_until_radius / self.position_cylinder_radius, 2, [0.8,0.8,0.8])
+                self.skip_until_circle_center_cylinder.translate(self.skip_until_circle_center.np(), relative=False)
         
         self.actual_movement_path = self.create_line([[p.x, p.y, p.alt] for p in self.sbet_coordinates], color=[0, 0, 1])
 
@@ -170,7 +183,10 @@ class NavigatorBase:
         return results
 
     def create_cylinder(self, size_ratio=1, color=[0,0,1]):
-        cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=self.position_cylinder_radius * size_ratio, height=self.position_cylinder_height * (2 - size_ratio), resolution=20, split=4)
+        return self.create_cylinder_exact(self.position_cylinder_radius * size_ratio, self.position_cylinder_height * (2 - size_ratio))
+
+    def create_cylinder_exact(self, radius, height, color=[0,0,1]):
+        cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=radius, height=height, resolution=20, split=4)
         cylinder.paint_uniform_color(color)
         return cylinder
 
@@ -283,6 +299,7 @@ class NavigatorBase:
         self.time("saved screenshot")
 
     def initialize_plot_and_visualization(self):
+        
         # Initialize the visualizer
         self.vis = Open3DVisualizer(add_axes=False)
 
@@ -294,6 +311,9 @@ class NavigatorBase:
             # Show the first frame and reset the view
             if self.merged_frame is not None:
                 self.vis.show_frame(self.merged_frame)
+
+            if self.skip_until_circle_center_cylinder is not None:
+                self.vis.add_geometry(self.skip_until_circle_center_cylinder)
             
             self.vis.set_follow_vehicle_view()
 

@@ -22,7 +22,7 @@ class LidarNavigator(NavigatorBase):
         to show the driving route.
         """
         
-        self.initialize_navigation(initial_movement=[[0,0,0]], rotate_sbet=True)
+        self.initialize_navigation(initial_movement=[[0,0,0]], rotate_sbet=False)
 
         if self.args.sbet is not None:
 
