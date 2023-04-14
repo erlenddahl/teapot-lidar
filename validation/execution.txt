@@ -63,7 +63,7 @@ Lillehammer
 
 		ABSOLUTE MOT 22-punktsky
 
-			python absoluteNavigator.py --pcap "validation\Lillehammer\2021-10-21\pcap\3_10hz" --preview always --sbet "validation\Lillehammer\2021-10-21\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Lillehammer\2022-02-16\pointcloud\combined.pcd" --sbet-z-offset -39.416 --build-cloud-after 0 --save-to "validation\Lillehammer\results\ABS, PCAP2022, PC2022\3_10hz" --skip-until-x 579490.13 --skip-until-y 6776060.22
+			python absoluteNavigator.py --pcap "validation\Lillehammer\2021-10-21\pcap\3_10hz" --preview always --sbet "validation\Lillehammer\2021-10-21\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Lillehammer\2022-02-16\pointcloud\combined.pcd" --sbet-z-offset -39.416 --build-cloud-after 0 --save-to "validation\Lillehammer\results\ABS, PCAP2021, PC2022\3_10hz" --skip-until-x 579490.13 --skip-until-y 6776060.22
 
 		INCREMENTAL
 
@@ -85,4 +85,4 @@ Lillehammer
 
 		ABSOLUTE MOT 22-punktsky
 
-			python absoluteNavigator.py --pcap "validation\Lillehammer\2022-02-16\pcap\2_10hz" --preview always --sbet "validation\Lillehammer\2022-02-16\navigation\sbet_teapot.csv" --point-cloud "validation\Lillehammer\2022-02-16\pointcloud\combined.pcd" --sbet-z-offset -39.416 --save-to "validation\Lillehammer\results\ABS, PCAP2022, PC2021\2_10hz" --build-cloud-after 5 --skip-until-x 579490.13 --skip-until-y 6776060.22 --recreate-caches
+			python absoluteNavigator.py --pcap "validation\Lillehammer\2022-02-16\pcap\2_10hz" --preview always --sbet "validation\Lillehammer\2022-02-16\navigation\sbet_teapot.csv" --point-cloud "validation\Lillehammer\2022-02-16\pointcloud\combined.pcd" --sbet-z-offset -39.416 --save-to "validation\Lillehammer\results\ABS, PCAP2022, PC2022\2_10hz" --build-cloud-after 5 --skip-until-x 579490.13 --skip-until-y 6776060.22 --recreate-caches --max-frame-radius 25 --wait-after-initial-frame 0 --hide-point-cloud
