@@ -21,8 +21,6 @@ class AbsoluteLidarNavigator(NavigatorBase):
         if self.args.sbet is None:
             raise Exception("Absolute navigation must have SBET coordinates (--sbet).")
 
-        self.merged_frame = None
-
     def load_point_cloud(self, path):
 
         cloud_meta_data_path = path.replace(".pcd", "-meta.json")
@@ -48,14 +46,6 @@ class AbsoluteLidarNavigator(NavigatorBase):
         """
         
         self.initialize_navigation(rotate_sbet=False)
-
-        self.actual_position_cylinder = self.create_cylinder(size_ratio=1, color=[0,0,1])
-        self.estimated_position_cylinder = self.create_cylinder(size_ratio=0.8, color=[1,0,0])
-        self.start_position_cylinder = self.create_cylinder(size_ratio=0.6, color=[1,1,1])
-
-        self.initial_coordinate = self.get_current_position().clone()
-        self.current_coordinate = self.initial_coordinate.clone()
-        self.start_position_cylinder.translate(self.initial_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
 
         self.last_extracted_frame_coordinate = None
         self.last_extracted_frame = None
@@ -104,15 +94,6 @@ class AbsoluteLidarNavigator(NavigatorBase):
                 break
         
         return self.finalize_navigation(navigation_exception)
-
-    def get_current_position(self):
-
-        # Retrieve the index of the currently processed frame
-        ix = self.reader.get_current_frame_index()
-
-        # Retrieve the SBET data for this frame, which has
-        # already been transformed to fit the point cloud.
-        return self.sbet_coordinates[ix]
 
     def draw_registration_result(self, source, target):
         source_temp = copy.deepcopy(source)
@@ -224,37 +205,10 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         self.time("frame normal estimation")
 
-        # Run the alignment
-        iterations = 100
-        transformation_matrix = np.identity(4)
-        for i in range(3):
-            reg = self.matcher.match(frame, partial_cloud, trans_init=transformation_matrix, threshold=1, max_iterations=iterations)
-
-            # If the calculated transformation matrix is (almost) identical to the one we sent in, we are happy.
-            if np.abs(np.mean(reg.transformation[0:3, 3]-transformation_matrix[0:3, 3])) < 1e-5:
-                break
-
-        self.registration_configs.append({
-            "iterations": iterations * i, 
-            "frame_ix": self.reader.get_current_frame_index(),
-            "pcap": self.reader.get_pcap_path()
-        })
-
-        self.check_save_frame_pair(partial_cloud, frame, reg)
-
-        registration_time = self.time("registration")
-
-        # Extract the translation part from the transformation array
-        movement = reg.transformation[:3,3]
-
-        # Move the estimated position
-        self.current_coordinate.translate(movement)
-        self.estimated_position_cylinder.translate(self.current_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
+        reg, registration_time, movement = self.run_registration(frame, partial_cloud, actual_coordinate)
 
         # Append the new movement to the path
         self.movement_path.points.append(self.current_coordinate.np())
-
-        self.update_plot(reg, registration_time, movement, actual_coordinate)
 
         # Add the new line
         if len(self.movements) == 2:

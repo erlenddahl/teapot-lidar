@@ -33,6 +33,7 @@ class NavigatorBase:
         self.save_path = args.save_to
         self.downsample_timer = args.downsample_after
         self.downsample_cloud_after_frames = args.downsample_after
+        self.merged_frame = None
         self.merged_frame_is_dirty = True
         self.save_screenshots_to = args.save_screenshots_to
         self.save_frame_pairs_to = args.save_frame_pairs_to
@@ -124,48 +125,53 @@ class NavigatorBase:
             points = o3d.utility.Vector3dVector(initial_movement), lines=o3d.utility.Vector2iVector([])
         )
 
-        if self.args.sbet is not None:
+        # Read the coordinates from all frames in the PCAP file(s).
+        # We set the rotate-argument to False, since we're working with
+        # the same coordinate system here -- both the georeferenced point cloud
+        # and the actual coordinates of the frames are in UTM, and there is
+        # therefore no need to rotate them like it is in the visual odometry
+        # based navigator.
+        self.sbet_coordinates = self.reader.get_coordinates(rotate=rotate_sbet, show_progress=True)
 
-            # Read the coordinates from all frames in the PCAP file(s).
-            # We set the rotate-argument to False, since we're working with
-            # the same coordinate system here -- both the georeferenced point cloud
-            # and the actual coordinates of the frames are in UTM, and there is
-            # therefore no need to rotate them like it is in the visual odometry
-            # based navigator.
-            self.sbet_coordinates = self.reader.get_coordinates(rotate=rotate_sbet, show_progress=True)
+        # If there is no point cloud offset here (incremental navigation), create an
+        # offset based on the SBET coordinates instead
+        if self.full_point_cloud_offset is None:
+            points = [[c.x, c.y, c.alt] for c in self.sbet_coordinates]
+            mins = np.amin(points, axis=0)
+            maxes = np.amax(points, axis=0)
+            self.full_point_cloud_offset = mins + (maxes - mins) / 2
+            tqdm.write("Using offset " + str(self.full_point_cloud_offset) + " (calculated from SBET)")
 
-            # If there is no point cloud offset here (incremental navigation), create an
-            # offset based on the SBET coordinates instead
-            if self.full_point_cloud_offset is None:
-                points = [[c.x, c.y, c.alt] for c in self.sbet_coordinates]
-                mins = np.amin(points, axis=0)
-                maxes = np.amax(points, axis=0)
-                self.full_point_cloud_offset = mins + (maxes - mins) / 2
-                tqdm.write("Using offset " + str(self.full_point_cloud_offset) + " (calculated from SBET)")
-
-                # Set a reasonable altitude on the skip-circle to allow it to be visualized together with 
-                # the movement paths.
-                if self.skip_until_circle_center is not None:
-                    self.skip_until_circle_center.alt = self.full_point_cloud_offset[2]
-                    tqdm.write("Skip-circle: " + str(self.skip_until_circle_center.np()))
-
-            else:
-                tqdm.write("Using offset " + str(self.full_point_cloud_offset) + " (from point cloud metadata)")
-
-            # Translate all coordinates towards origo with the same offset as
-            # the point cloud.
-            for c in self.sbet_coordinates:
-                c.translate(-self.full_point_cloud_offset)
-
-            # Also translate the "skip until" circle 
+            # Set a reasonable altitude on the skip-circle to allow it to be visualized together with 
+            # the movement paths.
             if self.skip_until_circle_center is not None:
-                self.skip_until_circle_center.translate(-self.full_point_cloud_offset)
-                self.skip_until_circle_center_cylinder = self.create_cylinder_exact(self.args.skip_until_radius / self.position_cylinder_radius, 2, [0.8,0.8,0.8])
-                self.skip_until_circle_center_cylinder.translate(self.skip_until_circle_center.np(), relative=False)
+                self.skip_until_circle_center.alt = self.full_point_cloud_offset[2]
+
+        else:
+            tqdm.write("Using offset " + str(self.full_point_cloud_offset) + " (from point cloud metadata)")
+
+        # Translate all coordinates towards origo with the same offset as
+        # the point cloud.
+        for c in self.sbet_coordinates:
+            c.translate(-self.full_point_cloud_offset)
+
+        # Also translate the "skip until" circle 
+        if self.skip_until_circle_center is not None:
+            self.skip_until_circle_center.translate(-self.full_point_cloud_offset)
+            self.skip_until_circle_center_cylinder = self.create_cylinder_exact(self.args.skip_until_radius / self.position_cylinder_radius, 2, [0.8,0.8,0.8])
+            self.skip_until_circle_center_cylinder.translate(self.skip_until_circle_center.np(), relative=False)
         
         self.actual_movement_path = self.create_line([[p.x, p.y, p.alt] for p in self.sbet_coordinates], color=[0, 0, 1])
 
         self.skip_until_circle()
+
+        self.actual_position_cylinder = self.create_cylinder(size_ratio=1, color=[0,0,1])
+        self.estimated_position_cylinder = self.create_cylinder(size_ratio=0.8, color=[1,0,0])
+        self.start_position_cylinder = self.create_cylinder(size_ratio=0.6, color=[1,1,1])
+
+        self.initial_coordinate = self.get_current_position().clone()
+        self.current_coordinate = self.initial_coordinate.clone()
+        self.start_position_cylinder.translate(self.initial_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
 
     def finalize_navigation(self, navigation_exception):
 
@@ -183,7 +189,7 @@ class NavigatorBase:
         return results
 
     def create_cylinder(self, size_ratio=1, color=[0,0,1]):
-        return self.create_cylinder_exact(self.position_cylinder_radius * size_ratio, self.position_cylinder_height * (2 - size_ratio))
+        return self.create_cylinder_exact(self.position_cylinder_radius * size_ratio, self.position_cylinder_height * (2 - size_ratio), color)
 
     def create_cylinder_exact(self, radius, height, color=[0,0,1]):
         cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=radius, height=height, resolution=20, split=4)
@@ -214,6 +220,48 @@ class NavigatorBase:
         tqdm.write(prefix + "    > X: {:.2f} - {:.2f}".format(mins[0], maxs[0]))
         tqdm.write(prefix + "    > Y: {:.2f} - {:.2f}".format(mins[1], maxs[1]))
         tqdm.write(prefix + "    > Z: {:.2f} - {:.2f}".format(mins[2], maxs[2]))
+
+    def get_current_position(self):
+
+        # Retrieve the index of the currently processed frame
+        ix = self.reader.get_current_frame_index()
+
+        # Retrieve the SBET data for this frame, which has
+        # already been transformed to fit the point cloud.
+        return self.sbet_coordinates[ix]
+
+    def run_registration(self, source, target, actual_coordinate):
+        # Run the alignment
+        iterations = 100
+        transformation_matrix = np.identity(4)
+        for i in range(3):
+            reg = self.matcher.match(source, target, trans_init=transformation_matrix, threshold=1, max_iterations=iterations)
+
+            # If the calculated transformation matrix is (almost) identical to the one we sent in, we are happy.
+            if np.abs(np.mean(reg.transformation[0:3, 3]-transformation_matrix[0:3, 3])) < 1e-5:
+                break
+
+        self.registration_configs.append({
+            "iterations": iterations * i, 
+            "frame_ix": self.reader.get_current_frame_index(),
+            "pcap": self.reader.get_pcap_path()
+        })
+
+        self.check_save_frame_pair(source, target, reg)
+
+        registration_time = self.time("registration")
+
+        # Extract the translation part from the transformation array
+        movement = reg.transformation[:3,3]
+
+        self.current_coordinate.translate(movement)
+
+        # Move the estimated position
+        self.estimated_position_cylinder.translate(self.current_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
+
+        self.update_plot(reg, registration_time, movement, actual_coordinate)
+
+        return reg, registration_time, movement
 
     def ensure_merged_frame_is_downsampled(self):
 

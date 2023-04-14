@@ -24,7 +24,7 @@ class PcapReaderHelper:
     def add_path_arguments(parser):
         parser.add_argument('--pcap', type=str, nargs='+', required=True, help="The path to one or more PCAP files to visualize, relative or absolute. A path to a directory containing multiple pcap files can also be provided.")
         parser.add_argument('--json', type=str, nargs='+', required=False, help="The path to corresponding JSON file(s) for each of the PCAP file(s) with the sensor metadata, relative or absolute. If this is not given, the PCAP location is used (by replacing .pcap with .json). A path to a directory containing multiple json files can also be provided.")
-        parser.add_argument('--sbet', type=str, required=False, help="The path to a corresponding SBET file with GNSS coordinates.")
+        parser.add_argument('--sbet', type=str, required=True, help="The path to a corresponding SBET file with GNSS coordinates.")
         parser.add_argument('--sbet-z-offset', type=float, default=0, required=False, help="If the GNSS positions in the SBET file have an altitude offset from the point cloud, this argument will be added/subtracted on the Z coordinates of each SBET coordinate.")
         parser.add_argument('--max-frame-radius', type=float, default=None, required=False, help="If given as a number larger than 0, all PCAP frames will be reduced in size by removing all points that are further away from the origin than this value (measured in meters).")
         parser.add_argument('--recreate-caches', action='store_true')

@@ -3,6 +3,7 @@ import numpy as np
 import os
 from tqdm import tqdm
 import open3d as o3d
+import copy
 from datetime import datetime
 
 class LidarNavigator(NavigatorBase):
@@ -22,22 +23,16 @@ class LidarNavigator(NavigatorBase):
         to show the driving route.
         """
         
-        self.initialize_navigation(initial_movement=[[0,0,0]], rotate_sbet=False)
+        self.initialize_navigation(initial_movement=[[0,0,0]], rotate_sbet=False)        
+        self.initialize_plot_and_visualization()
 
-        if self.args.sbet is not None:
-
-            self.current_coordinate = self.sbet_coordinates[0].clone()
-            self.initial_coordinate = self.sbet_coordinates[0].clone()
-
-        self.merged_frame = self.reader.next_frame(self.remove_vehicle, self.timer)
-
-        self.previous_frame = self.merged_frame
+        frame = self.reader.next_frame(self.remove_vehicle, self.timer)
+        self.transform_and_add_to_merged_frame(frame)
+        self.previous_frame = frame
 
         # Estimate normals for the first source frame in order to speed up the 
         # alignment operation.
         self.previous_frame.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
-        
-        self.initialize_plot_and_visualization()
 
         self.time("navigation preparations")
 
@@ -71,31 +66,6 @@ class LidarNavigator(NavigatorBase):
 
         return self.finalize_navigation(navigation_exception)
 
-    def get_current_position(self, transformed):
-
-        # Retrieve the index of the currently processed frame
-        ix = self.reader.get_current_frame_index()
-
-        # Retrieve the SBET data for this frame 
-        # This is the original location and time info from the SBET file.
-        sbet = self.sbet_coordinates[ix]
-
-        if not transformed:
-            return sbet
-
-        # Retrieve the transformed coordinates for this frame from the o3d movement line,
-        # which has been transformed after each registration in order to follow the red line.
-        o3d = self.actual_movement_path.points[ix]
-
-        # Combine those into one SbetRow with the original Sbet data, but the
-        # o3d transformed coordinates.
-        pos = sbet.clone()
-        pos.x = o3d[0]
-        pos.y = o3d[1]
-        pos.alt = o3d[2]
-
-        return pos
-
     def merge_next_frame(self):
         """ Reads the next frame, aligns it with the previous frame, merges them together
         to create a 3D model, and tracks the movement between frames.
@@ -110,33 +80,19 @@ class LidarNavigator(NavigatorBase):
         # the file. Return False to stop the loop.
         if frame is None:
             return False
-        
-        # Retrieve the actual coordinate
-        actual_coordinate = self.get_current_position(False) if self.current_coordinate is not None else None
 
         # Estimate normals for the target frame (the source frame will always have
         # normals from the previous step).
         frame.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
 
         self.time("normal estimation")
+        
+        # Retrieve the actual coordinate
+        actual_coordinate = self.get_current_position().clone()
+        self.actual_position_cylinder.translate(actual_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
 
         # Run the alignment
-        threshold = 1
-        reg = self.matcher.match(self.previous_frame, frame, threshold)
-        self.registration_configs.append({"threshold": threshold})
-
-        self.check_save_frame_pair(self.previous_frame, frame, reg)
-
-        registration_time = self.time("registration")
-
-        # Calculate how much the center point has moved by transforming [0,0,0] with
-        # the calculated transformation
-        movement = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(np.asarray([[0.0,0.0,0.0]]))).transform(reg.transformation).get_center()
-
-        if self.current_coordinate is not None:
-            self.current_coordinate.translate(movement) #TODO: Think this is wrong. Should probably use transformed red line in the end to generate all estimated coordinates.
-
-        self.update_plot(reg, registration_time, movement, actual_coordinate)
+        reg, registration_time, movement = self.run_registration(frame, self.previous_frame, actual_coordinate)
 
         # Append the new movement to the path
         self.movement_path = self.movement_path.transform(reg.transformation)
@@ -149,24 +105,20 @@ class LidarNavigator(NavigatorBase):
 
         self.time("book keeping")
 
-        # Transform the frame to fit the merged point cloud
-        self.merged_frame = self.merged_frame.transform(reg.transformation)
-
-        self.time("cloud transformation")
-
-        self.add_to_merged_frame(frame)
+        self.transform_and_add_to_merged_frame(frame, reg)
 
         # Store this frame so that it can be used as the source frame in the next iteration.
         self.previous_frame = frame
 
-        # Update the visualization
-        if self.preview_always:
-            self.vis.show_frame(self.merged_frame, True)
-
-            self.time("visualization")
-
         # Return True to let the loop continue to the next frame.
         return True
+
+    def transform_and_add_to_merged_frame(self, frame, reg=None):
+        transformed_frame = copy.deepcopy(frame)
+        if reg is not None:
+            transformed_frame.transform(reg.transformation)
+        transformed_frame.translate(self.current_coordinate.np())
+        self.add_to_merged_frame(transformed_frame, True)
         
     def update_live_movement(self, path):
         if not self.preview_always:
