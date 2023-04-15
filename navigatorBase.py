@@ -558,7 +558,7 @@ class NavigatorBase:
     @staticmethod
     def add_standard_and_parse_args(parser):
         parser.add_argument('--algorithm', type=str, default="NICP", required=False, help="Use this registration algorithm (see names in algorithmHelper.py).")
-        parser.add_argument('--frames', type=int, default=-1, required=False, help="If given a number larger than 1, only this many frames will be read from the PCAP file.")
+        parser.add_argument('--frames', type=int, default=-1, required=False, help="If given a number larger than 1, only this many frames will be processed before the analysis is stopped (useful for shorter test runs).")
         parser.add_argument('--build-cloud-after', type=int, default=1, required=False, help="How often registered frames should be added to the generated point cloud. 0 or lower deactivates the generated point cloud. 1 or higher generates a point cloud with details (and time usage) decreasing with higher numbers.")
         parser.add_argument('--skip-every-frame', type=int, default=0, required=False, help="If given a positive number larger than 0, this many frames will be skipped between every frame read from the PCAP file.")
         parser.add_argument('--skip-until-radius', type=int, default=20, required=False, help="If given together with --skip-until-x and --skip-until-y, the analysis will skip frames until the actual position enters the circle given by these three parameters.")
