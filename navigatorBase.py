@@ -141,12 +141,6 @@ class NavigatorBase:
             maxes = np.amax(points, axis=0)
             self.full_point_cloud_offset = mins + (maxes - mins) / 2
             tqdm.write("Using offset " + str(self.full_point_cloud_offset) + " (calculated from SBET)")
-
-            # Set a reasonable altitude on the skip-circle to allow it to be visualized together with 
-            # the movement paths.
-            if self.skip_until_circle_center is not None:
-                self.skip_until_circle_center.alt = self.full_point_cloud_offset[2]
-
         else:
             tqdm.write("Using offset " + str(self.full_point_cloud_offset) + " (from point cloud metadata)")
 
@@ -158,8 +152,6 @@ class NavigatorBase:
         # Also translate the "skip until" circle 
         if self.skip_until_circle_center is not None:
             self.skip_until_circle_center.translate(-self.full_point_cloud_offset)
-            self.skip_until_circle_center_cylinder = self.create_cylinder_exact(self.args.skip_until_radius / self.position_cylinder_radius, 2, [0.8,0.8,0.8])
-            self.skip_until_circle_center_cylinder.translate(self.skip_until_circle_center.np(), relative=False)
         
         self.actual_movement_path = self.create_line([[p.x, p.y, p.alt] for p in self.sbet_coordinates], color=[0, 0, 1])
 
@@ -172,6 +164,14 @@ class NavigatorBase:
         self.initial_coordinate = self.get_current_position().clone()
         self.current_coordinate = self.initial_coordinate.clone()
         self.start_position_cylinder.translate(self.initial_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
+
+        # Set the altitude on the skip-circle to the same as the first coordinate to be processed,
+        # to allow it to be visualized together with the movement paths.
+        self.skip_until_circle_center.alt = self.initial_coordinate.alt;
+
+        # Create a flat cylinder to indicate the skip-circle in the visualization.
+        self.skip_until_circle_center_cylinder = self.create_cylinder_exact(self.args.skip_until_radius / self.position_cylinder_radius, 2, [0.8,0.8,0.8])
+        self.skip_until_circle_center_cylinder.translate(self.skip_until_circle_center.np(), relative=False)
 
     def finalize_navigation(self, navigation_exception):
 
