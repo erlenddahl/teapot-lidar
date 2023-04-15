@@ -598,7 +598,7 @@ class NavigatorBase:
                 data = json.load(f)
                 for key in data:
                     arg_key = key.replace("--", "").replace("-", "_")
-                    if getattr(args, arg_key) is None:
+                    if getattr(args, arg_key, None) is None:
                         setattr(args, arg_key, data[key])
 
         if args.save_screenshots_to is not None and args.preview != "always":
