@@ -233,16 +233,20 @@ class NavigatorBase:
     def run_registration(self, source, target, actual_coordinate):
         # Run the alignment
         iterations = 25
+        diffs = []
         transformation_matrix = np.identity(4)
         for i in range(10):
             reg = self.matcher.match(source, target, trans_init=transformation_matrix, threshold=1, max_iterations=iterations)
 
             # If the calculated transformation matrix is (almost) identical to the one we sent in, we are happy.
             if np.abs(np.mean(reg.transformation[0:3, 3]-transformation_matrix[0:3, 3])) < 1e-5:
+            diff = np.abs(np.mean(reg.transformation[0:3, 3]-transformation_matrix[0:3, 3]))
+            diffs.append(diff)
                 break
 
         self.registration_configs.append({
-            "iterations": iterations * i, 
+            "iterations": len(diffs)+1,
+            "diffs": diffs,
             "frame_ix": self.reader.get_current_frame_index(),
             "pcap": self.reader.get_pcap_path()
         })
