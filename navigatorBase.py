@@ -584,12 +584,12 @@ class NavigatorBase:
         parser.add_argument('--raise-on-error', type=float, default=200, required=False, help="The frame processing will raise an exception if the distance between the actual and the estimated position is larger than this number. Set to 0 or lower to deactivate.")
         parser.add_argument('--raise-on-movement', type=float, default=100, required=False, help="The frame processing will raise an exception if the distance between two last estimated positions is larger than this number. Set to 0 or lower to deactivate.")
         parser.add_argument('--wait-after-first-frame', type=int, default=0, required=False, help="If given, the analysis will wait for this many seconds after the first frame to allow the visualization to be manually adjusted (zooming, panning, etc).")
-        parser.add_argument('--defaults', type=str, default=None, required=False, help="Additional arguments will be loaded from the given json file. Arguments already set from the command line will not be overwritten.")
+        parser.add_argument('--load-arguments', type=str, default=None, required=False, help="Additional arguments will be loaded from the given json file. Arguments already set from the command line will not be overwritten.")
 
         args = parser.parse_args()
 
-        if args.defaults is not None:
-            with open(args.defaults) as f:
+        if args.load_arguments is not None:
+            with open(args.load_arguments) as f:
                 data = json.load(f)
                 for key in data:
                     if key not in args:
