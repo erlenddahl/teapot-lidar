@@ -592,13 +592,16 @@ class NavigatorBase:
         parser.add_argument('--load-arguments', type=str, default=None, required=False, help="Additional arguments will be loaded from the given json file. Arguments already set from the command line will not be overwritten.")
 
         args = parser.parse_args()
+        arg_keys = vars(args)
 
         if args.load_arguments is not None:
             with open(args.load_arguments) as f:
                 data = json.load(f)
                 for key in data:
                     arg_key = key.replace("--", "").replace("-", "_")
-                    if getattr(args, arg_key, None) is None:
+                    if not arg_key in arg_keys:
+                        raise Exception("Unrecognized agrument in the JSON file (--load-arguments): " + key + " (" + arg_key + ")")
+                    if getattr(args, arg_key, None) is None or arg_keys[arg_key] == False:
                         setattr(args, arg_key, data[key])
 
         if args.save_screenshots_to is not None and args.preview != "always":
