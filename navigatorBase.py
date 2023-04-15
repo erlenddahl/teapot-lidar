@@ -597,8 +597,9 @@ class NavigatorBase:
             with open(args.load_arguments) as f:
                 data = json.load(f)
                 for key in data:
-                    if key not in args:
-                        setattr(args, key.replace("--", "").replace("-", "_"), data[key])
+                    arg_key = key.replace("--", "").replace("-", "_")
+                    if getattr(args, arg_key) is None:
+                        setattr(args, arg_key, data[key])
 
         if args.save_screenshots_to is not None and args.preview != "always":
             raise ValueError("Cannot save cloud screenshots without --preview being set to 'always'.")
