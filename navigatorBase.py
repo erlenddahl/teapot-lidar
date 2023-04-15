@@ -607,4 +607,7 @@ class NavigatorBase:
         if args.save_screenshots_to is not None and args.preview != "always":
             raise ValueError("Cannot save cloud screenshots without --preview being set to 'always'.")
 
+        tqdm.write("Running analysis with arguments:")
+        tqdm.write(json.dumps(vars(args), indent=4, sort_keys=True))
+
         return args
