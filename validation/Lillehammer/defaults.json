@@ -1,0 +1,13 @@
+{
+	"sbet-z-offset": -39.416,
+	"preview always": true,
+	"build-cloud-after": 5,
+	"skip-until-x": 579490.13,
+	"skip-until-y": 6776060.22,
+	"recreate-caches": true,
+	"max-frame-radius": 25,
+	"wait-after-first-frame": 0,
+	"hide-point-cloud": true,
+	"save-after-first-frame": true,
+	"safe-after-frames": 50
+}
