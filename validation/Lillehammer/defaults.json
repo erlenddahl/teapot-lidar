@@ -1,6 +1,6 @@
 {
 	"sbet-z-offset": -39.416,
-	"preview always": true,
+	"preview": "always",
 	"build-cloud-after": 5,
 	"skip-until-x": 579490.13,
 	"skip-until-y": 6776060.22,
