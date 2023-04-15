@@ -46,7 +46,7 @@ class NavigatorBase:
         self.raise_on_error = args.raise_on_error
         self.raise_on_movement = args.raise_on_movement
         self.has_waited = False
-        self.wait_after_initial_frame = args.wait_after_initial_frame
+        self.wait_after_first_frame = args.wait_after_first_frame
         self.full_point_cloud_offset = None
 
         self.skip_until_circle_center = None
@@ -502,14 +502,14 @@ class NavigatorBase:
         return cloud
 
     def check_wait(self):
-        if self.has_waited or self.wait_after_initial_frame <= 0:
+        if self.has_waited or self.wait_after_first_frame <= 0:
             return
 
-        end_at = time.time() + self.wait_after_initial_frame
-        with tqdm(desc="Waiting for vis. adjustment", total=self.wait_after_initial_frame, **self.tqdm_config) as pbar:
+        end_at = time.time() + self.wait_after_first_frame
+        with tqdm(desc="Waiting for vis. adjustment", total=self.wait_after_first_frame, **self.tqdm_config) as pbar:
             while time.time() < end_at:
                 self.vis.refresh_non_blocking()
-                pbar.n = int(self.wait_after_initial_frame - end_at + time.time())
+                pbar.n = int(self.wait_after_first_frame - end_at + time.time())
                 pbar.refresh()
 
         self.has_waited = True
@@ -575,7 +575,7 @@ class NavigatorBase:
         parser.add_argument('--skip-last-frame-in-pcap-file', type=bool, default=True, required=False, help="The last frame in each PCAP file is often corrupted. This flag makes the pcap reader skip the last frame in each file.")
         parser.add_argument('--raise-on-error', type=float, default=200, required=False, help="The frame processing will raise an exception if the distance between the actual and the estimated position is larger than this number. Set to 0 or lower to deactivate.")
         parser.add_argument('--raise-on-movement', type=float, default=100, required=False, help="The frame processing will raise an exception if the distance between two last estimated positions is larger than this number. Set to 0 or lower to deactivate.")
-        parser.add_argument('--wait-after-initial-frame', type=int, default=0, required=False, help="If given, the analysis will wait for this many seconds after the first frame to allow the visualization to be manually adjusted (zooming, panning, etc).")
+        parser.add_argument('--wait-after-first-frame', type=int, default=0, required=False, help="If given, the analysis will wait for this many seconds after the first frame to allow the visualization to be manually adjusted (zooming, panning, etc).")
 
         args = parser.parse_args()
 
