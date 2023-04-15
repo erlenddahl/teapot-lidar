@@ -239,9 +239,10 @@ class NavigatorBase:
             reg = self.matcher.match(source, target, trans_init=transformation_matrix, threshold=1, max_iterations=iterations)
 
             # If the calculated transformation matrix is (almost) identical to the one we sent in, we are happy.
-            if np.abs(np.mean(reg.transformation[0:3, 3]-transformation_matrix[0:3, 3])) < 1e-5:
             diff = np.abs(np.mean(reg.transformation[0:3, 3]-transformation_matrix[0:3, 3]))
             diffs.append(diff)
+            transformation_matrix = reg.transformation
+            if diff < 1e-3:
                 break
 
         self.registration_configs.append({
