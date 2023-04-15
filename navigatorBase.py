@@ -454,6 +454,12 @@ class NavigatorBase:
         self.plot.step(self.preview_always)
         self.time("plot step")
 
+        processed_frames = len(self.movements)
+        if processed_frames == 1 and self.args.save_after_first_frame:
+            self.check_results_saving()
+        elif self.args.save_after_frames > 0 and processed_frames % self.args.save_after_frames == 0:
+            self.check_results_saving()
+
         if self.raise_on_error > 0 and self.plot.position_error_3d[-1] > self.raise_on_error:
             raise Exception("The navigation error is larger than the given limit (--raise-on-error).")
 
@@ -569,6 +575,8 @@ class NavigatorBase:
         parser.add_argument('--downsample-after', type=int, default=10, required=False, help="The cloud will be downsampled (which is an expensive operation for large clouds, so don't do it too often) after this many registered frames have been added. If this number is higher than the number of frames being read, it will be downsampled once at the end of the process (unless downsampling is disabled, see --voxel-size).")
         parser.add_argument('--preview', type=str, default="always", choices=['always', 'end', 'never'], help="Show constantly updated point cloud and data plot previews while processing ('always'), show them only at the end ('end'), or don't show them at all ('never').")
         parser.add_argument('--save-to', type=str, default=None, required=False, help="If given, final results will be stored in this folder.")
+        parser.add_argument('--save-after-first-frame', action="store_true", help="Results will be stored after the first frame (useful to see that the output is correct before running a long analysis).")
+        parser.add_argument('--save-after-frames', type=int, default=0, required=False, help="If given, results will be saved after every nth frame (useful to keep an eye on results during a long analysis).")
         parser.add_argument('--save-screenshots-to', type=str, default=None, required=False, help="If given, point cloud screenshots will be saved in this directory with their indices as filenames (0.png, 1.png, 2.png, etc). Only works if --preview is set to 'always'.")
         parser.add_argument('--save-frame-pairs-to', type=str, default=None, required=False, help="If given, frame pairs with a registered fitness below --save-frame-pair-threshold will be saved to the given directory for manual inspection.")
         parser.add_argument('--save-frame-pair-threshold', type=float, default=0.97, required=False, help="If --save-frame-pairs-to is given, frame pairs with a registered fitness value below this value will be saved.")
