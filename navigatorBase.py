@@ -232,9 +232,9 @@ class NavigatorBase:
 
     def run_registration(self, source, target, actual_coordinate):
         # Run the alignment
-        iterations = 100
+        iterations = 25
         transformation_matrix = np.identity(4)
-        for i in range(3):
+        for i in range(10):
             reg = self.matcher.match(source, target, trans_init=transformation_matrix, threshold=1, max_iterations=iterations)
 
             # If the calculated transformation matrix is (almost) identical to the one we sent in, we are happy.
