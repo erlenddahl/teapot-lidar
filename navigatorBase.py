@@ -180,7 +180,7 @@ class NavigatorBase:
             self.plot.show_plot()
             self.plot.update()
 
-        results = self.check_results_saving(True)
+        results = self.check_results_saving(True, exception=navigation_exception)
         self.finish_plot_and_visualization()
 
         if navigation_exception is not None:
@@ -471,7 +471,7 @@ class NavigatorBase:
         if self.raise_on_movement > 0 and self.plot.distances[-1] > self.raise_on_movement:
             raise Exception("The movement between the last two frames was larger than the given limit (--raise-on-movement).")           
 
-    def check_results_saving(self, save_cloud = False):
+    def check_results_saving(self, save_cloud=False, exception=None):
 
         results = self.get_results()
         
@@ -479,6 +479,9 @@ class NavigatorBase:
         results["actual_coordinates"] = [x.json(True) for x in self.actual_coordinates]
         results["sbet_coordinates"] = [x.json(True) for x in self.sbet_coordinates]
         results["registration_configs"] = self.registration_configs
+
+        if exception is not None:
+            results["fatal_exception"] = vars(exception)
 
         results["args"] = vars(self.args)
         
