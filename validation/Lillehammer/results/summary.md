@@ -41,6 +41,8 @@ To make the results comparable, the trip analyses all started at the same point,
 	"build-cloud-after": 5,
 	"skip-until-x": 579490.13,
 	"skip-until-y": 6776060.22,
+	"run-until-x": 579523.26,
+	"run-until-y": 6776424.83,
 	"recreate-caches": true,
 	"max-frame-radius": 25,
 	"wait-after-first-frame": 0,
@@ -140,10 +142,10 @@ _**Registration iterations before convergence**_
 _**Links to individual trip details**_
 | Trip#   | Bare/Bare | Bare/Snow | Snow/Bare | Snow/Snow |
 |---------|-----------|-----------|-----------|-----------|
-| 1     | N/A | N/A | [Link](https://github.com/erlenddahl/teapot-lidar/tree/main/validation/Lillehammer/results/ABS%2C%20PCAP2022%2C%20PC2021/1_10hz) | [Link](https://github.com/erlenddahl/teapot-lidar/tree/main/validation/Lillehammer/results/ABS%2C%20PCAP2022%2C%20PC2022/1_10hz) |
-| 2     | N/A | N/A | [Link](https://github.com/erlenddahl/teapot-lidar/tree/main/validation/Lillehammer/results/ABS%2C%20PCAP2022%2C%20PC2021/2_10hz) | [Link](https://github.com/erlenddahl/teapot-lidar/tree/main/validation/Lillehammer/results/ABS%2C%20PCAP2022%2C%20PC2022/2_10hz) |
-| 3     | [Link](https://github.com/erlenddahl/teapot-lidar/tree/main/validation/Lillehammer/results/ABS%2C%20PCAP2021%2C%20PC2021/3_10hz) | [Link](https://github.com/erlenddahl/teapot-lidar/tree/main/validation/Lillehammer/results/ABS%2C%20PCAP2021%2C%20PC2022/3_10hz) | [Link](https://github.com/erlenddahl/teapot-lidar/tree/main/validation/Lillehammer/results/ABS%2C%20PCAP2022%2C%20PC2021/3_20hz) | [Link](https://github.com/erlenddahl/teapot-lidar/tree/main/validation/Lillehammer/results/ABS%2C%20PCAP2022%2C%20PC2022/3_20hz) |
-| 4     | [Link](https://github.com/erlenddahl/teapot-lidar/tree/main/validation/Lillehammer/results/ABS%2C%20PCAP2021%2C%20PC2021/4_10hz) | [Link](https://github.com/erlenddahl/teapot-lidar/tree/main/validation/Lillehammer/results/ABS%2C%20PCAP2021%2C%20PC2022/4_10hz) | [Link](https://github.com/erlenddahl/teapot-lidar/tree/main/validation/Lillehammer/results/ABS%2C%20PCAP2022%2C%20PC2021/4_20hz) | [Link](https://github.com/erlenddahl/teapot-lidar/tree/main/validation/Lillehammer/results/ABS%2C%20PCAP2022%2C%20PC2022/4_20hz) |
-| 5     | [Link](https://github.com/erlenddahl/teapot-lidar/tree/main/validation/Lillehammer/results/ABS%2C%20PCAP2021%2C%20PC2021/5_20hz) | [Link](https://github.com/erlenddahl/teapot-lidar/tree/main/validation/Lillehammer/results/ABS%2C%20PCAP2021%2C%20PC2022/5_20hz) | [Link](https://github.com/erlenddahl/teapot-lidar/tree/main/validation/Lillehammer/results/ABS%2C%20PCAP2022%2C%20PC2021/5_20hz) | [Link](https://github.com/erlenddahl/teapot-lidar/tree/main/validation/Lillehammer/results/ABS%2C%20PCAP2022%2C%20PC2022/5_20hz) |
-| 6     | [Link](https://github.com/erlenddahl/teapot-lidar/tree/main/validation/Lillehammer/results/ABS%2C%20PCAP2021%2C%20PC2021/6_20hz) | [Link](https://github.com/erlenddahl/teapot-lidar/tree/main/validation/Lillehammer/results/ABS%2C%20PCAP2021%2C%20PC2022/6_20hz) | N/A | N/A |
+| 1     | N/A | N/A | [Link](./ABS%2C%20PCAP2022%2C%20PC2021/1_10hz) | [Link](./ABS%2C%20PCAP2022%2C%20PC2022/1_10hz) |
+| 2     | N/A | N/A | [Link](./ABS%2C%20PCAP2022%2C%20PC2021/2_10hz) | [Link](./ABS%2C%20PCAP2022%2C%20PC2022/2_10hz) |
+| 3     | [Link](./ABS%2C%20PCAP2021%2C%20PC2021/3_10hz) | [Link](./ABS%2C%20PCAP2021%2C%20PC2022/3_10hz) | [Link](./ABS%2C%20PCAP2022%2C%20PC2021/3_20hz) | [Link](./ABS%2C%20PCAP2022%2C%20PC2022/3_20hz) |
+| 4     | [Link](./ABS%2C%20PCAP2021%2C%20PC2021/4_10hz) | [Link](./ABS%2C%20PCAP2021%2C%20PC2022/4_10hz) | [Link](./ABS%2C%20PCAP2022%2C%20PC2021/4_20hz) | [Link](./ABS%2C%20PCAP2022%2C%20PC2022/4_20hz) |
+| 5     | [Link](./ABS%2C%20PCAP2021%2C%20PC2021/5_20hz) | [Link](./ABS%2C%20PCAP2021%2C%20PC2022/5_20hz) | [Link](./ABS%2C%20PCAP2022%2C%20PC2021/5_20hz) | [Link](./ABS%2C%20PCAP2022%2C%20PC2022/5_20hz) |
+| 6     | [Link](./ABS%2C%20PCAP2021%2C%20PC2021/6_20hz) | [Link](./ABS%2C%20PCAP2021%2C%20PC2022/6_20hz) | N/A | N/A |
 | 7     | N/P | N/P | N/A | N/A |
