@@ -246,7 +246,7 @@ class NavigatorBase:
                 break
 
         self.registration_configs.append({
-            "iterations": len(diffs),
+            "iterations": len(diffs) * iterations,
             "diffs": diffs,
             "frame_ix": self.reader.get_current_frame_index(),
             "pcap": self.reader.get_pcap_path()
