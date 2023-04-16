@@ -161,6 +161,7 @@ class Plotter:
             "position_error_x": self.position_error_x,
             "position_error_y": self.position_error_y,
             "position_error_z": self.position_error_z,
+            "position_error_2d": self.position_error_2d,
             "position_error_3d": self.position_error_3d
         }
 
