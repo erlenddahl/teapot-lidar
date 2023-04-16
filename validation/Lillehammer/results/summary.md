@@ -31,7 +31,7 @@ The analysis was performed by processing the PCAP files for each of the collecte
 
 The rest of this section is about Lillehammer specifically. See [this document](./../../_notes/summary.md) for more method details that are common for all four locations.
 
-To make the results comparable, the trip analyses all started at the same point, which is set to after the missing PCAP file of trip 3 in 2022. This point is indicated with the blue circle on the image above. The analyses ran until failure, or until all frames were processed. In the next run, all analyses will end at before the last turn, almost straight north for the blue circle.
+To make the results comparable, the trip analyses all started at the same point, which is set to after the missing PCAP file of trip 3 in 2022. This point is indicated with the white circle on the image above. The analyses ran until failure, or until the actual position reached the end circle (black).
 
 **Common command line arguments:**
 ```
@@ -68,38 +68,38 @@ All entries with ~3500 meters did complete the entire route, but because of vari
 
 | Trip#   | Bare/Bare | Bare/Snow | Snow/Bare | Snow/Snow |
 |---------|-----------|-----------|-----------|-----------|
-| 1     | N/A | N/A | 24.640 | 3,080.423 |
-| 2     | N/A | N/A | 50.554 | 3,234.802 |
-| 3     | 3,540.214 | 29.578 | 3,817.083 | 1,769.072 |
-| 4     | 3,508.586 | 48.908 | 2,785.860 | 60.432 |
-| 5     | 3,559.483 | 391.129 | 2,630.673 | 80.426 |
-| 6     | 3,533.513 | 463.663 | N/A | N/A |
+| 1     | N/A | N/A | 24.640 | 3,234.967 |
+| 2     | N/A | N/A | 50.554 | 3,478.134 |
+| 3     | 3,307.276 | 29.578 | 3,498.181 | 2,094.734 |
+| 4     | 3,294.255 | 48.908 | 3,070.650 | 265.707 |
+| 5     | 3,314.796 | 678.582 | 2,973.419 | 272.403 |
+| 6     | 3,297.030 | 709.508 | N/A | N/A |
 | 7     | N/P | N/P | N/A | N/A |
-| **Average** | **3,535.449** | **233.320** | **1,861.762** | **1,645.031** |
+| **Average** | **3,303.339** | **366.644** | **1,923.489** | **1,869.189** |
 
 _**2D difference between actual and estimated coordinates [M]**_
 | Trip#   | Bare/Bare | Bare/Snow | Snow/Bare | Snow/Snow |
 |---------|-----------|-----------|-----------|-----------|
-| 1     | N/A | N/A | 1.088 | 0.767 |
-| 2     | N/A | N/A | 1.196 | 0.820 |
-| 3     | 0.580 | 0.972 | 0.856 | 0.895 |
-| 4     | 0.593 | 1.606 | 0.815 | 1.456 |
-| 5     | 0.545 | 1.038 | 0.803 | 1.374 |
-| 6     | 0.527 | 1.063 | N/A | N/A |
+| 1     | N/A | N/A | 1.088 | 0.797 |
+| 2     | N/A | N/A | 1.196 | 0.821 |
+| 3     | 0.588 | 0.972 | 0.831 | 0.898 |
+| 4     | 0.597 | 1.606 | 0.809 | 0.958 |
+| 5     | 0.548 | 1.046 | 0.860 | 0.972 |
+| 6     | 0.534 | 1.038 | N/A | N/A |
 | 7     | N/P | N/P | N/A | N/A |
-| **Average** | **0.562** | **1.170** | **0.951** | **1.062** |
+| **Average** | **0.567** | **1.166** | **0.957** | **0.889** |
 
 _**3D difference between actual and estimated coordinates [M]**_
 | Trip#   | Bare/Bare | Bare/Snow | Snow/Bare | Snow/Snow |
 |---------|-----------|-----------|-----------|-----------|
-| 1     | N/A | N/A | 1.245 | 0.925 |
-| 2     | N/A | N/A | 1.310 | 0.954 |
-| 3     | 0.650 | 1.136 | 0.957 | 1.007 |
-| 4     | 0.674 | 1.714 | 0.938 | 1.479 |
-| 5     | 0.622 | 1.150 | 0.915 | 1.404 |
-| 6     | 0.619 | 1.182 | N/A | N/A |
+| 1     | N/A | N/A | 1.245 | 0.954 |
+| 2     | N/A | N/A | 1.310 | 0.953 |
+| 3     | 0.660 | 1.136 | 0.935 | 1.011 |
+| 4     | 0.681 | 1.714 | 0.936 | 1.002 |
+| 5     | 0.627 | 1.176 | 0.970 | 1.018 |
+| 6     | 0.629 | 1.171 | N/A | N/A |
 | 7     | N/P | N/P | N/A | N/A |
-| **Average** | **0.641** | **1.295** | **1.073** | **1.154** |
+| **Average** | **0.649** | **1.299** | **1.079** | **0.988** |
 
 _**Reported registration fitness**_
 | Trip#   | Bare/Bare | Bare/Snow | Snow/Bare | Snow/Snow |
@@ -107,35 +107,35 @@ _**Reported registration fitness**_
 | 1     | N/A | N/A | 0.966 | 0.998 |
 | 2     | N/A | N/A | 0.964 | 1.000 |
 | 3     | 0.984 | 0.904 | 0.982 | 0.999 |
-| 4     | 0.889 | 0.976 | 0.978 | 0.998 |
-| 5     | 0.985 | 0.998 | 0.982 | 1.000 |
-| 6     | 0.900 | 0.998 | N/A | N/A |
+| 4     | 0.891 | 0.976 | 0.979 | 0.999 |
+| 5     | 0.985 | 0.989 | 0.982 | 1.000 |
+| 6     | 0.901 | 0.986 | N/A | N/A |
 | 7     | N/P | N/P | N/A | N/A |
-| **Average** | **0.940** | **0.969** | **0.975** | **0.999** |
+| **Average** | **0.940** | **0.964** | **0.975** | **0.999** |
 
 _**Reported registration RMSE**_
 | Trip#   | Bare/Bare | Bare/Snow | Snow/Bare | Snow/Snow |
 |---------|-----------|-----------|-----------|-----------|
 | 1     | N/A | N/A | 0.200 | 0.065 |
-| 2     | N/A | N/A | 0.188 | 0.051 |
-| 3     | 0.073 | 0.186 | 0.126 | 0.050 |
-| 4     | 0.102 | 0.202 | 0.127 | 0.051 |
-| 5     | 0.076 | 0.131 | 0.119 | 0.039 |
-| 6     | 0.092 | 0.132 | N/A | N/A |
+| 2     | N/A | N/A | 0.188 | 0.050 |
+| 3     | 0.073 | 0.186 | 0.124 | 0.052 |
+| 4     | 0.103 | 0.202 | 0.127 | 0.051 |
+| 5     | 0.077 | 0.136 | 0.120 | 0.044 |
+| 6     | 0.092 | 0.141 | N/A | N/A |
 | 7     | N/P | N/P | N/A | N/A |
-| **Average** | **0.086** | **0.163** | **0.152** | **0.051** |
+| **Average** | **0.086** | **0.166** | **0.152** | **0.053** |
 
 _**Registration iterations before convergence**_
 | Trip#   | Bare/Bare | Bare/Snow | Snow/Bare | Snow/Snow |
 |---------|-----------|-----------|-----------|-----------|
-| 1     | N/A | N/A | 200.000 | 79.519 |
-| 2     | N/A | N/A | 200.000 | 78.599 |
-| 3     | 199.971 | 200.000 | 199.902 | 76.039 |
-| 4     | 200.000 | 156.731 | 64.027 | 82.000 |
-| 5     | 199.910 | 96.818 | 63.037 | 80.667 |
-| 6     | 199.938 | 92.875 | N/A | N/A |
+| 1     | N/A | N/A | 200.000 | 79.054 |
+| 2     | N/A | N/A | 200.000 | 79.050 |
+| 3     | 199.968 | 200.000 | 199.896 | 74.169 |
+| 4     | 200.000 | 156.731 | 63.961 | 98.467 |
+| 5     | 199.904 | 85.987 | 63.772 | 99.200 |
+| 6     | 199.934 | 85.225 | N/A | N/A |
 | 7     | N/P | N/P | N/A | N/A |
-| **Average** | **199.955** | **136.606** | **145.393** | **79.365** |
+| **Average** | **199.951** | **131.986** | **145.526** | **85.988** |
 
 _**Links to individual trip details**_
 | Trip#   | Bare/Bare | Bare/Snow | Snow/Bare | Snow/Snow |

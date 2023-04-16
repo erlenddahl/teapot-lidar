@@ -4,6 +4,8 @@
 	"build-cloud-after": 5,
 	"skip-until-x": 579490.13,
 	"skip-until-y": 6776060.22,
+	"run-until-x": 579523.26,
+	"run-until-y": 6776424.83,
 	"recreate-caches": true,
 	"max-frame-radius": 25,
 	"wait-after-first-frame": 0,
