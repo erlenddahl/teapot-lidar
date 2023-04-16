@@ -1,7 +1,6 @@
 # Lillehammer
 
 ## The collected datasets
-![The driving route shown on a map.](full_route.png)
 
 ### October 21th 2021 (without snow):
 | Trip# | Frequency | Start time | Comment |
@@ -24,12 +23,15 @@
 | 4 | 20 hz | 20:38 | OK |
 | 5 | 20 hz | 20:48 | OK |
 
+The image below shows the driving route on a map of Lillehammer. All 10 valid trips are drawn, but as they are very similar, it's hard to differentiate them in this plot. The brown detour on the right hand side is part of the 2021 trips -- they started at the parkin spot at the bottom end of the brown arm, and drove north before entering the standard route. The 2022 trips started approximately at the same spot, but drove west, directly entering the route. Because of this discrepancy, and because trip 2022-3 is missing a PCAP file, the analysis start point is set to be after all trips are driving the same route without issues (white circle).
+
+![The driving route shown on a map.](full_route.png)
+
 ## The analysis
 
-### Method
-The analysis was performed by processing the PCAP files for each of the collected trips, and using absolute or incremental navigation to estimate a position for each frame until navigation failure. Navigation failure is defined as when the estimated position is more than five meters from the correct position. 
+### Details
 
-The rest of this section is about Lillehammer specifically. See [this document](./../../_notes/summary.md) for more method details that are common for all four locations.
+This section is about Lillehammer specifically. See [this document](./../../_notes/summary.md) for more method details that are common for all four locations.
 
 To make the results comparable, the trip analyses all started at the same point, which is set to after the missing PCAP file of trip 3 in 2022. This point is indicated with the white circle on the image above. The analyses ran until failure, or until the actual position reached the end circle (black).
 
