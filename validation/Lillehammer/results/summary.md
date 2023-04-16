@@ -26,6 +26,30 @@
 
 ## The analysis
 
+### Method
+See [this document](./../../_notes/summary.md) for method information that is common for all four locations.
+
+The analysis was performed by processing the PCAP files for each of the collected trips, and using absolute or incremental navigation to estimate a position for each frame until navigation failure. Navigation failure is defined as when the estimated position is more than five meters from the correct position. 
+
+To make the results comparable, the trip analyses all started at the same point, which is set to after the missing PCAP file of trip 3 in 2022. This point is indicated with the blue circle on the image above. The analyses ran until failure, or until all frames were processed. In the next run, all analyses will end at before the last turn, almost straight north for the blue circle.
+
+**Common command line arguments:**
+```
+{
+	"sbet-z-offset": -39.416,
+	"preview": "always",
+	"build-cloud-after": 5,
+	"skip-until-x": 579490.13,
+	"skip-until-y": 6776060.22,
+	"recreate-caches": true,
+	"max-frame-radius": 25,
+	"wait-after-first-frame": 0,
+	"hide-point-cloud": true,
+	"save-after-first-frame": true,
+	"save-after-frames": 50
+}
+```
+
 ### Absolute navigation
 
 The absolute navigation tables show how well the navigation worked in each of the four weather situations:
@@ -39,6 +63,9 @@ The numbers in the four results column represents the results for that combinati
 - N/P: This trip has not yet been processed.
 
 _**Meters driven before failure**_
+
+All entries with ~3500 meters did complete the entire route, but because of variances in the stopping point of the data collections, the lengths vary slightly.
+
 | Trip#   | Bare/Bare | Bare/Snow | Snow/Bare | Snow/Snow |
 |---------|-----------|-----------|-----------|-----------|
 | 1     | N/A | N/A | 24.640 | 2,630.914 |
@@ -97,3 +124,4 @@ _**Registration iterations before convergence**_
 | 6     | 199.938 | 106.625 | N/A | N/A |
 | 7     | N/P | N/P | N/A | N/A |
 | **Average** | **199.955** | **142.768** | **145.222** | **78.636** |
+
