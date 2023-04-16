@@ -297,10 +297,13 @@ class NavigatorBase:
         return data
 
     @staticmethod
-    def save_data(path, data):
+    def save_data(path, data, pretty):
 
         with open(path, 'w') as f:
-            json.dump(data, f, indent=4)
+            if pretty:
+                json.dump(data, f, indent=4)
+            else:
+                json.dump(data, f, indent=None, separators=(',', ':'))
 
     @staticmethod
     def save_cloud_as_las(path, cloud):
@@ -497,7 +500,7 @@ class NavigatorBase:
 
             self.time("results saving")
             
-            self.save_data(os.path.join(self.save_path, "data.json"), results)
+            self.save_data(os.path.join(self.save_path, "data.json"), results, self.args.save_pretty_json)
 
         return results
 
@@ -584,6 +587,7 @@ class NavigatorBase:
         parser.add_argument('--downsample-after', type=int, default=10, required=False, help="The cloud will be downsampled (which is an expensive operation for large clouds, so don't do it too often) after this many registered frames have been added. If this number is higher than the number of frames being read, it will be downsampled once at the end of the process (unless downsampling is disabled, see --voxel-size).")
         parser.add_argument('--preview', type=str, default="always", choices=['always', 'end', 'never'], help="Show constantly updated point cloud and data plot previews while processing ('always'), show them only at the end ('end'), or don't show them at all ('never').")
         parser.add_argument('--save-to', type=str, default=None, required=False, help="If given, final results will be stored in this folder.")
+        parser.add_argument('--save-pretty-json', action="store_true", help="Results will normally be saved as minified JSON (without whitespace) to save space, but this argument can be used to write pretty (human readable) JSON instead.")
         parser.add_argument('--save-after-first-frame', action="store_true", help="Results will be stored after the first frame (useful to see that the output is correct before running a long analysis).")
         parser.add_argument('--save-after-frames', type=int, default=0, required=False, help="If given, results will be saved after every nth frame (useful to keep an eye on results during a long analysis).")
         parser.add_argument('--save-screenshots-to', type=str, default=None, required=False, help="If given, point cloud screenshots will be saved in this directory with their indices as filenames (0.png, 1.png, 2.png, etc). Only works if --preview is set to 'always'.")
