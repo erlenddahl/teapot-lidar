@@ -225,6 +225,12 @@ class NavigatorBase:
         # Retrieve the index of the currently processed frame
         ix = self.reader.get_current_frame_index()
 
+        # The frame index from the readers is the index of the last
+        # read frame. If we haven't started reading yet, it will 
+        # be -1. In that case, use the first frame (instead of the last)
+        if ix < 0:
+            ix = 0
+
         # Retrieve the SBET data for this frame, which has
         # already been transformed to fit the point cloud.
         return self.sbet_coordinates[ix]
