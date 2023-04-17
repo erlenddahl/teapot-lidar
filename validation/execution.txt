@@ -11,20 +11,3 @@ python pointCloud.py --create-from "validation\Lillehammer\Punktsky_2022-02-16-r
 conda create --name teapot310 python=3.10.9
 conda activate teapot310
 pip install open3d numpy matplotlib tqdm laspy[laszip] ouster-sdk[examples] tabulate probreg pyproj
-
-
-VALIDATION
-
-Lillehammer
-
-	2021-10-21
-
-		1, 2 dropped -- outside of SBET (Morten confirms, no SBET available)
-
-		ABSOLUTE MOT 21-punktsky
-
-			
-
-		INCREMENTAL
-
-			x python incrementalNavigator.py --pcap "validation\Lillehammer\2021-10-21\pcap\3_10hz" --sbet "validation\Lillehammer\2021-10-21\navigation\sbet-output-UTC-1000.out" --save-to "validation\Lillehammer\results\INC, PCAP2021\3_10hz" --load-arguments "validation\Lillehammer\default-arguments.json"
