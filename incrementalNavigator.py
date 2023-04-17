@@ -23,10 +23,11 @@ class LidarNavigator(NavigatorBase):
         to show the driving route.
         """
         
-        self.initialize_navigation(initial_movement=[[0,0,0]], rotate_sbet=False)        
+        self.initialize_navigation(rotate_sbet=False)        
         self.initialize_plot_and_visualization()
 
         frame = self.reader.next_frame(self.remove_vehicle, self.timer)
+        self.rotate_frame(frame)
         self.transform_and_add_to_merged_frame(frame)
         self.previous_frame = frame
 
@@ -73,13 +74,15 @@ class LidarNavigator(NavigatorBase):
 
         # Fetch the next frame
         frame = self.reader.next_frame(self.remove_vehicle, self.timer)
-
         self.time("frame extraction")
 
         # If it is empty, that (usually) means we have reached the end of
         # the file. Return False to stop the loop.
         if frame is None:
             return False
+
+        # Rotate the frame using the current heading
+        self.rotate_frame(frame)
 
         # Estimate normals for the target frame (the source frame will always have
         # normals from the previous step).
