@@ -27,16 +27,10 @@ class SbetRow:
 
             if type(original) is not dict:
                 original = original.__dict__
-                
-            self.sow = original["sow"]
-            self.lat = original["lat"]
-            self.lon = original["lon"]
-            self.alt = original["alt"]
-            self.age = original["age"]
-            self.index = original["index"]
-            self.x = original["x"]
-            self.y = original["y"]
-            self.heading = original["heading"]
+
+            for key in original:
+                self.__dict__[key] = original[key]
+
             return
 
         self.sow = row["time"]
