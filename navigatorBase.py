@@ -49,14 +49,14 @@ class NavigatorBase:
 
         self.skip_until_circle_center = None
         self.skip_until_circle_center_cylinder = None
-        if self.args.skip_until_radius > 0 and self.args.skip_until_x is not None and self.args.skip_until_x is not None:
+        if self.args.skip_until_radius > 0 and self.args.skip_until_x is not None and self.args.skip_until_y is not None:
             self.skip_until_circle_center = SbetRow(None, x=self.args.skip_until_x, y=self.args.skip_until_y)
             self.skip_until_circle_center.radius = self.args.skip_until_radius
 
+        self.run_until_ix = -1
         self.run_until_circle_center = None
         self.run_until_circle_center_cylinder = None
-        self.run_until_ix = -1
-        if self.args.run_until_radius > 0 and self.args.run_until_x is not None and self.args.run_until_x is not None:
+        if self.args.run_until_radius > 0 and self.args.run_until_x is not None and self.args.run_until_y is not None:
             self.run_until_circle_center = SbetRow(None, x=self.args.run_until_x, y=self.args.run_until_y)
             self.run_until_circle_center.radius = self.args.run_until_radius
 
@@ -102,7 +102,7 @@ class NavigatorBase:
         if self.skip_until_circle_center is None:
             return
 
-        skip_until = self.find_first_frame_entering_circle(self.skip_until_circle_center)
+        skip_until, _ = self.find_first_frame_entering_circle(self.skip_until_circle_center)
 
         if skip_until < 0:
             raise Exception("The actual position never entered the circle given by --skip-until-[x/y/radius] (" + str(self.skip_until_circle_center.x) + ", " + str(self.skip_until_circle_center.y) + ", " + str(self.skip_until_circle_center.radius) + ").")
@@ -113,9 +113,9 @@ class NavigatorBase:
         for (ix, position) in enumerate(self.sbet_coordinates):
             distance = circle.distance2d(position)
             if distance <= circle.radius:
-                return ix
+                return (ix, position)
 
-        return -1
+        return (-1, None)
 
     def initialize_navigation(self, initial_movement=[], rotate_sbet=False):
         self.timer.reset()
@@ -189,15 +189,15 @@ class NavigatorBase:
         if self.run_until_circle_center is not None:
 
             # Calculate the ending frame
-            self.run_until_ix = self.find_first_frame_entering_circle(self.run_until_circle_center)
+            self.run_until_ix, coordinate = self.find_first_frame_entering_circle(self.run_until_circle_center)
+            print(self.run_until_ix, coordinate, self.run_until_circle_center)
             
             # Translate the "run until" circle 
             self.run_until_circle_center.translate(-self.full_point_cloud_offset)
             
-            # And set the altitude on the skip-circle to the same as the first coordinate to be processed,
+            # And set the altitude on the skip-circle to the same as the first coordinate to enter the circle,
             # to allow it to be visualized together with the movement paths.
-            # TODO: Use the altitude of the first coordinate that enters this circle instead!
-            # self.run_until_circle_center.alt = self.initial_coordinate.alt;
+            self.run_until_circle_center.alt = coordinate.alt if coordinate is not None else self.initial_coordinate.alt;
 
             # Create a flat cylinder to indicate the skip-circle in the visualization.
             self.run_until_circle_center_cylinder = self.create_cylinder_exact(self.args.run_until_radius / self.position_cylinder_radius, 2, [0.8,0.8,0.8])
