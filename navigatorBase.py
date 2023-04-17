@@ -634,6 +634,11 @@ class NavigatorBase:
                 data = json.load(f)
                 for key in data:
                     arg_key = key.replace("--", "").replace("-", "_")
+
+                    # Ignore absoluteNavigator arguments to allow common .json file
+                    if arg_key in ["point_cloud", "hide_point_cloud", "cloud_part_radius"]:
+                        continue
+
                     if not arg_key in arg_keys:
                         raise Exception("Unrecognized agrument in the JSON file (--load-arguments): " + key + " (" + arg_key + ")")
                     if getattr(args, arg_key, None) is None or arg_keys[arg_key] == False:
