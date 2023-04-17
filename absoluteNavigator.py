@@ -102,14 +102,6 @@ class AbsoluteLidarNavigator(NavigatorBase):
         target_temp.paint_uniform_color([0, 0.651, 0.929])
         o3d.visualization.draw_geometries([source_temp, target_temp])
 
-    def get_corrected_heading(self, heading):
-        heading = heading - np.pi/2
-        if heading < 0:
-            heading_corrected = np.absolute(heading)
-        elif heading > 0:
-            heading_corrected = np.pi*2-heading
-        return heading_corrected
-
     def throw_outside_of_cloud(self, actual_position, partial_radius):
         print("")
         print("")
@@ -159,12 +151,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         self.time("position extraction")
 
-        # Rotate the frame using the current heading
-        #TODO: Should use estimated heading for actual situation!
-        R = frame.get_rotation_matrix_from_xyz((0, 0, self.get_corrected_heading(actual_coordinate.heading)))
-        frame.rotate(R, center=[0,0,0])
-
-        self.time("frame rotation")
+        self.rotate_frame(frame)
 
         # Extract a part of the cloud around the actual position. This is the cloud we are going to register against.
         partial_radius = self.args.cloud_part_radius

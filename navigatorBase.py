@@ -239,6 +239,26 @@ class NavigatorBase:
         pos.frame_ix = ix
 
         return pos
+
+    def rotate_frame(self, frame, coordinate=None):
+
+        if coordinate is None:
+            coordinate = self.get_current_position()
+
+        # Rotate the frame using the current heading
+        #TODO: Should use estimated heading for actual situation!
+        R = frame.get_rotation_matrix_from_xyz((0, 0, self.get_corrected_heading(coordinate.heading)))
+        frame.rotate(R, center=[0,0,0])
+        self.time("frame rotation")
+
+    def get_corrected_heading(self, heading):
+        heading = heading - np.pi/2
+        if heading < 0:
+            heading_corrected = np.absolute(heading)
+        elif heading > 0:
+            heading_corrected = np.pi*2-heading
+        return heading_corrected
+
     def run_registration(self, source, target, actual_coordinate):
         # Run the alignment
         iterations = 25
