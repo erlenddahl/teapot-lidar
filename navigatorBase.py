@@ -179,7 +179,7 @@ class NavigatorBase:
             self.plot.show_plot()
             self.plot.update()
 
-        results = self.check_results_saving(True, exception=navigation_exception)
+        results = self.check_results_saving(True, exception=navigation_exception, finished=True)
         self.finish_plot_and_visualization()
 
         if navigation_exception is not None:
@@ -489,18 +489,23 @@ class NavigatorBase:
         if self.args.raise_on_movement > 0 and self.plot.distances[-1] > self.args.raise_on_movement:
             raise Exception("The movement between the last two frames (" + str(self.plot.distances[-1]) + ") was larger than the given limit (--raise-on-movement " + str(self.args.raise_on_movement) + ").")           
 
-    def check_results_saving(self, save_cloud=False, exception=None):
+    def check_results_saving(self, save_cloud=False, exception=None, finished=False):
 
         results = self.get_results()
         
         results["estimated_coordinates"] = [x.json() for x in self.estimated_coordinates]
         results["actual_coordinates"] = [x.json(True) for x in self.actual_coordinates]
-        results["sbet_coordinates"] = [x.json(True) for x in self.sbet_coordinates]
+        # TODO: Is this really needed? results["sbet_coordinates"] = [x.json(True) for x in self.sbet_coordinates]
         results["registration_configs"] = self.registration_configs
         results["point_cloud_offset"] = self.full_point_cloud_offset
 
+        status = "ongoing"
+        if finished:
+            status = "finished"
         if exception is not None:
-            results["fatal_exception"] = vars(exception)
+            status = "failed"
+            results["fatal_exception"] = str(exception)
+        results["status"] = status
 
         results["args"] = vars(self.args)
         
