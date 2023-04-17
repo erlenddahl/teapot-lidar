@@ -497,7 +497,7 @@ class NavigatorBase:
         results["actual_coordinates"] = [x.json(True) for x in self.actual_coordinates]
         # TODO: Is this really needed? results["sbet_coordinates"] = [x.json(True) for x in self.sbet_coordinates]
         results["registration_configs"] = self.registration_configs
-        results["point_cloud_offset"] = self.full_point_cloud_offset
+        results["point_cloud_offset"] = self.full_point_cloud_offset.tolist()
 
         status = "ongoing"
         if finished:
