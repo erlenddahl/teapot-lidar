@@ -233,8 +233,12 @@ class NavigatorBase:
 
         # Retrieve the SBET data for this frame, which has
         # already been transformed to fit the point cloud.
-        return self.sbet_coordinates[ix]
+        pos = self.sbet_coordinates[ix]
 
+        # Set the frame_ix as an additional parameter
+        pos.frame_ix = ix
+
+        return pos
     def run_registration(self, source, target, actual_coordinate):
         # Run the alignment
         iterations = 25

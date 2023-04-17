@@ -67,6 +67,9 @@ class SbetRow:
             json["heading"] = self.heading
             json["index"] = self.index
 
+        if "frame_ix" in self.__dict__:
+            json["frame_ix"] = self.frame_ix
+
         return json
 
     def get_csv_headers(self):
