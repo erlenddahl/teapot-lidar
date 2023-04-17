@@ -3,6 +3,8 @@ This analysis is based on data collected from four locations in two different da
 
 The collected LiDAR data was stored as PCAP files, and the GNSS coordinates as SBET files. Coordinates from the SBET files were matched against LiDAR frames in the PCAP files using their timestamps.
 
+The analysis was performed by processing the PCAP files for each of the collected trips, and using absolute or incremental navigation to estimate a position for each frame until navigation failure. Navigation failure is defined as when the estimated position is more than five meters from the correct position. 
+
 Site specific details and results can be found in the following documents:
 - [Lillehammer](./../Lillehammer/results/summary.md)
 - Dovre (not ready)
