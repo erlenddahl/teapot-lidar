@@ -51,6 +51,14 @@ class NavigatorBase:
         self.skip_until_circle_center_cylinder = None
         if self.args.skip_until_radius > 0 and self.args.skip_until_x is not None and self.args.skip_until_x is not None:
             self.skip_until_circle_center = SbetRow(None, x=self.args.skip_until_x, y=self.args.skip_until_y)
+            self.skip_until_circle_center.radius = self.args.skip_until_radius
+
+        self.run_until_circle_center = None
+        self.run_until_circle_center_cylinder = None
+        self.run_until_ix = -1
+        if self.args.run_until_radius > 0 and self.args.run_until_x is not None and self.args.run_until_x is not None:
+            self.run_until_circle_center = SbetRow(None, x=self.args.run_until_x, y=self.args.run_until_y)
+            self.run_until_circle_center.radius = self.args.run_until_radius
 
         if args.skip_start > 0 and self.skip_until_circle_center is not None:
             raise Exception("Cannot use both --skip-start and --skip-until-[x/y/radius] at the same time!")
@@ -94,17 +102,20 @@ class NavigatorBase:
         if self.skip_until_circle_center is None:
             return
 
-        skip_until = -1
-        for (ix, position) in enumerate(self.sbet_coordinates):
-            distance = self.skip_until_circle_center.distance2d(position)
-            if distance <= self.args.skip_until_radius:
-                skip_until = ix
-                break
+        skip_until = self.find_first_frame_entering_circle(self.skip_until_circle_center)
 
         if skip_until < 0:
-            raise Exception("The actual position never entered the circle given by --skip-until-[x/y/radius].")
+            raise Exception("The actual position never entered the circle given by --skip-until-[x/y/radius] (" + str(self.skip_until_circle_center.x) + ", " + str(self.skip_until_circle_center.y) + ", " + str(self.skip_until_circle_center.radius) + ").")
 
         self.skip_to_frame(skip_until, "Skipping until entering circle")
+
+    def find_first_frame_entering_circle(self, circle):
+        for (ix, position) in enumerate(self.sbet_coordinates):
+            distance = circle.distance2d(position)
+            if distance <= circle.radius:
+                return ix
+
+        return -1
 
     def initialize_navigation(self, initial_movement=[], rotate_sbet=False):
         self.timer.reset()
@@ -146,10 +157,16 @@ class NavigatorBase:
         # the point cloud.
         for c in self.sbet_coordinates:
             c.translate(-self.full_point_cloud_offset)
+
+        if self.skip_until_circle_center is not None:
+            
+            # Translate the "skip until" circle 
+            self.skip_until_circle_center.translate(-self.full_point_cloud_offset)
+
+            # Then skip frames until the skip circle
+            self.skip_until_circle()
         
         self.actual_movement_path = self.create_line([[p.x, p.y, p.alt] for p in self.sbet_coordinates], color=[0, 0, 1])
-
-        self.skip_until_circle()
 
         self.actual_position_cylinder = self.create_cylinder(size_ratio=1, color=[0,0,1])
         self.estimated_position_cylinder = self.create_cylinder(size_ratio=0.8, color=[1,0,0])
@@ -161,9 +178,6 @@ class NavigatorBase:
 
         if self.skip_until_circle_center is not None:
             
-            # Translate the "skip until" circle 
-            self.skip_until_circle_center.translate(-self.full_point_cloud_offset)
-            
             # And set the altitude on the skip-circle to the same as the first coordinate to be processed,
             # to allow it to be visualized together with the movement paths.
             self.skip_until_circle_center.alt = self.initial_coordinate.alt;
@@ -171,6 +185,23 @@ class NavigatorBase:
             # Create a flat cylinder to indicate the skip-circle in the visualization.
             self.skip_until_circle_center_cylinder = self.create_cylinder_exact(self.args.skip_until_radius / self.position_cylinder_radius, 2, [0.8,0.8,0.8])
             self.skip_until_circle_center_cylinder.translate(self.skip_until_circle_center.np(), relative=False)
+
+        if self.run_until_circle_center is not None:
+
+            # Calculate the ending frame
+            self.run_until_ix = self.find_first_frame_entering_circle(self.run_until_circle_center)
+            
+            # Translate the "run until" circle 
+            self.run_until_circle_center.translate(-self.full_point_cloud_offset)
+            
+            # And set the altitude on the skip-circle to the same as the first coordinate to be processed,
+            # to allow it to be visualized together with the movement paths.
+            # TODO: Use the altitude of the first coordinate that enters this circle instead!
+            # self.run_until_circle_center.alt = self.initial_coordinate.alt;
+
+            # Create a flat cylinder to indicate the skip-circle in the visualization.
+            self.run_until_circle_center_cylinder = self.create_cylinder_exact(self.args.run_until_radius / self.position_cylinder_radius, 2, [0.8,0.8,0.8])
+            self.run_until_circle_center_cylinder.translate(self.run_until_circle_center.np(), relative=False)
 
     def finalize_navigation(self, navigation_exception):
 
@@ -415,6 +446,8 @@ class NavigatorBase:
 
             if self.skip_until_circle_center_cylinder is not None:
                 self.vis.add_geometry(self.skip_until_circle_center_cylinder)
+            if self.run_until_circle_center_cylinder is not None:
+                self.vis.add_geometry(self.run_until_circle_center_cylinder)
             
             self.vis.set_follow_vehicle_view()
 
@@ -642,6 +675,10 @@ class NavigatorBase:
         parser.add_argument('--skip-until-radius', type=int, default=20, required=False, help="If given together with --skip-until-x and --skip-until-y, the analysis will skip frames until the actual position enters the circle given by these three parameters.")
         parser.add_argument('--skip-until-x', type=float, default=None, required=False, help="If given together with --skip-until-x and --skip-until-radius, the analysis will skip frames until the actual position enters the circle given by these three parameters.")
         parser.add_argument('--skip-until-y', type=float, default=None, required=False, help="If given together with --skip-until-y and --skip-until-radius, the analysis will skip frames until the actual position enters the circle given by these three parameters.")
+        
+        parser.add_argument('--run-until-radius', type=int, default=20, required=False, help="If given together with --run-until-x and --run-until-y, the analysis will run frames until the actual position enters the circle given by these three parameters.")
+        parser.add_argument('--run-until-x', type=float, default=None, required=False, help="If given together with --run-until-x and --run-until-radius, the analysis will run frames until the actual position enters the circle given by these three parameters.")
+        parser.add_argument('--run-until-y', type=float, default=None, required=False, help="If given together with --run-until-y and --run-until-radius, the analysis will run frames until the actual position enters the circle given by these three parameters.")
         
         parser.add_argument('--frames', type=int, default=-1, required=False, help="If given a number larger than 1, only this many frames will be processed before the analysis is stopped (useful for shorter test runs).")
         

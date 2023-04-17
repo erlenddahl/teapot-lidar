@@ -81,6 +81,9 @@ class LidarNavigator(NavigatorBase):
         if frame is None:
             return False
 
+        if self.run_until_ix > 0 and self.reader.get_current_frame_index() >= self.run_until_ix:
+            return False
+
         # Rotate the frame using the current heading
         self.rotate_frame(frame)
 

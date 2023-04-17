@@ -125,6 +125,9 @@ class AbsoluteLidarNavigator(NavigatorBase):
         if frame is None:
             return False
 
+        if self.run_until_ix > 0 and self.reader.get_current_frame_index() >= self.run_until_ix:
+            return False
+
         # Find the current position, and update the blue (actual) position cylinder
         actual_coordinate = self.get_current_position().clone()
         self.actual_position_cylinder.translate(actual_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
