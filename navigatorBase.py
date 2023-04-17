@@ -596,16 +596,23 @@ class NavigatorBase:
     @staticmethod
     def add_standard_and_parse_args(parser):
         parser.add_argument('--algorithm', type=str, default="NICP", required=False, help="Use this registration algorithm (see names in algorithmHelper.py).")
-        parser.add_argument('--frames', type=int, default=-1, required=False, help="If given a number larger than 1, only this many frames will be processed before the analysis is stopped (useful for shorter test runs).")
+        
+        parser.add_argument('--skip-last-frame-in-pcap-file', type=bool, default=True, required=False, help="The last frame in each PCAP file is often corrupted. This flag makes the pcap reader skip the last frame in each file.")
         parser.add_argument('--build-cloud-after', type=int, default=1, required=False, help="How often registered frames should be added to the generated point cloud. 0 or lower deactivates the generated point cloud. 1 or higher generates a point cloud with details (and time usage) decreasing with higher numbers.")
+        parser.add_argument('--voxel-size', type=float, default=0.1, required=False, help="The voxel size used for cloud downsampling. If less than or equal to zero, downsampling will be disabled.")
+        parser.add_argument('--downsample-after', type=int, default=10, required=False, help="The cloud will be downsampled (which is an expensive operation for large clouds, so don't do it too often) after this many registered frames have been added. If this number is higher than the number of frames being read, it will be downsampled once at the end of the process (unless downsampling is disabled, see --voxel-size).")
+        parser.add_argument('--wait-after-first-frame', type=int, default=0, required=False, help="If given, the analysis will wait for this many seconds after the first frame to allow the visualization to be manually adjusted (zooming, panning, etc).")
+        parser.add_argument('--preview', type=str, default="always", choices=['always', 'end', 'never'], help="Show constantly updated point cloud and data plot previews while processing ('always'), show them only at the end ('end'), or don't show them at all ('never').")
+        
+        parser.add_argument('--skip-start', type=int, default=0, required=False, help="If given a positive number larger than 0, this many frames will be skipped before starting processing frames.")
         parser.add_argument('--skip-every-frame', type=int, default=0, required=False, help="If given a positive number larger than 0, this many frames will be skipped between every frame read from the PCAP file.")
+        
         parser.add_argument('--skip-until-radius', type=int, default=20, required=False, help="If given together with --skip-until-x and --skip-until-y, the analysis will skip frames until the actual position enters the circle given by these three parameters.")
         parser.add_argument('--skip-until-x', type=float, default=None, required=False, help="If given together with --skip-until-x and --skip-until-radius, the analysis will skip frames until the actual position enters the circle given by these three parameters.")
         parser.add_argument('--skip-until-y', type=float, default=None, required=False, help="If given together with --skip-until-y and --skip-until-radius, the analysis will skip frames until the actual position enters the circle given by these three parameters.")
-        parser.add_argument('--skip-start', type=int, default=0, required=False, help="If given a positive number larger than 0, this many frames will be skipped before starting processing frames.")
-        parser.add_argument('--voxel-size', type=float, default=0.1, required=False, help="The voxel size used for cloud downsampling. If less than or equal to zero, downsampling will be disabled.")
-        parser.add_argument('--downsample-after', type=int, default=10, required=False, help="The cloud will be downsampled (which is an expensive operation for large clouds, so don't do it too often) after this many registered frames have been added. If this number is higher than the number of frames being read, it will be downsampled once at the end of the process (unless downsampling is disabled, see --voxel-size).")
-        parser.add_argument('--preview', type=str, default="always", choices=['always', 'end', 'never'], help="Show constantly updated point cloud and data plot previews while processing ('always'), show them only at the end ('end'), or don't show them at all ('never').")
+        
+        parser.add_argument('--frames', type=int, default=-1, required=False, help="If given a number larger than 1, only this many frames will be processed before the analysis is stopped (useful for shorter test runs).")
+        
         parser.add_argument('--save-to', type=str, default=None, required=False, help="If given, final results will be stored in this folder.")
         parser.add_argument('--save-pretty-json', action="store_true", help="Results will normally be saved as minified JSON (without whitespace) to save space, but this argument can be used to write pretty (human readable) JSON instead.")
         parser.add_argument('--save-after-first-frame', action="store_true", help="Results will be stored after the first frame (useful to see that the output is correct before running a long analysis).")
@@ -613,10 +620,10 @@ class NavigatorBase:
         parser.add_argument('--save-screenshots-to', type=str, default=None, required=False, help="If given, point cloud screenshots will be saved in this directory with their indices as filenames (0.png, 1.png, 2.png, etc). Only works if --preview is set to 'always'.")
         parser.add_argument('--save-frame-pairs-to', type=str, default=None, required=False, help="If given, frame pairs with a registered fitness below --save-frame-pair-threshold will be saved to the given directory for manual inspection.")
         parser.add_argument('--save-frame-pair-threshold', type=float, default=0.97, required=False, help="If --save-frame-pairs-to is given, frame pairs with a registered fitness value below this value will be saved.")
-        parser.add_argument('--skip-last-frame-in-pcap-file', type=bool, default=True, required=False, help="The last frame in each PCAP file is often corrupted. This flag makes the pcap reader skip the last frame in each file.")
+        
         parser.add_argument('--raise-on-error', type=float, default=200, required=False, help="The frame processing will raise an exception if the distance between the actual and the estimated position is larger than this number. Set to 0 or lower to deactivate.")
         parser.add_argument('--raise-on-movement', type=float, default=100, required=False, help="The frame processing will raise an exception if the distance between two last estimated positions is larger than this number. Set to 0 or lower to deactivate.")
-        parser.add_argument('--wait-after-first-frame', type=int, default=0, required=False, help="If given, the analysis will wait for this many seconds after the first frame to allow the visualization to be manually adjusted (zooming, panning, etc).")
+        
         parser.add_argument('--load-arguments', type=str, default=None, required=False, help="Additional arguments will be loaded from the given json file. Arguments already set from the command line will not be overwritten.")
 
         args = parser.parse_args()
