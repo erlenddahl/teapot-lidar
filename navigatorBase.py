@@ -263,9 +263,25 @@ class NavigatorBase:
         # Move the estimated position
         self.estimated_position_cylinder.translate(self.current_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
 
+        # Update the plot with data from this registration
         self.update_plot(reg, registration_time, movement, actual_coordinate)
 
-        return reg, registration_time, movement
+        # Append the new movement to the path
+        self.movement_path.points.append(self.current_coordinate.np())
+
+        # Add the new line
+        if len(self.movements) == 2:
+            if self.preview_always:
+                self.vis.add_geometry(self.movement_path)
+        if len(self.movements) >= 2:
+            self.movement_path.lines.append([len(self.movements) - 2, len(self.movements) - 1])
+            self.movement_path.paint_uniform_color([1, 0, 0])
+            if self.preview_always:
+                self.vis.update_geometry(self.movement_path)
+
+        self.time("book keeping")
+
+        return reg
 
     def ensure_merged_frame_is_downsampled(self):
 

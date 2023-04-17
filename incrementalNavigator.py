@@ -92,18 +92,7 @@ class LidarNavigator(NavigatorBase):
         self.actual_position_cylinder.translate(actual_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
 
         # Run the alignment
-        reg, registration_time, movement = self.run_registration(frame, self.previous_frame, actual_coordinate)
-
-        # Append the new movement to the path
-        self.movement_path = self.movement_path.transform(reg.transformation)
-        self.movement_path.points.append([0,0,0])
-        self.movement_path.lines.append([len(self.movement_path.lines), len(self.movement_path.lines) + 1])
-        self.movement_path.paint_uniform_color([1, 0, 0])
-
-        # Add the new line
-        self.update_live_movement(self.movement_path)
-
-        self.time("book keeping")
+        reg = self.run_registration(frame, self.previous_frame, actual_coordinate)
 
         self.transform_and_add_to_merged_frame(frame, reg)
 
@@ -119,15 +108,6 @@ class LidarNavigator(NavigatorBase):
             transformed_frame.transform(reg.transformation)
         transformed_frame.translate(self.current_coordinate.np())
         self.add_to_merged_frame(transformed_frame, True)
-        
-    def update_live_movement(self, path):
-        if not self.preview_always:
-            return
-
-        if len(self.movements) == 2:
-            self.vis.add_geometry(path)
-        if len(self.movements) > 2:
-            self.vis.update_geometry(path)
 
 if __name__ == "__main__":
 

@@ -205,22 +205,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         self.time("frame normal estimation")
 
-        reg, registration_time, movement = self.run_registration(frame, partial_cloud, actual_coordinate)
-
-        # Append the new movement to the path
-        self.movement_path.points.append(self.current_coordinate.np())
-
-        # Add the new line
-        if len(self.movements) == 2:
-            if self.preview_always:
-                self.vis.add_geometry(self.movement_path)
-        if len(self.movements) >= 2:
-            self.movement_path.lines.append([len(self.movements) - 2, len(self.movements) - 1])
-            self.movement_path.paint_uniform_color([1, 0, 0])
-            if self.preview_always:
-                self.vis.update_geometry(self.movement_path)
-
-        self.time("book keeping")
+        reg = self.run_registration(frame, partial_cloud, actual_coordinate)
 
         # Update the visualization
         if self.preview_always:
