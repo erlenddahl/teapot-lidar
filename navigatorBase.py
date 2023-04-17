@@ -523,6 +523,8 @@ class NavigatorBase:
 
         results = self.get_results()
         
+        results["initial_coordinate"] = self.initial_coordinate.json(True)
+        results["current_coordinate"] = self.current_coordinate.json()
         results["estimated_coordinates"] = [x.json() for x in self.estimated_coordinates]
         results["actual_coordinates"] = [x.json(True) for x in self.actual_coordinates]
         # TODO: Is this really needed? results["sbet_coordinates"] = [x.json(True) for x in self.sbet_coordinates]
