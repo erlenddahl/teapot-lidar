@@ -43,8 +43,6 @@ class NavigatorBase:
         self.build_cloud_timer = args.build_cloud_after
         self.build_cloud_after = args.build_cloud_after
         self.build_cloud = args.build_cloud_after > 0
-        self.raise_on_error = args.raise_on_error
-        self.raise_on_movement = args.raise_on_movement
         self.has_waited = False
         self.wait_after_first_frame = args.wait_after_first_frame
         self.full_point_cloud_offset = None
@@ -468,11 +466,11 @@ class NavigatorBase:
         elif self.args.save_after_frames > 0 and processed_frames % self.args.save_after_frames == 0:
             self.check_results_saving()
 
-        if self.raise_on_error > 0 and self.plot.position_error_3d[-1] > self.raise_on_error:
-            raise Exception("The navigation error is larger than the given limit (--raise-on-error).")
+        if self.args.raise_on_error > 0 and self.plot.position_error_3d[-1] > self.args.raise_on_error:
+            raise Exception("The navigation error (" + str(self.plot.position_error_3d[-1]) + ") is larger than the given limit (--raise-on-error " + str(self.args.raise_on_error) + ").")
 
-        if self.raise_on_movement > 0 and self.plot.distances[-1] > self.raise_on_movement:
-            raise Exception("The movement between the last two frames was larger than the given limit (--raise-on-movement).")           
+        if self.args.raise_on_movement > 0 and self.plot.distances[-1] > self.args.raise_on_movement:
+            raise Exception("The movement between the last two frames (" + str(self.plot.distances[-1]) + ") was larger than the given limit (--raise-on-movement " + str(self.args.raise_on_movement) + ").")           
 
     def check_results_saving(self, save_cloud=False, exception=None):
 
