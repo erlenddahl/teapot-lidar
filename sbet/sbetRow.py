@@ -59,12 +59,12 @@ class SbetRow:
         json = {
             "x": self.x,
             "y": self.y,
-            "z": self.alt
+            "z": self.alt,
+            "heading": self.heading
         }
 
         if actual:
             json["age"] = self.age
-            json["heading"] = self.heading
             json["index"] = self.index
 
         if "frame_ix" in self.__dict__:
