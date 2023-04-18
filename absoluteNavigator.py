@@ -129,7 +129,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
             return False
 
         # Find the current position, and update the blue (actual) position cylinder
-        actual_coordinate = self.get_current_position().clone()
+        actual_coordinate = self.get_current_actual_coordinate().clone()
         self.actual_position_cylinder.translate(actual_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
 
         # If this is the first frame in a new file (but not in the very first file), we want to move the 
@@ -147,7 +147,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
             # Now just move the estimate so that it is offset with the same amount, but from the
             # first coordinate in the new file instead of the last coordinate in the last file.
-            self.current_coordinate = actual_coordinate.clone().translate([dx, dy, dz])
+            self.current_estimated_coordinate = actual_coordinate.clone().translate([dx, dy, dz])
 
         if self.is_first_frame:
             self.is_first_frame = False
@@ -162,12 +162,12 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         # Keep a slightly larger partial cloud to make it quicker to extract the actual partial cloud
         # This reduced time usage from 27 to 9 seconds on first 20 frames of a random file.
-        c = self.current_coordinate.np()
-        if self.last_extracted_frame_coordinate is None or self.last_extracted_frame_coordinate.distance2d(self.current_coordinate) >= partial_radius * 0.8:
+        c = self.current_estimated_coordinate.np()
+        if self.last_extracted_frame_coordinate is None or self.last_extracted_frame_coordinate.distance2d(self.current_estimated_coordinate) >= partial_radius * 0.8:
 
             bbox = o3d.geometry.AxisAlignedBoundingBox(min_bound=c - pr * 2, max_bound=c + pr * 2)
             self.last_extracted_frame = self.full_cloud.crop(bbox)
-            self.last_extracted_frame_coordinate = self.current_coordinate.clone()
+            self.last_extracted_frame_coordinate = self.current_estimated_coordinate.clone()
            
             self.time("larger partial cloud point extraction")
 
@@ -175,7 +175,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
         partial_cloud = self.last_extracted_frame.crop(bbox)
 
         if len(partial_cloud.points) < 10:
-            self.throw_outside_of_cloud(self.current_coordinate, partial_radius)
+            self.throw_outside_of_cloud(self.current_estimated_coordinate, partial_radius)
         
         self.time("partial cloud point extraction")
 
@@ -209,7 +209,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
             self.add_to_merged_frame(transformed_frame, handle_visualization=True)
 
-            #self.vis.set_follow_vehicle_view(self.current_coordinate.np())
+            #self.vis.set_follow_vehicle_view(self.current_estimated_coordinate.np())
 
         # Return True to let the loop continue to the next frame.
         return True

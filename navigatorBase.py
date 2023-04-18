@@ -66,7 +66,7 @@ class NavigatorBase:
         self.tqdm_config = { "ascii": True }
         self.print_summary_at_end = False
 
-        self.current_coordinate = None
+        self.current_estimated_coordinate = None
         
         self.position_cylinder_radius = 1
         self.position_cylinder_height = 20
@@ -172,8 +172,8 @@ class NavigatorBase:
         self.estimated_position_cylinder = self.create_cylinder(size_ratio=0.8, color=[1,0,0])
         self.start_position_cylinder = self.create_cylinder(size_ratio=0.6, color=[1,1,1])
 
-        self.initial_coordinate = self.get_current_position().clone()
-        self.current_coordinate = self.initial_coordinate.clone()
+        self.initial_coordinate = self.get_current_actual_coordinate().clone()
+        self.current_estimated_coordinate = self.initial_coordinate.clone()
         self.start_position_cylinder.translate(self.initial_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
 
         if self.skip_until_circle_center is not None:
@@ -251,7 +251,7 @@ class NavigatorBase:
         tqdm.write(prefix + "    > Y: {:.2f} - {:.2f}".format(mins[1], maxs[1]))
         tqdm.write(prefix + "    > Z: {:.2f} - {:.2f}".format(mins[2], maxs[2]))
 
-    def get_current_position(self):
+    def get_current_actual_coordinate(self):
 
         # Retrieve the index of the currently processed frame
         ix = self.reader.get_current_frame_index()
@@ -274,10 +274,9 @@ class NavigatorBase:
     def rotate_frame(self, frame, coordinate=None):
 
         if coordinate is None:
-            coordinate = self.get_current_position()
+            coordinate = self.current_estimated_coordinate
 
         # Rotate the frame using the current heading
-        #TODO: Should use estimated heading for actual situation!
         R = frame.get_rotation_matrix_from_xyz((0, 0, self.get_corrected_heading(coordinate.heading)))
         frame.rotate(R, center=[0,0,0])
         self.time("frame rotation")
@@ -319,16 +318,16 @@ class NavigatorBase:
         # Extract the translation part from the transformation array
         movement = reg.transformation[:3,3]
 
-        self.current_coordinate.translate(movement)
+        self.current_estimated_coordinate.translate(movement)
 
         # Move the estimated position
-        self.estimated_position_cylinder.translate(self.current_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
+        self.estimated_position_cylinder.translate(self.current_estimated_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
 
         # Update the plot with data from this registration
         self.update_plot(reg, registration_time, movement, actual_coordinate)
 
         # Append the new movement to the path
-        self.movement_path.points.append(self.current_coordinate.np())
+        self.movement_path.points.append(self.current_estimated_coordinate.np())
 
         # Add the new line
         if len(self.movements) == 2:
@@ -513,19 +512,19 @@ class NavigatorBase:
         # Append the newest movement
         self.movements.append(movement)
 
-        if self.current_coordinate is not None:
+        if self.current_estimated_coordinate is not None:
 
             # Add the current coordinate to the list of estimations
-            self.estimated_coordinates.append(self.current_coordinate.clone())
+            self.estimated_coordinates.append(self.current_estimated_coordinate.clone())
             self.actual_coordinates.append(actual_coordinate.clone())
 
             # Calculate differences between the estimate and the actual coordinate
-            dx = abs(self.current_coordinate.x - actual_coordinate.x)
-            dy = abs(self.current_coordinate.y - actual_coordinate.y)
-            dz = self.current_coordinate.alt - actual_coordinate.alt
+            dx = abs(self.current_estimated_coordinate.x - actual_coordinate.x)
+            dy = abs(self.current_estimated_coordinate.y - actual_coordinate.y)
+            dz = self.current_estimated_coordinate.alt - actual_coordinate.alt
 
             # Calculate distances along and across of the movement vector (heading)
-            dist = self.calculate_distance_between_points(self.current_coordinate.x, self.current_coordinate.y, actual_coordinate.x, actual_coordinate.y, actual_coordinate.heading)
+            dist = self.calculate_distance_between_points(self.current_estimated_coordinate.x, self.current_estimated_coordinate.y, actual_coordinate.x, actual_coordinate.y, actual_coordinate.heading)
 
             # Save all values in the plot collection
             self.plot.position_error_along_heading.append(dist[0])
@@ -560,7 +559,7 @@ class NavigatorBase:
         results = self.get_results()
         
         results["initial_coordinate"] = self.initial_coordinate.json(True)
-        results["current_coordinate"] = self.current_coordinate.json()
+        results["current_estimated_coordinate"] = self.current_estimated_coordinate.json()
         results["estimated_coordinates"] = [x.json() for x in self.estimated_coordinates]
         results["actual_coordinates"] = [x.json(True) for x in self.actual_coordinates]
         results["registration_configs"] = self.registration_configs

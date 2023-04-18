@@ -94,7 +94,7 @@ class LidarNavigator(NavigatorBase):
         self.time("normal estimation")
         
         # Retrieve the actual coordinate
-        actual_coordinate = self.get_current_position().clone()
+        actual_coordinate = self.get_current_actual_coordinate().clone()
         self.actual_position_cylinder.translate(actual_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
 
         # Run the alignment
@@ -112,7 +112,7 @@ class LidarNavigator(NavigatorBase):
         transformed_frame = copy.deepcopy(frame)
         if reg is not None:
             transformed_frame.transform(reg.transformation)
-        transformed_frame.translate(self.current_coordinate.np())
+        transformed_frame.translate(self.current_estimated_coordinate.np())
         self.add_to_merged_frame(transformed_frame, True)
 
 if __name__ == "__main__":
