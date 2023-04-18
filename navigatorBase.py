@@ -546,8 +546,11 @@ class NavigatorBase:
         elif self.args.save_after_frames > 0 and processed_frames % self.args.save_after_frames == 0:
             self.check_results_saving()
 
-        if self.args.raise_on_error > 0 and self.plot.position_error_3d[-1] > self.args.raise_on_error:
-            raise Exception("The navigation error (" + str(self.plot.position_error_3d[-1]) + ") is larger than the given limit (--raise-on-error " + str(self.args.raise_on_error) + ").")
+        if self.args.raise_on_2d_error > 0 and self.plot.position_error_2d[-1] > self.args.raise_on_2d_error:
+            raise Exception("The navigation error (" + str(self.plot.position_error_3d[-1]) + ") is larger than the given limit (--raise-on-2d-error " + str(self.args.raise_on_2d_error) + ").")
+
+        if self.args.raise_on_3d_error > 0 and self.plot.position_error_3d[-1] > self.args.raise_on_3d_error:
+            raise Exception("The navigation error (" + str(self.plot.position_error_3d[-1]) + ") is larger than the given limit (--raise-on-3d-error " + str(self.args.raise_on_3d_error) + ").")
 
         if self.args.raise_on_movement > 0 and self.plot.distances[-1] > self.args.raise_on_movement:
             raise Exception("The movement between the last two frames (" + str(self.plot.distances[-1]) + ") was larger than the given limit (--raise-on-movement " + str(self.args.raise_on_movement) + ").")           
@@ -560,7 +563,6 @@ class NavigatorBase:
         results["current_coordinate"] = self.current_coordinate.json()
         results["estimated_coordinates"] = [x.json() for x in self.estimated_coordinates]
         results["actual_coordinates"] = [x.json(True) for x in self.actual_coordinates]
-        # TODO: Is this really needed? results["sbet_coordinates"] = [x.json(True) for x in self.sbet_coordinates]
         results["registration_configs"] = self.registration_configs
         results["point_cloud_offset"] = self.full_point_cloud_offset.tolist()
 
@@ -690,7 +692,8 @@ class NavigatorBase:
         parser.add_argument('--save-frame-pairs-to', type=str, default=None, required=False, help="If given, frame pairs with a registered fitness below --save-frame-pair-threshold will be saved to the given directory for manual inspection.")
         parser.add_argument('--save-frame-pair-threshold', type=float, default=0.97, required=False, help="If --save-frame-pairs-to is given, frame pairs with a registered fitness value below this value will be saved.")
         
-        parser.add_argument('--raise-on-error', type=float, default=200, required=False, help="The frame processing will raise an exception if the distance between the actual and the estimated position is larger than this number. Set to 0 or lower to deactivate.")
+        parser.add_argument('--raise-on-2d-error', type=float, default=50, required=False, help="The frame processing will raise an exception if the 2d distance between the actual and the estimated position is larger than this number. Set to 0 or lower to deactivate.")
+        parser.add_argument('--raise-on-3d-error', type=float, default=50, required=False, help="The frame processing will raise an exception if the 3d distance between the actual and the estimated position is larger than this number. Set to 0 or lower to deactivate.")
         parser.add_argument('--raise-on-movement', type=float, default=100, required=False, help="The frame processing will raise an exception if the distance between two last estimated positions is larger than this number. Set to 0 or lower to deactivate.")
         
         parser.add_argument('--load-arguments', type=str, default=None, required=False, help="Additional arguments will be loaded from the given json file. Arguments already set from the command line will not be overwritten.")

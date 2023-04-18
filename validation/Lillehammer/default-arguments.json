@@ -12,5 +12,6 @@
 	"hide-point-cloud": true,
 	"save-after-first-frame": true,
 	"save-after-frames": 50,
-	"raise-on-error": 10
+	"raise-on-2d-error": 10,
+	"raise-on-3d-error": 20
 }
