@@ -27,7 +27,7 @@ class LidarNavigator(NavigatorBase):
         self.initialize_plot_and_visualization()
 
         frame = self.reader.next_frame(self.remove_vehicle, self.timer)
-        self.rotate_frame(frame)
+        self.rotate_frame(frame, self.get_current_actual_coordinate())
         self.transform_and_add_to_merged_frame(frame)
         self.previous_frame = frame
 
