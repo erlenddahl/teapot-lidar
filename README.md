@@ -1,3 +1,5 @@
+![Header](./notes/readme-header.jpg)
+
 # TEAPOT LIDAR
 This repo will contain relevant code for working with [lidar](https://en.wikipedia.org/wiki/Lidar) data in the [SINTEF](https://www.sintef.no) project [TEAPOT](https://www.sintef.no/prosjekter/2021/teapot/).
 
