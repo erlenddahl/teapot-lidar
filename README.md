@@ -13,7 +13,7 @@ Incremental navigation works by using [point cloud registration](https://en.wiki
 More details can be found in the [notes](./notes/notes.md).
 
 ## Georeferenced point cloud navigation
-_[This part is not yet started.]_
+_[Short info coming soon]_
 
 # Running the code
 
@@ -34,11 +34,8 @@ pcapBrowser.py is a very simple open3d based tool for visualizing the frames in 
 
 ```
 python pcapBrowser.py --pcap path\to\pcap-file.pcap --json path\to\metadata-file.json
-```
 
-Or, if the pcap and json files have the same names (123.pcap and 123.json), it is sufficient to use the pcap parameter:
-
-```
+# Or, if the pcap and json files have the same names (123.pcap and 123.json), it is sufficient to use the pcap parameter:
 python pcapBrowser.py --pcap path\to\pcap-file.pcap
 ```
 
@@ -49,13 +46,11 @@ When the visualization window appears, use the arrow keys to navigate from frame
 ### Point cloud generation
 The pointCloud.py script reads a folder of .laz files, and combines them into one large point cloud, which is saved as a Open3D .pcd file. Due to float rounding issues, the .laz files are first read once (header only) to generate a common minimum, and then all .laz files are translated towards the origin using this minimum so that the absolute value of all point coordinates are low numbers, thus less vulnerable to float rounding imprecision. Because of this, an additional metadata file is stored with information about how much the cloud was translated (this can be used to convert the "origin-local" coordinates back to original coordinates while running navigation).
 
-**Example of combining .laz files into a single .pcd:**
 ```
+# Example of combining .laz files into a single .pcd:
 python pointCloud.py --create-from "folder-with-laz-files" --preview never --write-to "full-point-cloud.pcd"
-```
 
-**Example of visualizing a .pcd point cloud:**
-```
+# Example of visualizing a .pcd point cloud:
 python pointCloud.py --show "full-point-cloud.pcd"
 ```
 
@@ -80,28 +75,20 @@ options:
 ## Incremental navigation
 incrementalNavigator.py runs through all frames the given PCAP file, and uses the selected registration algorithm to place all frames in the same coordinate system. The vehicle's movements between frames are calculated and visualized as a red line in the final point cloud. Data can be previewed using the --preview argument, and/or saved using the --save-to argument. For debugging, the --frames argument sets a maximum number of frames to be read before finishing, and the --skip-every-frame argument allows for simulating lower frequencies by skipping for example every second frame. The --skip-start or --skip-until-[x/y/radius] arguments can be used to skip processing until the vehicle reaches a certain point in the route. For comparisons against the actual driving route, the --sbet argument can be used to provide the actual GNSS coordinates.
 
-**Example with default preview and no saving:**
 ```
+# Example with default preview and no saving:
 python incrementalNavigator.py --pcap path\to\pcap-file.pcap --json path\to\metadata-file.json
-```
 
-**Example with default metadata file, no preview, and results saved to the results folder:**
-```
+# Example with default metadata file, no preview, and results saved to the results folder:
 python incrementalNavigator.py --pcap path\to\pcap-file.pcap --preview never --save-to "results_folder"
-```
 
-**Example with multiple .pcap files:**
-```
+# Example with multiple .pcap files:
 python incrementalNavigator.py --pcap path\to\pcap-file1.pcap path\to\pcap-file2.pcap --preview never --save-to "results_folder"
-```
 
-**Example with all .pcap files the given folder:**
-```
+# Example with all .pcap files the given folder:
 python incrementalNavigator.py --pcap path\to\folder_with_pcaps --preview never --save-to "results_folder"
-```
 
-**Example with various settings for when to start the navigation, and when to end it (when the error gets too big):**
-```
+# Example with various settings for when to start the navigation, and when to end it (when the error gets too big):
 python incrementalNavigator.py --pcap "validation\Lillehammer\211021\pcap\4_10hz" --preview always --sbet "validation\Lillehammer\211021\navigasjon\sbet-output-UTC-1000.out" --sbet-z-offset -39.416 --skip-start 0 --build-cloud-after 0 --save-to "validation\results\incremental\Lillehammer\211021\4_10hz" --skip-until-x 579490.13 --skip-until-y 6776060.22
 ```
 
