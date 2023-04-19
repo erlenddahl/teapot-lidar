@@ -168,6 +168,86 @@ _**Links to individual trip details**_
 
 ## Incremental navigation
 
+_**Meters driven before failure**_
+| Trip#   | Bare      |      Snow |
+|---------|-----------|-----------|
+| 1     | 24.034 | 31.704 |
+| 2     | 28.350 | 34.917 |
+| 3     | 4.219 | 333.405 |
+| 4     | 275.926 | 224.654 |
+| 5     | 160.757 | 393.763 |
+| **Average** | **98.657** | **203.689** |
+
+
+
+_**2D difference between actual and estimated coordinates [M]**_
+| Trip#   | Bare      |      Snow |
+|---------|-----------|-----------|
+| 1     | 1.005 | 1.207 |
+| 2     | 0.957 | 0.636 |
+| 3     | 0.437 | 3.230 |
+| 4     | 2.634 | 2.981 |
+| 5     | 1.577 | 3.086 |
+| **Average** | **1.322** | **2.228** |
+
+
+
+_**3D difference between actual and estimated coordinates [M]**_
+| Trip#   | Bare      |      Snow |
+|---------|-----------|-----------|
+| 1     | 1.980 | 2.575 |
+| 2     | 2.147 | 2.453 |
+| 3     | 0.583 | 17.649 |
+| 4     | 15.382 | 14.142 |
+| 5     | 8.835 | 20.073 |
+| **Average** | **5.785** | **11.378** |
+
+
+
+_**Reported registration fitness**_
+| Trip#   | Bare      |      Snow |
+|---------|-----------|-----------|
+| 1     | 0.996 | 0.994 |
+| 2     | 0.997 | 0.999 |
+| 3     | 0.999 | 0.999 |
+| 4     | 0.999 | 0.999 |
+| 5     | 0.999 | 0.999 |
+| **Average** | **0.998** | **0.998** |
+
+
+
+_**Reported registration RMSE**_
+| Trip#   | Bare      |      Snow |
+|---------|-----------|-----------|
+| 1     | 0.160 | 0.164 |
+| 2     | 0.156 | 0.129 |
+| 3     | 0.123 | 0.094 |
+| 4     | 0.110 | 0.097 |
+| 5     | 0.126 | 0.092 |
+| **Average** | **0.135** | **0.115** |
+
+
+
+_**Registration iterations before convergence**_
+| Trip#   | Bare      |      Snow |
+|---------|-----------|-----------|
+| 1     | 54.167 | 52.500 |
+| 2     | 54.167 | 50.000 |
+| 3     | 50.000 | 50.000 |
+| 4     | 50.338 | 50.043 |
+| 5     | 50.071 | 49.976 |
+| **Average** | **51.748** | **50.504** |
+
+
+
+_**Links to individual trip details**_
+| Trip#   | Bare      |      Snow |
+|---------|-----------|-----------|
+| 1     | [Link](./INC%2C%20PCAP2021%2C%20correct%20heading/3_10hz) | [Link](./INC%2C%20PCAP2022/1_10hz) |
+| 2     | [Link](./INC%2C%20PCAP2021%2C%20correct%20heading/4_10hz) | [Link](./INC%2C%20PCAP2022/2_10hz) |
+| 3     | [Link](./INC%2C%20PCAP2021%2C%20correct%20heading/5_20hz) | [Link](./INC%2C%20PCAP2022/3_20hz) |
+| 4     | [Link](./INC%2C%20PCAP2021%2C%20correct%20heading/6_20hz) | [Link](./INC%2C%20PCAP2022/4_20hz) |
+| 5     | [Link](./INC%2C%20PCAP2021%2C%20correct%20heading/7_20hz) | [Link](./INC%2C%20PCAP2022/5_20hz) |
 
 
 ## Run configurations
