@@ -3,7 +3,7 @@ This repo will contain relevant code for working with [lidar](https://en.wikiped
 
 In this project we will investigate if the lidar data can be used to improve or replace GNSS navigation in two different ways: a) by "incremental navigation", that is by calculating vehicle movements by the difference between sequential lidar frames, and b) by using a georeferenced point cloud to locate a lidar frame.
 
-Results can be found [here](https://github.com/erlenddahl/teapot-lidar/blob/main/validation/_notes/summary.md).
+During the TEAPOT project, LiDAR data was collected from four different locations with and without snow and analyzed using the two nagivation methods outlined below. Analysis results can be found [here](https://github.com/erlenddahl/teapot-lidar/blob/main/validation/_notes/summary.md).
 
 ## Incremental navigation (visual odometry)
 Incremental navigation works by using [point cloud registration](https://en.wikipedia.org/wiki/Point_set_registration) to calculate a transformation to align two sequential frames from a lidar dataset. This transformation can then be used to calculate how far and in which direction the vehicle moved between these two frames. By doing this for every frame pair in a lidar dataset, we can calculate the total movement. Given an initial GNSS position, the idea is that we can calculate updated GNSS positions throughout the movement without any more GNSS data. This is equal to a simple visual odometry.
@@ -12,10 +12,12 @@ Incremental navigation works by using [point cloud registration](https://en.wiki
 |-----|-----|-----
 | [<img src="./notes/frame-matching-test-frames-cropped.png" width="300" height="150" />](./notes/frame-matching-test-frames-cropped.png) | [<img src="./notes/animation_tiny.gif" width="300" height="150" />](./notes/animation.gif) | [<img src="./notes/navigated_point_cloud_example.jpg" width="300" height="150" />](./notes/navigated_point_cloud_example.jpg)
 
-More details can be found in the [notes](./notes/notes.md).
+More details can be found in the [technical notes](./notes/notes.md).
 
 ## Georeferenced point cloud navigation
-_[Short info coming soon]_
+Georeferenced navigation (also called "absolute navigation" other places in this repo) means that each lidar frame is registered against an existing pointcloud from the target location, putting the frame directly into a georeferenced location. This gives the position of the frame (and thus the vehicle that is in the center of the frame) directly. Due to constraints in the registration algorithms, it is not feasible to register a frame against a large pointcloud, so there is an intermediate step that extracts a frame-sized part of the cloud around the current location (known or estimated), then registers against that.
+
+_[Images to come.]_
 
 # Running the code
 
