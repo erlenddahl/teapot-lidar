@@ -6,15 +6,17 @@ In this project we will investigate if the lidar data can be used to improve or 
 During the TEAPOT project, LiDAR data was collected from four different locations with and without snow and analyzed using the two nagivation methods outlined below. Detailed analysis results can be found [here](https://github.com/erlenddahl/teapot-lidar/blob/main/validation/_notes/summary.md).
 
 #### Table of Contents
-- [Navigation algorithms](#navigation)
--- [Incremental navigation (visual odometry)](#incnav)
--- [Georeferenced point cloud navigation](#absnav)
-- [Running the code](#code)
--- [Requirements](#reqs)
--- [Utilities](#utils)
--- [PCAP browser](#pcapbrowser)
--- [Point cloud generation](#pointclouds)
--- [Navigation algorithms](#navigation-code)
+* [Navigation algorithms](#navigation)
+  * [Incremental navigation (visual odometry)](#incnav)
+  * [Georeferenced point cloud navigation](#absnav)
+* [Running the code](#code)
+  * [Requirements](#reqs)
+  * [Utilities](#utils)
+  * [PCAP browser](#pcapbrowser)
+  * [Point cloud generation](#pointclouds)
+  * [Navigation algorithms](#navigation-code)
+    * [Incremental navigation](#nav-inc)
+    * [Absolute navigation](#nav-abs)
 
 <a name="navigation"></a>
 ## Navigation algorithms
@@ -130,7 +132,10 @@ options:
 ```
 
 <a name="navigation-code"></a>
-## Incremental navigation
+## Navigation scripts
+
+<a name="nav-inc"></a>
+### Incremental navigation
 incrementalNavigator.py runs through all frames the given PCAP file, and uses the selected registration algorithm to place all frames in the same coordinate system. The vehicle's movements between frames are calculated and visualized as a red line in the final point cloud. Data can be previewed using the --preview argument, and/or saved using the --save-to argument. For debugging, the --frames argument sets a maximum number of frames to be read before finishing, and the --skip-every-frame argument allows for simulating lower frequencies by skipping for example every second frame. The --skip-start or --skip-until-[x/y/radius] arguments can be used to skip processing until the vehicle reaches a certain point in the route. For comparisons against the actual driving route, the --sbet argument can be used to provide the actual GNSS coordinates.
 
 ```
@@ -267,7 +272,8 @@ options:
                         command line will not be overwritten.
 ```
 
-## Absolute (point cloud) navigation
+<a name="nav-abs"></a>
+### Absolute (point cloud) navigation
 absoluteNavigator.py runs through all frames the given PCAP file, and uses the selected registration algorithm to register each frame against the full point cloud (technically it extracts a small part of the point cloud around the current position, and registers against that, since registering against the full cloud didn't work). The input arguments for the absolute navigation is very similar to the incremental navigation arguments, so see above for some more explanation and examples.
 
 The main difference is the --point-cloud argument, which gives the location of the full point cloud to navigate against (created using pointCloud.py, see above).
