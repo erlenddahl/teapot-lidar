@@ -1,14 +1,10 @@
 ![Header](./notes/readme-header.jpg)
 
 # TEAPOT LIDAR
-This repo will contain relevant code for working with [lidar](https://en.wikipedia.org/wiki/Lidar) data in the [SINTEF](https://www.sintef.no) project [TEAPOT](https://www.sintef.no/prosjekter/2021/teapot/).
-
-In this project we will investigate if the lidar data can be used to improve or replace GNSS navigation in two different ways: a) by "incremental navigation", that is by calculating vehicle movements by the difference between sequential lidar frames, and b) by using a georeferenced point cloud to locate a lidar frame.
-
-During the TEAPOT project, LiDAR data was collected from four different locations with and without snow and analyzed using the two nagivation methods outlined below. Detailed analysis results can be found [here](https://github.com/erlenddahl/teapot-lidar/blob/main/validation/_notes/summary.md).
+This repo contains relevant code for working with [lidar](https://en.wikipedia.org/wiki/Lidar) data in the [SINTEF](https://www.sintef.no) project [TEAPOT](https://www.sintef.no/prosjekter/2021/teapot/).
 
 #### Table of Contents
-* [Navigation algorithms](#navigation)
+* [Introduction](#intro)
   * [Incremental navigation (visual odometry)](#incnav)
   * [Georeferenced point cloud navigation](#absnav)
 * [Running the code](#code)
@@ -20,8 +16,12 @@ During the TEAPOT project, LiDAR data was collected from four different location
     * [Incremental navigation](#nav-inc)
     * [Absolute navigation](#nav-abs)
 
-<a name="navigation"></a>
-## Navigation algorithms
+<a name="intro"></a>
+## Introduction
+In this project we will investigate if the lidar data can be used to improve or replace GNSS navigation in two different ways: a) by "incremental navigation", that is by calculating vehicle movements by the difference between sequential lidar frames, and b) by using a georeferenced point cloud to locate a lidar frame.
+
+During the TEAPOT project, LiDAR data was collected from four different locations with and without snow and analyzed using the two nagivation methods outlined below. Detailed analysis results can be found [here](https://github.com/erlenddahl/teapot-lidar/blob/main/validation/_notes/summary.md).
+
 In this project, we have developed Python scripts for performing LiDAR navigations using two different techniques: visual odometry, and point cloud navigation. Each of them will be introduced in the following sections, with the Python scripts outlined below.
 
 <a name="incnav"></a>
