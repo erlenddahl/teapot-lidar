@@ -703,6 +703,9 @@ class NavigatorBase:
         args = parser.parse_args()
         arg_keys = vars(args)
 
+        # Extract all defaults values (provide dummy pcap and sbet because they are required)
+        defaults = vars(parser.parse_args(["--pcap", "x", "--sbet", "x"]))
+
         if args.load_arguments is not None:
             with open(args.load_arguments) as f:
                 data = json.load(f)
@@ -715,7 +718,10 @@ class NavigatorBase:
 
                     if not arg_key in arg_keys:
                         raise Exception("Unrecognized agrument in the JSON file (--load-arguments): " + key + " (" + arg_key + ")")
-                    if getattr(args, arg_key, None) is None or arg_keys[arg_key] == False:
+
+                    value = getattr(args, arg_key, None)
+                    is_default = value == defaults[arg_key]
+                    if value is None or is_default or arg_keys[arg_key] == False:
                         setattr(args, arg_key, data[key])
 
         if args.save_screenshots_to is not None and args.preview != "always":
