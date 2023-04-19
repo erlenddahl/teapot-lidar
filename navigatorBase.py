@@ -581,8 +581,11 @@ class NavigatorBase:
             self.plot.save_plot(os.path.join(self.save_path, "plot.png"))
 
             if save_cloud and self.build_cloud:
-                self.save_cloud_as_las(os.path.join(self.save_path, "cloud.laz"), self.merged_frame)
-                o3d.io.write_point_cloud(os.path.join(self.save_path, "cloud.pcd"), self.merged_frame, compressed=True)
+                try:
+                    self.save_cloud_as_las(os.path.join(self.save_path, "cloud.laz"), self.merged_frame)
+                    o3d.io.write_point_cloud(os.path.join(self.save_path, "cloud.pcd"), self.merged_frame, compressed=True)
+                except:
+                    tqdm.write("Failed to save point cloud.")
 
             self.time("results saving")
             
