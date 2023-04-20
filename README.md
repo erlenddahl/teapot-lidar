@@ -38,7 +38,9 @@ More details can be found in the [technical notes](./notes/notes.md). The python
 ## Georeferenced point cloud navigation
 Georeferenced navigation (also called "absolute navigation" other places in this repo) means that each lidar frame is registered against an existing pointcloud from the target location, putting the frame directly into a georeferenced location. This gives the position of the frame (and thus the vehicle that is in the center of the frame) directly. Due to constraints in the registration algorithms, it is not feasible to register a frame against a large pointcloud, so there is an intermediate step that extracts a frame-sized part of the cloud around the current location (known or estimated), then registers against that.
 
-_[Images to come.]_
+| A georeferenced point cloud of the location is loaded (blue). | A part of this point cloud (red) is extracted around the presumed location, and registered against the LiDAR frame (green). | Each LiDAR frame is thus placed within the point cloud, and given a location.
+|-----|-----|-----
+| [<img src="./notes/absolute01.jpg" width="300" height="150" />](./notes/absolute01.jpg) | [<img src="./notes/absolute02.jpg" width="300" height="150" />](./notes/absolute02.jpg) | [<img src="./notes/absolute03.jpg" width="300" height="150" />](./notes/absolute03.jpg)
 
 The python script ```absoluteNavigation.py``` performs incremental navigation on one or more given LiDAR input files. See below for documentation.
 
