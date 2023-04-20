@@ -1,8 +1,27 @@
+#### Table of Contents
+* [Lillehammer](#header)
+  * [The collected datasets](#datasets)
+    * [October 21th 2021 (without snow)](#2021)
+    * [February 16th 2022 (with snow)](#2022)
+* [The analysis](#analysis)
+  * [Details](#details)
+  * [Absolute navigation](#analysis-abs)
+  * [Incremental navigation](#analysis-inc)
+* [Run configs](#run-configs)
+  * [Absolute, PCAPs from 2021, point cloud from 2021](#abs-pcap2021-pc2021)
+  * [Absolute, PCAPs from 2021, point cloud from 2022](#abs-pcap2021-pc2022)
+  * [Absolute, PCAPs from 2022, point cloud from 2021](#abs-pcap2022-pc2021)
+  * [Absolute, PCAPs from 2022, point cloud from 2022](#abs-pcap2022-pc2022)
+  * [Incremental, PCAPs from 2021](#inc-pcap2021)
+  * [Incremental, PCAPs from 2022](#inc-pcap2022)
 
+<a name="header"></a>
 # Lillehammer
 
+<a name="datasets"></a>
 ## The collected datasets
 
+<a name="2021"></a>
 ### October 21th 2021 (without snow):
 | Trip# | Frequency | Start time | Comment |
 |-------|-----------|------------|---------|
@@ -15,6 +34,7 @@
 | 7 | 20 hz | 21:17 | OK |
 
 
+<a name="2022"></a>
 ### February 16th 2022 (with snow):
 | Trip# | Frequency | Start time | Comment |
 |-------|-----------|------------|---------|
@@ -28,8 +48,10 @@ The image below shows the driving route on a map of Lillehammer. All 10 valid tr
 
 ![The driving route shown on a map.](full_route.png)
 
+<a name="analysis"></a>
 # The analysis
 
+<a name="details"></a>
 ## Details
 
 This section is about Lillehammer specifically. See [this document](./../../_notes/summary.md) for more method details that are common for all four locations.
@@ -55,6 +77,7 @@ To make the results comparable, the trip analyses all started at the same point,
 }
 ```
 
+<a name="analysis-abs"></a>
 ## Absolute navigation
 
 The absolute navigation tables show how well the navigation worked in each of the four weather situations:
@@ -166,6 +189,7 @@ _**Links to individual trip details**_
 | 6     | [Link](./ABS%2C%20PCAP2021%2C%20PC2021/6_20hz) | [Link](./ABS%2C%20PCAP2021%2C%20PC2022/6_20hz) | N/A | N/A |
 | 7     | N/P | N/P | N/A | N/A |
 
+<a name="analysis-inc"></a>
 ## Incremental navigation
 
 _**Meters driven before failure**_
@@ -249,9 +273,10 @@ _**Links to individual trip details**_
 | 4     | [Link](./INC%2C%20PCAP2021%2C%20correct%20heading/6_20hz) | [Link](./INC%2C%20PCAP2022/4_20hz) |
 | 5     | [Link](./INC%2C%20PCAP2021%2C%20correct%20heading/7_20hz) | [Link](./INC%2C%20PCAP2022/5_20hz) |
 
-
+<a name="run-configs"></a>
 ## Run configurations
 
+<a name="abs-pcap2021-pc2021"></a>
 ### Absolute, PCAPs from 2021, point cloud from 2021
 
 ```
@@ -262,6 +287,7 @@ python absoluteNavigator.py --pcap "validation\Lillehammer\2021-10-21\pcap\6_20h
 python absoluteNavigator.py --pcap "validation\Lillehammer\2021-10-21\pcap\7_20hz" --sbet "validation\Lillehammer\2021-10-21\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --save-to "validation\Lillehammer\results\ABS, PCAP2021, PC2021\7_20hz" --load-arguments "validation\Lillehammer\default-arguments.json"
 ```
 
+<a name="abs-pcap2021-pc2022"></a>
 ### Absolute, PCAPs from 2021, point cloud from 2022
 
 ```
@@ -272,6 +298,7 @@ python absoluteNavigator.py --pcap "validation\Lillehammer\2021-10-21\pcap\6_20h
 python absoluteNavigator.py --pcap "validation\Lillehammer\2021-10-21\pcap\7_20hz" --sbet "validation\Lillehammer\2021-10-21\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Lillehammer\2022-02-16\pointcloud\combined.pcd" --sbet-z-offset -39.416 --save-to "validation\Lillehammer\results\ABS, PCAP2021, PC2022\7_20hz" --load-arguments "validation\Lillehammer\default-arguments.json"
 ```
 
+<a name="abs-pcap2022-pc2021"></a>
 ### Absolute, PCAPs from 2022, point cloud from 2021
 
 ```
@@ -282,6 +309,7 @@ python absoluteNavigator.py --pcap "validation\Lillehammer\2022-02-16\pcap\4_20h
 python absoluteNavigator.py --pcap "validation\Lillehammer\2022-02-16\pcap\5_20hz" --sbet "validation\Lillehammer\2022-02-16\navigation\sbet_teapot.csv" --point-cloud "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --sbet-z-offset -39.416 --save-to "validation\Lillehammer\results\ABS, PCAP2022, PC2021\5_20hz" --load-arguments "validation\Lillehammer\default-arguments.json"
 ```
 
+<a name="abs-pcap2022-pc2022"></a>
 ### Absolute, PCAPs from 2022, point cloud from 2022
 
 ```
@@ -292,6 +320,7 @@ python absoluteNavigator.py --pcap "validation\Lillehammer\2022-02-16\pcap\4_20h
 python absoluteNavigator.py --pcap "validation\Lillehammer\2022-02-16\pcap\5_20hz" --sbet "validation\Lillehammer\2022-02-16\navigation\sbet_teapot.csv" --point-cloud "validation\Lillehammer\2022-02-16\pointcloud\combined.pcd" --sbet-z-offset -39.416 --save-to "validation\Lillehammer\results\ABS, PCAP2022, PC2022\5_20hz" --load-arguments "validation\Lillehammer\default-arguments.json"
 ```
 
+<a name="inc-pcap2021"></a>
 ### Incremental, PCAPs from 2021
 
 ```
@@ -304,6 +333,7 @@ python incrementalNavigator.py --pcap "validation\Lillehammer\2021-10-21\pcap\6_
 python incrementalNavigator.py --pcap "validation\Lillehammer\2021-10-21\pcap\7_20hz" --sbet "validation\Lillehammer\2021-10-21\navigation\sbet-output-UTC-1000.out" --save-to "validation\Lillehammer\results\INC, PCAP2021\7_20hz" --load-arguments "validation\Lillehammer\default-arguments.json"
 ```
 
+<a name="inc-pcap2022"></a>
 ### Incremental, PCAPs from 2022
 
 ```
