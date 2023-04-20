@@ -3,18 +3,22 @@ import os
 import numpy as np
 import open3d as o3d
 import csv
+import random
 
 from sbet.sbetRow import SbetRow
 
 class SbetParser:
 
-    def __init__(self, filename, z_offset):
+    def __init__(self, filename, z_offset, random_noise):
         self.z_offset = z_offset
 
         if filename.lower().endswith(".csv"):
             self.rows = SbetParser.read_csv(filename)
         else:
             self.rows = SbetParser.read_latlon(filename, filename.replace(".out", "-smrmsg.out"))
+
+        self.random_noise = random_noise
+        self.add_noise = random_noise is not None and (random_noise[0] > 0 or random_noise[1] > 0 or random_noise[2] > 0)
 
         self.current_index = 0
         self.row_count = len(self.rows)
@@ -35,7 +39,14 @@ class SbetParser:
 
             if self.rows[i]["time"] >= sow:
                 self.current_index = i
-                return SbetRow(self.rows[i-1], sow, i, z_offset=self.z_offset)
+                sbetRow = SbetRow(self.rows[i-1], sow, i, z_offset=self.z_offset)
+
+                if self.add_noise:
+                    sbetRow.x += random.uniform(-self.random_noise[0], self.random_noise[0])
+                    sbetRow.y += random.uniform(-self.random_noise[1], self.random_noise[1])
+                    sbetRow.alt += random.uniform(-self.random_noise[2], self.random_noise[2])
+
+                return sbetRow
 
         self.current_index = 0
         return None

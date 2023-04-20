@@ -52,7 +52,7 @@ class PcapReader:
         self.skip_last_frame_in_pcap_file = False
         if args is not None:
             if args.sbet is not None:
-                self.sbet = SbetParser(args.sbet, args.sbet_z_offset)
+                self.sbet = SbetParser(args.sbet, args.sbet_z_offset, args.sbet_noise)
                 self.gps_week = self.sbet.get_gps_week(pcap_path = self.pcap_path)
             if args.skip_last_frame_in_pcap_file:
                 self.skip_last_frame_in_pcap_file = True
