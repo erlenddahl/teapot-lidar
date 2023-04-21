@@ -32,7 +32,6 @@ class PcapReaderHelper:
 
         parser.add_argument('--sbet', type=str, required=True, help="The path to a corresponding SBET file with GNSS coordinates.")
         parser.add_argument('--sbet-noise', type=float, nargs=3, required=False, help="If given, all SBET coordinates will be randomized by adding a random value between +/- this value to the X, Y and Z coordinates. A value must be provided for each dimension (three values).")
-        parser.add_argument('--sbet-z-offset', type=float, default=0, required=False, help="If the GNSS positions in the SBET file have an altitude offset from the point cloud, this argument will be added/subtracted on the Z coordinates of each SBET coordinate.")
 
     @staticmethod
     def from_path_args(args = None):

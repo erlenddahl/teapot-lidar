@@ -52,7 +52,7 @@ class PcapReader:
         self.skip_last_frame_in_pcap_file = False
         if args is not None:
             if getattr(args, "sbet", None) is not None:
-                self.sbet = SbetParser(args.sbet, args.sbet_z_offset, args.sbet_noise)
+                self.sbet = SbetParser(args.sbet, args.sbet_noise)
                 self.gps_week = self.sbet.get_gps_week(pcap_path = self.pcap_path)
             if getattr(args, "skip_last_frame_in_pcap_file", False):
                 self.skip_last_frame_in_pcap_file = True
@@ -204,7 +204,7 @@ class PcapReader:
         self.sbet.reset()
         iterator = iter(self.enumerate_lidar_packets())
         for packet in iterator:
-            pos = self.sbet.get_position(self.get_sbet_timestamp(packet), gps_week=self.gps_week, continue_from_previous=True)
+            pos = self.sbet.get_position(self.get_sbet_timestamp(packet), pcap_path=self.pcap_path, gps_week=self.gps_week, continue_from_previous=True)
             positions.append(pos)
 
             for _ in range(self.skip_frames):

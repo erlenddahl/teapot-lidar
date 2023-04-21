@@ -12,12 +12,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--sbet', type=str, required=True, help="The path to a corresponding SBET file with GNSS coordinates. Can also read CSV files with the headers Index,GpsTime,Lat,Lon,Elevation,Azimuth (since some SBET files didn't work with this reader).")
     parser.add_argument('--gps-week', type=int, default=-1, required=False, help="If given, this GPS week will be used to transform the timestamps to unix and human readable time.")
-    parser.add_argument('--sbet-z-offset', type=float, default=0, required=False, help="If the GNSS positions in the SBET file have an altitude offset from the point cloud, this argument will be added/subtracted on the Z coordinates of each SBET coordinate.")
     parser.add_argument('--out-csv', type=str, required=False, help="If given, coordinates will be saved to this CSV file instead of being visualized.")
     args = parser.parse_args()
 
     # Create and start a visualization
-    parser = SbetParser(args.sbet, args.sbet_z_offset)
+    parser = SbetParser(args.sbet)
     
     min_time = np.min(parser.rows["time"])
     max_time = np.max(parser.rows["time"])
@@ -64,7 +63,7 @@ if __name__ == "__main__":
         )
         path.paint_uniform_color([1, 0, 0])
         
-        coords = parser.get_rotated_rows()
+        coords = parser.get_rows(rotate=True)
         transformed_path = o3d.geometry.LineSet(
             points = o3d.utility.Vector3dVector([[p.x, p.y, p.alt] for p in coords]), lines=o3d.utility.Vector2iVector([[i, i+1] for i in range(len(coords) - 1)])
         )

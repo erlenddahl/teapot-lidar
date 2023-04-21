@@ -15,12 +15,14 @@ epoch = datetime.datetime.strptime("19800106_000000", datetimeformat)
 
 # finner gps uke fra dato i filnavn pcapfil
 def filename2gpsweek(pcap_file):
-    ymd_hms = (pcap_file.split('x')[1]).split('_')[1] + '_' + \
-        (pcap_file.split('x')[1]).split('_')[2].replace('.pcap', '')
-    utc = datetime.datetime.strptime(ymd_hms, datetimeformat)
+    utc = filename2utc(pcap_file)
     tdiff = utc - epoch + datetime.timedelta(seconds=DELTA_UNIX_GPS)
     gpsweek = tdiff.days // 7
     return gpsweek
+
+def filename2utc(pcap_file):
+    ymd_hms = (pcap_file.split('x')[1]).split('_')[1] + '_' + (pcap_file.split('x')[1]).split('_')[2].replace('.pcap', '')
+    return datetime.datetime.strptime(ymd_hms, datetimeformat)
 
 # regner om fra unix time til gps seconds of week. Lidar bruker unix og sbet bruker seconds of week (SoW)
 def timestamp_unix2sow(unix, gps_week):

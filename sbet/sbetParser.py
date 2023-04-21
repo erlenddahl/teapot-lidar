@@ -1,16 +1,16 @@
-from sbet.sbetHelpers import read_sbet, filename2gpsweek, timestamp_unix2sow, timestamp_sow2unix
+from sbet.sbetHelpers import read_sbet, filename2gpsweek, filename2utc, timestamp_unix2sow, timestamp_sow2unix
 import os
 import numpy as np
 import open3d as o3d
 import csv
 import random
+from pyproj import Transformer
 
 from sbet.sbetRow import SbetRow
 
 class SbetParser:
 
-    def __init__(self, filename, z_offset, random_noise):
-        self.z_offset = z_offset
+    def __init__(self, filename, random_noise):
 
         if filename.lower().endswith(".csv"):
             self.rows = SbetParser.read_csv(filename)
@@ -23,10 +23,32 @@ class SbetParser:
         self.current_index = 0
         self.row_count = len(self.rows)
 
+        # Used for transforming read coordinates to the correct reference frame upon request.
+        # Must be initialized with self.create_transformer, which is automatically called in 
+        # get_position, but not get_rows.
+        self.gps_epoch = None
+        self.transformer = None
+        self.current_filename = None
+
+        # Hard coded CRSes for now; these are the ones used in Teapot.
+        self.crs_from = 7912 # ITRF14, lat lon, height
+        self.crs_to = 5972 # ETRS89 / UTM zone 32N + NN2000 height
+
     def reset(self):
         self.current_index = 0
 
+    def create_transformer(self, pcap_filename):
+        self.gps_epoch = self.get_gps_epoch(pcap_filename)
+        self.transformer = Transformer.from_crs(self.crs_from, self.crs_to)
+        self.current_filename = pcap_filename
+
     def get_position(self, timestamp=None, pcap_filename=None, pcap_path=None, gps_week=None, continue_from_previous=False):
+
+        if pcap_path is not None:
+            pcap_filename = os.path.basename(pcap_path)
+
+        if pcap_filename != self.current_filename:
+            self.create_transformer(pcap_filename)
 
         if gps_week is None:
             gps_week = self.get_gps_week(pcap_path, pcap_filename)
@@ -39,7 +61,8 @@ class SbetParser:
 
             if self.rows[i]["time"] >= sow:
                 self.current_index = i
-                sbetRow = SbetRow(self.rows[i-1], sow, i, z_offset=self.z_offset)
+                sbetRow = SbetRow(self.rows[i-1], sow, i)
+                sbetRow.calculate_transformed(self.transformer, self.gps_epoch)
 
                 if self.add_noise:
                     sbetRow.x += random.uniform(-self.random_noise[0], self.random_noise[0])
@@ -50,6 +73,13 @@ class SbetParser:
 
         self.current_index = 0
         return None
+
+    def get_gps_epoch(self, pcap_filename=None):
+
+        utc = filename2utc(pcap_filename)
+
+        dayofyear = utc.timetuple().tm_yday
+        currentepoch = utc.year + dayofyear / 365 # Current Epoch ex: 2021.45
 
     def get_gps_week(self, pcap_path = None, pcap_filename = None):
         if pcap_path is not None:
@@ -83,12 +113,10 @@ class SbetParser:
         
         return sbet
 
-    def get_rows(self):
-        return [SbetRow(row, z_offset=self.z_offset) for row in self.rows]
-    
-    def get_rotated_rows(self):
-        """ Returns all coordinates rotated so that the initial heading points due north. """
-        coords = self.get_rows()
+    def get_rows(self, rotate=False):
+        coords = [SbetRow(row).calculate_transformed(self.transformer, self.gps_epoch) for row in self.rows]
+        if not rotate:
+            return coords
         return SbetParser.rotate_points(coords, coords[0].heading)
 
     @staticmethod
