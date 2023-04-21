@@ -8,14 +8,14 @@ import os
 
 class PcapBrowser:
 
-    def __init__(self, pcap_path, metadata_path, save_screenshots_to, sbet_path):
+    def __init__(self, pcap_path, metadata_path, args):
         """Initialize a PcapBrowser by reading metadata and setting
         up a package source from the pcap file.
         """
 
-        self.reader = BufferedPcapReader(pcap_path, metadata_path, sbet_path=sbet_path)
+        self.reader = BufferedPcapReader(pcap_path, metadata_path, args)
         self.vis = Open3DVisualizer()
-        self.save_screenshots_to = save_screenshots_to
+        self.save_screenshots_to = args.save_screenshots_to
 
         browser = self
         class RemoveVehicleProcessor:
@@ -134,10 +134,10 @@ class PcapBrowser:
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    PcapReaderHelper.add_path_arguments(parser)
+    PcapReaderHelper.add_path_arguments(parser, browsing_only=True)
     parser.add_argument('--save-screenshots-to', type=str, default=None, required=False, help="If given, point cloud screenshots will be saved in this directory with their indices as filenames (0.png, 1.png, 2.png, etc). Only works if --preview is set to 'always'.")
     args = parser.parse_args()
 
     # Create and start a visualization
-    visualizer = PcapBrowser(args.pcap[0], args.json[0] if args.json is not None else None, args.save_screenshots_to, args.sbet)
+    visualizer = PcapBrowser(args.pcap[0], args.json[0] if args.json is not None else None, args)
     visualizer.start_visualization()
