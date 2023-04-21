@@ -703,13 +703,18 @@ class NavigatorBase:
         args = parser.parse_args()
         arg_keys = vars(args)
 
-        # Extract all defaults values (provide dummy pcap and sbet because they are required)
-        defaults = vars(parser.parse_args(["--pcap", "x", "--sbet", "x"]))
+        # Extract all defaults values (provide dummy values for the required arguments)
+        defaults = vars(parser.parse_args(["--pcap", "x", "--sbet", "x", "--point-cloud", "x"]))
 
         if args.load_arguments is not None:
             with open(args.load_arguments) as f:
                 data = json.load(f)
                 for key in data:
+
+                    # Allow prefixing keys with # to ignore them
+                    if key.startswith("#"): 
+                        continue 
+                        
                     arg_key = key.replace("--", "").replace("-", "_")
 
                     # Ignore absoluteNavigator arguments to allow common .json file
