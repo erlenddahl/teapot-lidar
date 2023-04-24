@@ -95,8 +95,8 @@ _**Meters driven before failure**_
 
 All entries with ~3200 meters did complete the entire route, but because of slight variances in driving routes, the lengths vary slightly.
 
-| Trip#   | Bare      |      Snow |
-|---------|-----------|-----------|
+| Trip#   | Bare/Bare | Bare/Snow | Snow/Bare | Snow/Snow |
+|---------|-----------|-----------|-----------|-----------|
 | 1     | N/A | N/A | 27.757 | 3,210.851 |
 | 2     | N/A | N/A | 46.361 | 3,209.959 |
 | 3     | 3,206.431 | 46.084 | 3,216.194 | 3,216.194 |
@@ -109,8 +109,8 @@ All entries with ~3200 meters did complete the entire route, but because of slig
 
 
 _**Percentage of route driven before failure**_
-| Trip#   | Bare      |      Snow |
-|---------|-----------|-----------|
+| Trip#   | Bare/Bare | Bare/Snow | Snow/Bare | Snow/Snow |
+|---------|-----------|-----------|-----------|-----------|
 | 1     | N/A | N/A | 0.9 | 100.0 |
 | 2     | N/A | N/A | 1.4 | 100.0 |
 | 3     | 100.0 | 1.4 | 100.0 | 100.0 |
@@ -123,8 +123,8 @@ _**Percentage of route driven before failure**_
 
 
 _**2D difference between actual and estimated coordinates [M]**_
-| Trip#   | Bare      |      Snow |
-|---------|-----------|-----------|
+| Trip#   | Bare/Bare | Bare/Snow | Snow/Bare | Snow/Snow |
+|---------|-----------|-----------|-----------|-----------|
 | 1     | N/A | N/A | 1.088 | 0.774 |
 | 2     | N/A | N/A | 1.196 | 0.816 |
 | 3     | 0.573 | 0.972 | 0.844 | 0.868 |
@@ -137,8 +137,8 @@ _**2D difference between actual and estimated coordinates [M]**_
 
 
 _**3D difference between actual and estimated coordinates [M]**_
-| Trip#   | Bare      |      Snow |
-|---------|-----------|-----------|
+| Trip#   | Bare/Bare | Bare/Snow | Snow/Bare | Snow/Snow |
+|---------|-----------|-----------|-----------|-----------|
 | 1     | N/A | N/A | 1.245 | 0.933 |
 | 2     | N/A | N/A | 1.310 | 0.951 |
 | 3     | 0.650 | 1.136 | 0.948 | 1.011 |
@@ -151,8 +151,8 @@ _**3D difference between actual and estimated coordinates [M]**_
 
 
 _**Reported registration fitness**_
-| Trip#   | Bare      |      Snow |
-|---------|-----------|-----------|
+| Trip#   | Bare/Bare | Bare/Snow | Snow/Bare | Snow/Snow |
+|---------|-----------|-----------|-----------|-----------|
 | 1     | N/A | N/A | 0.966 | 0.998 |
 | 2     | N/A | N/A | 0.964 | 1.000 |
 | 3     | 0.984 | 0.904 | 0.981 | 0.999 |
@@ -165,8 +165,8 @@ _**Reported registration fitness**_
 
 
 _**Reported registration RMSE**_
-| Trip#   | Bare      |      Snow |
-|---------|-----------|-----------|
+| Trip#   | Bare/Bare | Bare/Snow | Snow/Bare | Snow/Snow |
+|---------|-----------|-----------|-----------|-----------|
 | 1     | N/A | N/A | 0.200 | 0.065 |
 | 2     | N/A | N/A | 0.188 | 0.051 |
 | 3     | 0.073 | 0.186 | 0.124 | 0.050 |
@@ -179,8 +179,8 @@ _**Reported registration RMSE**_
 
 
 _**Registration iterations before convergence**_
-| Trip#   | Bare      |      Snow |
-|---------|-----------|-----------|
+| Trip#   | Bare/Bare | Bare/Snow | Snow/Bare | Snow/Snow |
+|---------|-----------|-----------|-----------|-----------|
 | 1     | N/A | N/A | 200.000 | 79.138 |
 | 2     | N/A | N/A | 200.000 | 78.574 |
 | 3     | 199.965 | 200.000 | 199.887 | 73.497 |
@@ -193,8 +193,8 @@ _**Registration iterations before convergence**_
 
 
 _**LiDAR Frequency**_
-| Trip#   | Bare      |      Snow |
-|---------|-----------|-----------|
+| Trip#   | Bare/Bare | Bare/Snow | Snow/Bare | Snow/Snow |
+|---------|-----------|-----------|-----------|-----------|
 | 1     | - | - | 10 hz | 10 hz |
 | 2     | - | - | 10 hz | 10 hz |
 | 3     | 10 hz | 10 hz | 20 hz | 20 hz |
@@ -206,15 +206,14 @@ _**LiDAR Frequency**_
 
 
 _**Links to individual trip details**_
-| Trip#   | Bare      |      Snow |
-|---------|-----------|-----------|
+| Trip#   | Bare/Bare | Bare/Snow | Snow/Bare | Snow/Snow |
+|---------|-----------|-----------|-----------|-----------|
 | 1     | N/A | N/A | [Link](./ABS%2C%20PCAP2022%2C%20PC2021/1_10hz) | [Link](./ABS%2C%20PCAP2022%2C%20PC2022/1_10hz) |
 | 2     | N/A | N/A | [Link](./ABS%2C%20PCAP2022%2C%20PC2021/2_10hz) | [Link](./ABS%2C%20PCAP2022%2C%20PC2022/2_10hz) |
 | 3     | [Link](./ABS%2C%20PCAP2021%2C%20PC2021/3_10hz) | [Link](./ABS%2C%20PCAP2021%2C%20PC2022/3_10hz) | [Link](./ABS%2C%20PCAP2022%2C%20PC2021/3_20hz) | [Link](./ABS%2C%20PCAP2022%2C%20PC2022/3_20hz) |
 | 4     | [Link](./ABS%2C%20PCAP2021%2C%20PC2021/4_10hz) | [Link](./ABS%2C%20PCAP2021%2C%20PC2022/4_10hz) | [Link](./ABS%2C%20PCAP2022%2C%20PC2021/4_20hz) | [Link](./ABS%2C%20PCAP2022%2C%20PC2022/4_20hz) |
 | 5     | [Link](./ABS%2C%20PCAP2021%2C%20PC2021/5_20hz) | [Link](./ABS%2C%20PCAP2021%2C%20PC2022/5_20hz) | [Link](./ABS%2C%20PCAP2022%2C%20PC2021/5_20hz) | [Link](./ABS%2C%20PCAP2022%2C%20PC2022/5_20hz) |
 | 6     | [Link](./ABS%2C%20PCAP2021%2C%20PC2021/6_20hz) | [Link](./ABS%2C%20PCAP2021%2C%20PC2022/6_20hz) | N/A | N/A |
-| 7     | N/P | N/P | N/A | N/A |
 | 7     | N/P | N/P | N/A | N/A |
 
 <a name="analysis-inc"></a>
