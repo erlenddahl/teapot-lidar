@@ -58,10 +58,6 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
             if not self.args.hide_point_cloud:
                 self.vis.show_frame(self.full_cloud)
-            
-            self.vis.add_geometry(self.actual_position_cylinder)
-            self.vis.add_geometry(self.estimated_position_cylinder)
-            self.vis.add_geometry(self.start_position_cylinder)
 
         self.is_first_frame = True
 

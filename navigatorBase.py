@@ -169,38 +169,40 @@ class NavigatorBase:
         self.actual_movement_path = self.create_line([[p.x, p.y, p.alt] for p in self.sbet_coordinates], color=[0, 0, 1])
 
         self.actual_position_cylinder = self.create_cylinder(size_ratio=1, color=[0,0,1])
-        self.estimated_position_cylinder = self.create_cylinder(size_ratio=0.8, color=[1,0,0])
-        self.start_position_cylinder = self.create_cylinder(size_ratio=0.6, color=[1,1,1])
+        self.estimated_position_cylinder = self.create_cylinder(size_ratio=1, color=[1,0,0])
+        self.start_position_cylinder = self.create_cylinder(size_ratio=1, color=[1,1,1])
 
         self.initial_coordinate = self.get_current_actual_coordinate().clone()
         self.current_estimated_coordinate = self.initial_coordinate.clone()
+
+        self.actual_position_cylinder.translate(self.initial_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
+        self.estimated_position_cylinder.translate(self.initial_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
         self.start_position_cylinder.translate(self.initial_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
 
         if self.skip_until_circle_center is not None:
             
             # And set the altitude on the skip-circle to the same as the first coordinate to be processed,
             # to allow it to be visualized together with the movement paths.
-            self.skip_until_circle_center.alt = self.initial_coordinate.alt;
+            self.skip_until_circle_center.alt = self.initial_coordinate.alt - 5;
 
             # Create a flat cylinder to indicate the skip-circle in the visualization.
-            self.skip_until_circle_center_cylinder = self.create_cylinder_exact(self.args.skip_until_radius / self.position_cylinder_radius, 2, [0.8,0.8,0.8])
+            self.skip_until_circle_center_cylinder = self.create_cylinder_exact(self.args.skip_until_radius / self.position_cylinder_radius, 0.5, [0.8,0.8,0.8])
             self.skip_until_circle_center_cylinder.translate(self.skip_until_circle_center.np(), relative=False)
 
         if self.run_until_circle_center is not None:
 
             # Calculate the ending frame
             self.run_until_ix, coordinate = self.find_first_frame_entering_circle(self.run_until_circle_center)
-            print(self.run_until_ix, coordinate, self.run_until_circle_center)
             
             # Translate the "run until" circle 
             self.run_until_circle_center.translate(-self.full_point_cloud_offset)
             
             # And set the altitude on the skip-circle to the same as the first coordinate to enter the circle,
             # to allow it to be visualized together with the movement paths.
-            self.run_until_circle_center.alt = coordinate.alt if coordinate is not None else self.initial_coordinate.alt;
+            self.run_until_circle_center.alt = (coordinate.alt if coordinate is not None else self.initial_coordinate.alt) - 5;
 
             # Create a flat cylinder to indicate the skip-circle in the visualization.
-            self.run_until_circle_center_cylinder = self.create_cylinder_exact(self.args.run_until_radius / self.position_cylinder_radius, 2, [0.8,0.8,0.8])
+            self.run_until_circle_center_cylinder = self.create_cylinder_exact(self.args.run_until_radius / self.position_cylinder_radius, 0.5, [0.8,0.8,0.8])
             self.run_until_circle_center_cylinder.translate(self.run_until_circle_center.np(), relative=False)
 
     def finalize_navigation(self, navigation_exception):
@@ -452,6 +454,10 @@ class NavigatorBase:
 
             if self.actual_movement_path is not None:
                 self.vis.add_geometry(self.actual_movement_path, True)
+            
+            self.vis.add_geometry(self.actual_position_cylinder)
+            self.vis.add_geometry(self.estimated_position_cylinder)
+            self.vis.add_geometry(self.start_position_cylinder)
 
             self.check_save_screenshot(0, True)
 
