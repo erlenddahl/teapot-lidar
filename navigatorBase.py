@@ -669,6 +669,46 @@ class NavigatorBase:
         return parser
 
     @staticmethod
+    def load_arguments_from_json(parser, args, json_path):
+
+        # Extract the keys for all arguments
+        arg_keys = vars(args)
+
+        # Extract all defaults values.
+        # In order to do this, we fake parsing a list of empty arguments.
+        # But since some arguments are required, we must provide dummy values for those.
+        required_arguments = ["--pcap", "x", "--sbet", "x"]
+        if "point_cloud" in [x.dest for x in parser._actions]:
+            required_arguments.append("--point-cloud")
+            required_arguments.append("x")
+        defaults = vars(parser.parse_args(required_arguments))
+
+        # Load the given JSON file
+        with open(json_path) as f:
+            data = json.load(f)
+
+            # Go through each defined key in the JSON file
+            for key in data:
+
+                # Allow prefixing keys with # to ignore them
+                if key.startswith("#"): 
+                    continue 
+                    
+                arg_key = key.replace("--", "").replace("-", "_")
+
+                # Ignore absoluteNavigator arguments to allow common .json file
+                if arg_key in ["point_cloud", "hide_point_cloud", "cloud_part_radius"]:
+                    continue
+
+                if not arg_key in arg_keys:
+                    raise Exception("Unrecognized agrument in the JSON file (--load-arguments): " + key + " (" + arg_key + ")")
+
+                value = getattr(args, arg_key, None)
+                is_default = value == defaults[arg_key]
+                if value is None or is_default or arg_keys[arg_key] == False:
+                    setattr(args, arg_key, data[key])
+
+    @staticmethod
     def add_standard_and_parse_args(parser):
         parser.add_argument('--algorithm', type=str, default="NICP", required=False, help="Use this registration algorithm (see names in algorithmHelper.py).")
         
@@ -707,33 +747,9 @@ class NavigatorBase:
         parser.add_argument('--load-arguments', type=str, default=None, required=False, help="Additional arguments will be loaded from the given json file. Arguments already set from the command line will not be overwritten.")
 
         args = parser.parse_args()
-        arg_keys = vars(args)
-
-        # Extract all defaults values (provide dummy values for the required arguments)
-        defaults = vars(parser.parse_args(["--pcap", "x", "--sbet", "x", "--point-cloud", "x"]))
 
         if args.load_arguments is not None:
-            with open(args.load_arguments) as f:
-                data = json.load(f)
-                for key in data:
-
-                    # Allow prefixing keys with # to ignore them
-                    if key.startswith("#"): 
-                        continue 
-                        
-                    arg_key = key.replace("--", "").replace("-", "_")
-
-                    # Ignore absoluteNavigator arguments to allow common .json file
-                    if arg_key in ["point_cloud", "hide_point_cloud", "cloud_part_radius"]:
-                        continue
-
-                    if not arg_key in arg_keys:
-                        raise Exception("Unrecognized agrument in the JSON file (--load-arguments): " + key + " (" + arg_key + ")")
-
-                    value = getattr(args, arg_key, None)
-                    is_default = value == defaults[arg_key]
-                    if value is None or is_default or arg_keys[arg_key] == False:
-                        setattr(args, arg_key, data[key])
+            NavigatorBase.load_arguments_from_json(parser, args, args.load_arguments)
 
         if args.save_screenshots_to is not None and args.preview != "always":
             raise ValueError("Cannot save cloud screenshots without --preview being set to 'always'.")
