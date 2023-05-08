@@ -256,7 +256,7 @@ class NavigatorBase:
     def get_current_actual_coordinate(self):
 
         # Retrieve the index of the currently processed frame
-        ix = self.reader.get_current_frame_index()
+        ix = self.reader.get_current_frame_index() - 1
 
         # The frame index from the readers is the index of the last
         # read frame. If we haven't started reading yet, it will 
@@ -291,6 +291,17 @@ class NavigatorBase:
             heading_corrected = np.pi*2-heading
         return heading_corrected
 
+    def calculate_heading(self, prev, curr):
+        """ Calculates a headinv between the previous and current coordinates.
+        Heading 0 is straight North, PI/2 straight East, PI or -PI straight South, and -PI/2 straight West.
+        """
+
+        dx = curr.x - prev.x
+        dy = curr.y - prev.y
+        angle = math.atan2(dx, dy)
+        return angle
+
+
     def run_registration(self, source, target, actual_coordinate):
         # Run the alignment
         iterations = 25
@@ -320,10 +331,20 @@ class NavigatorBase:
         # Extract the translation part from the transformation array
         movement = reg.transformation[:3,3]
 
+        # Keep track of the old estimation
+        previous_estimated_coordinate = self.current_estimated_coordinate.clone()
+
+        # Now update the current estimate using the single-point cloud's center point
         self.current_estimated_coordinate.translate(movement)
 
-        # Move the estimated position
+        #tqdm.write("Initial: " + str(self.initial_coordinate.np()) + ", Movement: " + str(movement) + ", Previous estimate: " + str(previous_estimated_coordinate.np()) + ", New estimate: " + str(self.current_estimated_coordinate.np()))
+
+        # Move the cylinder
         self.estimated_position_cylinder.translate(self.current_estimated_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
+
+        # Estimate a new current heading
+        self.current_estimated_coordinate.heading = actual_coordinate.heading #self.calculate_heading(previous_estimated_coordinate, self.current_estimated_coordinate)
+        #tqdm.write("Actual heading: " + str(self.get_current_actual_coordinate().heading) + ", estimated heading: " + str(self.current_estimated_coordinate.heading))
 
         # Update the plot with data from this registration
         self.update_plot(reg, registration_time, movement, actual_coordinate)
@@ -462,6 +483,10 @@ class NavigatorBase:
             self.check_save_screenshot(0, True)
 
         self.plot = Plotter(self.preview_always)
+
+        # Add the first coordinates to the lists
+        self.estimated_coordinates.append(self.current_estimated_coordinate.clone())
+        self.actual_coordinates.append(self.initial_coordinate.clone())
 
     def finish_plot_and_visualization(self):
         
