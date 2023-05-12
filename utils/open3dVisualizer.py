@@ -3,10 +3,11 @@ import numpy as np
 
 class Open3DVisualizer:
 
-    def __init__(self, add_axes=True):
+    def __init__(self, add_axes=True, window_name=None):
         self._is_initial_geometry = True
 
         self.vis = o3d.visualization.VisualizerWithKeyCallback()
+        self.window_name = window_name
 
         self._current_geometry = None
         self._is_non_blocking = False
@@ -23,7 +24,7 @@ class Open3DVisualizer:
             return
 
         # initialize visualizer and rendering options
-        self.vis.create_window()
+        self.vis.create_window(window_name=self.window_name if self.window_name is not None else "Open3D")
 
         # Create a simple axis visualization
         if self.add_axes:

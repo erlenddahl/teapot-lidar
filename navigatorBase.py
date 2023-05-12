@@ -22,6 +22,8 @@ class NavigatorBase:
 
         self.args = args
 
+        self.visualization_window_name = self.args.visualization_window_name if self.args.visualization_window_name is not None else os.path.basename(os.path.normpath(args.pcap[0]))
+
         self.reader = PcapReaderHelper.from_lists(args.pcap, args.json, args.skip_every_frame, args=args)
         self.voxel_size = args.voxel_size
         self.matcher = AlgorithmHelper.get_algorithm(args.algorithm)
@@ -503,7 +505,7 @@ class NavigatorBase:
     def initialize_plot_and_visualization(self):
         
         # Initialize the visualizer
-        self.vis = Open3DVisualizer(add_axes=False)
+        self.vis = Open3DVisualizer(add_axes=False, window_name=self.visualization_window_name)
 
         if self.preview_always:
 
@@ -793,7 +795,8 @@ class NavigatorBase:
         parser.add_argument('--wait-after-first-frame', type=int, default=0, required=False, help="If given, the analysis will wait for this many seconds after the first frame to allow the visualization to be manually adjusted (zooming, panning, etc).")
         parser.add_argument('--preview', type=str, default="always", choices=['always', 'end', 'never'], help="Show constantly updated point cloud and data plot previews while processing ('always'), show them only at the end ('end'), or don't show them at all ('never').")
         parser.add_argument('--show-debug-visualization', dest='show_debug_visualization', default=False, action='store_true', help="If set to true, the analysis will pause multiple times during each frame to show the different steps in the visualizer (zoom out and find the origin, that's where stuff happens).")
-        
+        parser.add_argument('--visualization-window-name', type=str, default=None, required=False, help="If set, the visualization window will have this title. If not set, the title will be based on the pcap file/folder path.")
+
         parser.add_argument('--skip-start', type=int, default=0, required=False, help="If given a positive number larger than 0, this many frames will be skipped before starting processing frames.")
         parser.add_argument('--skip-every-frame', type=int, default=0, required=False, help="If given a positive number larger than 0, this many frames will be skipped between every frame read from the PCAP file.")
         
