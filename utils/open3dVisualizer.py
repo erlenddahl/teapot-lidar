@@ -14,6 +14,9 @@ class Open3DVisualizer:
         self.has_been_initialized = False
         self.add_axes = add_axes
 
+        self.next_key_listener_created = False
+        self.is_waiting = False
+
     def _initialize(self):
 
         if self.has_been_initialized:
@@ -54,6 +57,19 @@ class Open3DVisualizer:
         self.ctr.set_zoom(0.05)
         self.ctr.set_lookat([600, 0, 0.5] if vehicle_location is None else vehicle_location)
         self.ctr.set_up([0.35, 0, 0.94])
+
+    def wait_until_right_arrow_is_pressed(self):
+        
+        def key_next(vis):
+            self.is_waiting = False
+
+        if not self.next_key_listener_created:
+            self.vis.register_key_callback(262, key_next) # Arrow right
+            self.next_key_listener_created = True
+
+        self.is_waiting = True
+        while self.is_waiting:
+            self.refresh_non_blocking()
     
     def register_key_callback(self, key_code, callback):
         self.vis.register_key_callback(key_code, callback)
