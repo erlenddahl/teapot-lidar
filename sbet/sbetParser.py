@@ -10,7 +10,7 @@ from sbet.sbetRow import SbetRow
 
 class SbetParser:
 
-    def __init__(self, filename, random_noise):
+    def __init__(self, filename, random_noise, noise_from_frame_ix=0, crs_from=4258, crs_to=5972):
 
         if filename.lower().endswith(".csv"):
             self.rows = SbetParser.read_csv(filename)
@@ -30,16 +30,15 @@ class SbetParser:
         self.transformer = None
         self.current_filename = None
 
-        # Hard coded CRSes for now; these are the ones used in Teapot.
-        self.crs_from = 7912 # ITRF14, lat lon, height
-        self.crs_to = 5972 # ETRS89 / UTM zone 32N + NN2000 height
+        self.crs_from = crs_from
+        self.crs_to = crs_to
+        self.transformer = Transformer.from_crs(self.crs_from, self.crs_to)
 
     def reset(self):
         self.current_index = 0
 
     def create_transformer(self, pcap_filename):
         self.gps_epoch = self.get_gps_epoch(pcap_filename)
-        self.transformer = Transformer.from_crs(self.crs_from, self.crs_to)
         self.current_filename = pcap_filename
 
     def get_position(self, timestamp=None, pcap_filename=None, pcap_path=None, gps_week=None, continue_from_previous=False):
@@ -74,12 +73,18 @@ class SbetParser:
         self.current_index = 0
         return None
 
-    def get_gps_epoch(self, pcap_filename=None):
+    def get_gps_epoch(self, pcap_filename):
 
         utc = filename2utc(pcap_filename)
 
+        return self.get_gps_epoch_from_utc(utc)
+
+    def get_gps_epoch_from_utc(self, utc):
+
         dayofyear = utc.timetuple().tm_yday
         currentepoch = utc.year + dayofyear / 365 # Current Epoch ex: 2021.45
+
+        return currentepoch
 
     def get_gps_week(self, pcap_path = None, pcap_filename = None):
         if pcap_path is not None:

@@ -52,7 +52,7 @@ class PcapReader:
         self.skip_last_frame_in_pcap_file = False
         if args is not None:
             if getattr(args, "sbet", None) is not None:
-                self.sbet = SbetParser(args.sbet, args.sbet_noise)
+                self.sbet = SbetParser(args.sbet, args.sbet_noise, args.sbet_noise_from_frame_ix, args.sbet_crs_from, args.sbet_crs_to)
                 self.gps_week = self.sbet.get_gps_week(pcap_path = self.pcap_path)
             if getattr(args, "skip_last_frame_in_pcap_file", False):
                 self.skip_last_frame_in_pcap_file = True
@@ -191,6 +191,13 @@ class PcapReader:
         if find_bounds or find_count:
             self.save_internal_meta()
 
+    def get_sbet_data(self):
+        return {
+            "crs_from": self.sbet.crs_from,
+            "crs_to": self.sbet.crs_to,
+            "gps_epoch": self.sbet.gps_epoch
+        }
+
     def get_coordinates(self, rotate=True, show_progress=False):
         """Returns a list of coordinates (SbetRow) corresponding to each LidarPacket in the current Pcap file."""
 
@@ -204,7 +211,7 @@ class PcapReader:
         self.sbet.reset()
         iterator = iter(self.enumerate_lidar_packets())
         for packet in iterator:
-            pos = self.sbet.get_position(self.get_sbet_timestamp(packet), pcap_path=self.pcap_path, gps_week=self.gps_week, continue_from_previous=True)
+            pos = self.sbet.get_position(self.get_sbet_timestamp(packet), pcap_path=self.pcap_path, gps_week=self.gps_week, continue_from_previous=True, frame_ix=len(positions))
             positions.append(pos)
 
             for _ in range(self.skip_frames):

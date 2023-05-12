@@ -5,21 +5,28 @@ from datetime import datetime
 import open3d as o3d
 import csv
 from sbet.sbetParser import SbetParser
+from pcap.pcapReaderHelper import PcapReaderHelper
 
 if __name__ == "__main__":
 
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--sbet', type=str, required=True, help="The path to a corresponding SBET file with GNSS coordinates. Can also read CSV files with the headers Index,GpsTime,Lat,Lon,Elevation,Azimuth (since some SBET files didn't work with this reader).")
+    PcapReaderHelper.add_sbet_arguments(parser)
     parser.add_argument('--gps-week', type=int, default=-1, required=False, help="If given, this GPS week will be used to transform the timestamps to unix and human readable time.")
+    parser.add_argument('--gps-epoch', type=int, default=-1, required=False, help="If given, this GPS epoch will be used to transform the coordinates.")
     parser.add_argument('--out-csv', type=str, required=False, help="If given, coordinates will be saved to this CSV file instead of being visualized.")
     args = parser.parse_args()
 
     # Create and start a visualization
-    parser = SbetParser(args.sbet)
+    parser = SbetParser(args.sbet, args.sbet_noise, args.sbet_noise_from_frame_ix, args.sbet_crs_from, args.sbet_crs_to)
+    parser.gps_epoch = args.gps_epoch
     
     min_time = np.min(parser.rows["time"])
     max_time = np.max(parser.rows["time"])
+
+    print("From CRS:", parser.crs_from)
+    print("To CRS:", parser.crs_to)
+    print("To CRS:", parser.gps_epoch)
 
     print("Min time:", min_time)
     print("Max time:", max_time)
@@ -44,9 +51,11 @@ if __name__ == "__main__":
 
     print("Initial heading:", parser.rows[0]["heading"])
 
-    print(parser.rows[0])
+    print("First row:", parser.rows[0])
 
     coords = parser.get_rows()
+
+    print("First coordinate:", coords[0])
 
     if args.out_csv is not None:
 

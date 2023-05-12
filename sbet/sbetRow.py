@@ -34,7 +34,7 @@ class SbetRow:
         self.sow = row["time"]
         self.lat = row["lat"]
         self.lon = row["lon"]
-        self.alt = row["alt"] 
+        self.alt = row["alt"]
         self.alt_raw = row["alt"]
         self.age = sow - row["time"]
         self.heading = row["heading"]
@@ -47,7 +47,7 @@ class SbetRow:
 
     def calculate_transformed(self, transformer, gps_epoch):
 
-        self.x, self.y, self.alt = transformer.transform(self.lat, self.lon, self.alt_raw, gps_epoch)
+        self.x, self.y, self.alt, _ = transformer.transform(self.lat, self.lon, self.alt_raw, gps_epoch)
 
         return self
 
@@ -96,3 +96,6 @@ class SbetRow:
 
     def np(self):
         return np.array([self.x, self.y, self.alt])
+
+    def short_str(self):
+        return f"{self.x:.2f}, {self.y:.2f}"

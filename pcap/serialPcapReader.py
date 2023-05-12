@@ -38,6 +38,9 @@ class SerialPcapReader:
 
         return frame
 
+    def get_sbet_data(self):
+        return self.readers[self.current_reader_index].get_sbet_data()
+
     def get_coordinates(self, rotate=True, show_progress=False):
         """Returns a list of coordinates (SbetRow) corresponding to each LidarPacket in the current Pcap file."""
 
