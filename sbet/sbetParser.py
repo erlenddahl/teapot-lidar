@@ -19,6 +19,7 @@ class SbetParser:
 
         self.random_noise = random_noise
         self.add_noise = random_noise is not None and (random_noise[0] > 0 or random_noise[1] > 0 or random_noise[2] > 0)
+        self.noise_from_frame_ix = noise_from_frame_ix
 
         self.current_index = 0
         self.row_count = len(self.rows)
@@ -41,7 +42,7 @@ class SbetParser:
         self.gps_epoch = self.get_gps_epoch(pcap_filename)
         self.current_filename = pcap_filename
 
-    def get_position(self, timestamp=None, pcap_filename=None, pcap_path=None, gps_week=None, continue_from_previous=False):
+    def get_position(self, timestamp=None, pcap_filename=None, pcap_path=None, gps_week=None, continue_from_previous=False, frame_ix=-1):
 
         if pcap_path is not None:
             pcap_filename = os.path.basename(pcap_path)
@@ -63,7 +64,7 @@ class SbetParser:
                 sbetRow = SbetRow(self.rows[i-1], sow, i)
                 sbetRow.calculate_transformed(self.transformer, self.gps_epoch)
 
-                if self.add_noise:
+                if self.add_noise and frame_ix > self.noise_from_frame_ix:
                     sbetRow.x += random.uniform(-self.random_noise[0], self.random_noise[0])
                     sbetRow.y += random.uniform(-self.random_noise[1], self.random_noise[1])
                     sbetRow.alt += random.uniform(-self.random_noise[2], self.random_noise[2])
