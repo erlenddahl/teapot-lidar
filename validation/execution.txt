@@ -4,9 +4,6 @@ cd "G:\2021-10-21 - Kartverket, LIDAR"
 
 python sbetParser.py --sbet "validation\Lillehammer\2021-10-21\navigation\sbet-output-UTC-1000.out"
 
-python pointCloud.py --create-from "validation\Lillehammer\2021-10-21\pointcloud\Referansepunktsky" --preview never --write-to "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --voxel-size 0.2
-python pointCloud.py --create-from "validation\Lillehammer\2022-02-16\pointcloud" --preview never --write-to "validation\Lillehammer\2022-02-16\pointcloud\combined.pcd"
-
 
 conda create --name teapot310 python=3.10.9
 conda activate teapot310

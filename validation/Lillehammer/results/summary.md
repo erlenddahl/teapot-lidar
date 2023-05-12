@@ -3,6 +3,7 @@
   * [The collected datasets](#datasets)
     * [October 21th 2021 (without snow)](#2021)
     * [February 16th 2022 (with snow)](#2022)
+  * [Point clouds](#pointclouds)
 * [The analysis](#analysis)
   * [Details](#details)
   * [Absolute navigation](#analysis-abs)
@@ -47,6 +48,14 @@
 The image below shows the driving route on a map of Lillehammer. All 10 valid trips are drawn, but as they are very similar, it's hard to differentiate them in this plot. The brown detour on the right hand side is part of the 2021 trips -- they started at the parkin spot at the bottom end of the brown arm, and drove north before entering the standard route. The 2022 trips started approximately at the same spot, but drove west, directly entering the route. Because of this discrepancy, and because trip 2022-3 is missing a PCAP file, the analysis start point is set to be after all trips are driving the same route without issues (white circle), and because of the navigation issues in trip 2022-2, the end point is set to the last left turn (black circle).
 
 ![The driving route shown on a map.](full_route.png)
+
+<a name="pointclouds"></a>
+# Point clouds
+The point clouds are generated from trip 3 in 2021 and trip 1 in 2022 by the NMA. The resulting .laz files are merged into one using the following commands:
+```
+python pointCloud.py --create-from "validation\Lillehammer\2021-10-21\pointcloud\Referansepunktsky" --preview never --write-to "validation\Lillehammer\2021-10-21\pointcloud\combined.pcd" --voxel-size 0.2
+python pointCloud.py --create-from "validation\Lillehammer\2022-02-16\pointcloud" --preview never --write-to "validation\Lillehammer\2022-02-16\pointcloud\combined.pcd" --voxel-size 0.2
+```
 
 <a name="analysis"></a>
 # The analysis

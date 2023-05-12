@@ -19,6 +19,14 @@ Site specific details and results can be found in the following documents:
 - Drivdalen (not ready)
 - Lismarka (not ready)
 
+<a name="coordinate-systems"></a>
+## Coordinate systems
+The SBET files delivered by the NMA are in EPSG:4937.
+The point clouds delivered by the NMA are in EPST:5972.
+This has been confirmed by testing (see the images prefixed with 'crs_comparison' in this folder) and talks with the NMA.
+
+All SBET coordinates are converted from 4937 to 5972 when running the analysis, using the navigator's --sbet-crs-from and --sbet-crs-to arguments and a GPS epoch based on the dates in the PCAP filenames.
+
 <a name="data-recording-limitations"></a>
 ## Data recording limitations
 The data collection system ran in a loop that recorded LiDAR frames for 20 seconds, then saved them disk, then recorded for next 20 seconds, etc. This resulted in a slight gap between the files of about 1 to 1.5 seconds, or usually around 5-7 meters (depending on driving speed). This time delay was slightly reduced in time for the 2022 data collection campaign, but the gaps are still visible, and a potential problem for the registration algorithms.
@@ -52,3 +60,9 @@ The NICP algorithm also has input parameters that allows us to set a relative_fi
 The image below shows results for the 10 first frames in a random trip with a convergence criteria og 1e-3 (left) and 1e-5 (center), plus the difference between them (right). The difference is the values for 1e-5 divided by the values for 1e-3, showing that the time usage is 4-5 times as high, while the change in 3D error is usually less than a tenth of a percent.
 
 ![1e-3 vs 1e-5](1e3_vs_1e5.png)
+
+<a name="noise-verification"></a>
+## Navigation verification by SBET noise
+In order to verify that the navigators are working as intended (not in any way based on the true trajectory except for the first input coordinate), the absoluteNavigator was tested using --sbet-noise 5 5 5 and --sbet-noise-from-frame-ix 10. This makes the true trajectory very noisy. If the navigator "cheats", the navigation will also be noisy. I wasn't.
+
+![A demonstration of the behaviour with noisy true trajectory.](noised_sbet.png)
