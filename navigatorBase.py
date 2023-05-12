@@ -312,60 +312,10 @@ class NavigatorBase:
         angle = math.atan2(dx, dy)
         return angle
 
-    def transform_pcap(self, pc_o3d, sbet_coordinate):
-        """
-        Transform a point cloud from a PCAP file to UTM32 coordinates and process it using Open3D.
 
-        Args:
-            sbet_coordinate (dict): Initial position of the lidar in latitude, longitude, altitude, and heading.
-        Returns:
-            Tuple containing the transformed point cloud, the initial UTM32 coordinates, and the initial origin of the point cloud.
+    def run_registration(self, source, target, previous_estimated_coordinate, actual_coordinate):
 
-        """
-
-        # Process point cloud data with Open3D
-        self.rotate_frame(pc_o3d, sbet_coordinate)
-        initial_origin = pc_o3d.get_center()
-        pc_o3d = pc_o3d.translate([0, 0, 0], relative=False)  # open3d
-
-        pc_transformed_utm = pc_o3d.translate(sbet_coordinate.np(), relative=False)  # open3d
-
-        return pc_transformed_utm, sbet_coordinate, initial_origin
-
-    def initial_transform(self, init_source, init_target, sbet_coordinate):
-        """
-        Performs transformation of point clouds to a local coordinate system and returns transformed point clouds.
-
-        Args:
-            init_source (open3d.geometry.PointCloud): Initial source point cloud.
-            init_target (open3d.geometry.PointCloud): Initial target point cloud.
-            sbet_coordinate (ndarray): UTM coordinate for the center of the point cloud.
-
-        Returns:
-            tuple: A tuple containing:
-                - voxeldown_source (open3d.geometry.PointCloud): Voxel downsampled source point cloud.
-                - source_trans (open3d.geometry.PointCloud): Transformed source point cloud.
-                - voxeldown_target (open3d.geometry.PointCloud): Voxel downsampled target point cloud.
-                - target_trans (open3d.geometry.PointCloud): Transformed target point cloud.
-                - target_center_init (numpy.ndarray): Initial target center.
-        """
-        from copy import deepcopy
-        init_center = init_source.get_center()
-        target_center_init = sbet_coordinate.np() - init_center
-        tqdm.write(f"init_center: {init_center}, source_center_init: {source_center_init}, target_center_init: {target_center_init}")
-        # initial local transformation to a local coordinate system
-        source_trans = deepcopy(init_source).translate([0,0,0], relative=False)
-        target_trans = deepcopy(init_target).translate(target_center_init, relative=False)
-        return source_trans, target_trans, target_center_init
-
-
-    def run_registration(self, target, source, previous_estimated_coordinate, actual_coordinate):
-
-        target, init_coord, origo = self.transform_pcap(target, previous_estimated_coordinate)
-        saved_center = source.get_center() # Saves center of point cloud extract
-        source_transformed, target_transformed, target_center = self.initial_transform(source, target, previous_estimated_coordinate)
-
-        tqdm.write(f"Init_coord: {init_coord}, origo: {origo}, saved_center: {saved_center}, target center: {target_center}")
+        self.rotate_frame(source)
 
         self.time("frame rotation")
 
@@ -375,7 +325,7 @@ class NavigatorBase:
         transformation_matrix = np.identity(4) if self.previous_matrix is None else self.previous_matrix
         for i in range(10):
             threshold = max(1, 3 - len(diffs))
-            reg = self.matcher.match(source_transformed, target_transformed, trans_init=transformation_matrix, threshold=threshold, max_iterations=iterations)
+            reg = self.matcher.match(source, target, trans_init=transformation_matrix, threshold=threshold, max_iterations=iterations)
 
             # If the calculated transformation matrix is (almost) identical to the one we sent in, we are happy.
             diff = np.abs(np.mean(reg.transformation[0:3, 3]-transformation_matrix[0:3, 3]))
@@ -399,20 +349,10 @@ class NavigatorBase:
         registration_time = self.time("registration")
 
         # Extract the translation part from the transformation array
-        movement = transformation_matrix[0:3, 3] - origo
-
-        if transformation_matrix[0, 3]*origo[0] < 0:
-            movement[0] = transformation_matrix[0, 3] + origo[0]
-        elif transformation_matrix[1, 3]*origo[1] < 0:
-            movement[1] = transformation_matrix[1, 3] + origo[1]
-
-        source_ICP = source_transformed.translate(saved_center, relative=False)
-        target_ICP_center = target_transformed.get_center() + saved_center - origo
-
-        tqdm.write(f"Target center: {target_ICP_center}")
+        movement = transformation_matrix[0:3, 3]
 
         # Now update the current estimate using the single-point cloud's center point
-        self.current_estimated_coordinate.set(target_ICP_center)
+        self.current_estimated_coordinate.translate(movement)
 
         # Move the cylinder
         self.estimated_position_cylinder.translate(self.current_estimated_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
