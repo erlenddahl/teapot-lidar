@@ -644,7 +644,7 @@ class NavigatorBase:
             return
 
         end_at = time.time() + self.wait_after_first_frame
-        with tqdm(desc="Waiting for vis. adjustment", total=self.wait_after_first_frame, **self.tqdm_config) as pbar:
+        with tqdm(desc="Waiting for vis. adjustment", total=self.wait_after_first_frame, leave=False, **self.tqdm_config) as pbar:
             while time.time() < end_at:
                 self.vis.refresh_non_blocking()
                 pbar.n = int(self.wait_after_first_frame - end_at + time.time())
