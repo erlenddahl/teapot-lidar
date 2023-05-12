@@ -318,11 +318,13 @@ class NavigatorBase:
                 break
 
         self.registration_configs.append({
+        metadata = {
             "iterations": len(diffs) * iterations,
             "diffs": diffs,
             "frame_ix": self.reader.get_current_frame_index(),
             "pcap": self.reader.get_pcap_path()
-        })
+        }
+        self.registration_configs.append(metadata)
 
         self.check_save_frame_pair(source, target, reg)
 
@@ -337,17 +339,21 @@ class NavigatorBase:
         # Now update the current estimate using the single-point cloud's center point
         self.current_estimated_coordinate.translate(movement)
 
-        #tqdm.write("Initial: " + str(self.initial_coordinate.np()) + ", Movement: " + str(movement) + ", Previous estimate: " + str(previous_estimated_coordinate.np()) + ", New estimate: " + str(self.current_estimated_coordinate.np()))
 
         # Move the cylinder
         self.estimated_position_cylinder.translate(self.current_estimated_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
 
         # Estimate a new current heading
         self.current_estimated_coordinate.heading = actual_coordinate.heading #self.calculate_heading(previous_estimated_coordinate, self.current_estimated_coordinate)
-        #tqdm.write("Actual heading: " + str(self.get_current_actual_coordinate().heading) + ", estimated heading: " + str(self.current_estimated_coordinate.heading))
 
         # Update the plot with data from this registration
         self.update_plot(reg, registration_time, movement, actual_coordinate)
+
+        tqdm.write(f"[Frame {metadata['frame_ix']}]")
+        tqdm.write(f"  Input estimate: {self.to_actual(previous_estimated_coordinate).short_str()}, Output estimate: {self.to_actual(self.current_estimated_coordinate).short_str()}, Actual: {self.to_actual(actual_coordinate).short_str()}")
+        tqdm.write(f"  Iterations: {metadata['iterations']}, Final threshold: {threshold}, Final fitness: {reg.fitness:.3f}, Final RMSE: {reg.inlier_rmse:.3f}, Time: {registration_time:.2f}, Movement: {movement[0]:.2f}, {movement[1]:.2f}, {movement[2]:.2f}")
+        tqdm.write(f"  Errors :: x: {self.plot.position_error_x[-1]:.2f}, y: {self.plot.position_error_y[-1]:.2f}, z: {self.plot.position_error_z[-1]:.2f}, along: {self.plot.position_error_along_heading[-1]:.2f}, across: {self.plot.position_error_across_heading[-1]:.2f} 2D: {self.plot.position_error_2d[-1]:.2f}, 3D: {self.plot.position_error_3d[-1]:.2f}")
+        tqdm.write(f"  Actual heading: {self.get_current_actual_coordinate().heading:.2f}, estimated heading: {self.current_estimated_coordinate.heading:.2f}")
 
         # Append the new movement to the path
         self.movement_path.points.append(self.current_estimated_coordinate.np())
