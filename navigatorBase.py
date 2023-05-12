@@ -315,7 +315,20 @@ class NavigatorBase:
 
     def run_registration(self, source, target, previous_estimated_coordinate, actual_coordinate):
 
+        if self.args.show_debug_visualization:
+            source = self.modify_cloud(source, color=[1,0,0])
+            self.vis.add_geometry(source, True)
+            self.vis.add_geometry(target)
+            tqdm.write("Showing source/frame (red) and target/point cloud extract before frame rotation. Press right arrow to continue.")
+            self.vis.wait_until_right_arrow_is_pressed()
+
         self.rotate_frame(source)
+
+        if self.args.show_debug_visualization:
+            self.vis.update_geometry(source)
+            self.vis.update_geometry(target)
+            tqdm.write("Showing source/frame (red) and target/point cloud extract after frame rotation. Press right arrow to continue.")
+            self.vis.wait_until_right_arrow_is_pressed()
 
         self.time("frame rotation")
 
@@ -345,6 +358,21 @@ class NavigatorBase:
         self.registration_configs.append(metadata)
 
         self.check_save_frame_pair(source, target, reg)
+
+        if self.args.show_debug_visualization:
+            self.vis.update_geometry(source)
+            self.vis.update_geometry(target)
+            tqdm.write("Showing source/frame (red) and target/point cloud extract before registration and transformation. Press right arrow to continue.")
+            self.vis.wait_until_right_arrow_is_pressed()
+
+            source.transform(transformation_matrix)
+            self.vis.update_geometry(source)
+            self.vis.update_geometry(target)
+            tqdm.write("Showing source/frame (red) and target/point cloud extract after registration and transformation. Press right arrow to continue.")
+            self.vis.wait_until_right_arrow_is_pressed()
+
+            self.vis.remove_geometry(source)
+            self.vis.remove_geometry(target)
 
         registration_time = self.time("registration")
 
@@ -764,6 +792,7 @@ class NavigatorBase:
         parser.add_argument('--downsample-after', type=int, default=10, required=False, help="The cloud will be downsampled (which is an expensive operation for large clouds, so don't do it too often) after this many registered frames have been added. If this number is higher than the number of frames being read, it will be downsampled once at the end of the process (unless downsampling is disabled, see --voxel-size).")
         parser.add_argument('--wait-after-first-frame', type=int, default=0, required=False, help="If given, the analysis will wait for this many seconds after the first frame to allow the visualization to be manually adjusted (zooming, panning, etc).")
         parser.add_argument('--preview', type=str, default="always", choices=['always', 'end', 'never'], help="Show constantly updated point cloud and data plot previews while processing ('always'), show them only at the end ('end'), or don't show them at all ('never').")
+        parser.add_argument('--show-debug-visualization', dest='show_debug_visualization', default=False, action='store_true', help="If set to true, the analysis will pause multiple times during each frame to show the different steps in the visualizer (zoom out and find the origin, that's where stuff happens).")
         
         parser.add_argument('--skip-start', type=int, default=0, required=False, help="If given a positive number larger than 0, this many frames will be skipped before starting processing frames.")
         parser.add_argument('--skip-every-frame', type=int, default=0, required=False, help="If given a positive number larger than 0, this many frames will be skipped between every frame read from the PCAP file.")
