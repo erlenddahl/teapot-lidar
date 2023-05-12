@@ -43,7 +43,7 @@ class PointCloud:
     def to_absolute(self, vector, lowest):
         return int(lowest) + vector / 1000.0
 
-    def read_all(self, preview = 'never', max_files = -1):
+    def read_all(self, preview = 'never', max_files=-1, voxel_size=None):
 
         full_cloud = o3d.geometry.PointCloud()
 
@@ -88,6 +88,11 @@ class PointCloud:
                 self.visualizer.show_frame(full_cloud)
                 self.visualizer.refresh_non_blocking()
 
+        if voxel_size is not None:
+            self.original_point_count = len(full_cloud.points)
+            full_cloud = full_cloud.voxel_down_sample(voxel_size=voxel_size)
+            self.downsampled_point_count = len(full_cloud.points)
+
         if preview != 'never':
             #self.visualizer.show_frame(full_cloud)
             #self.visualizer.run()
@@ -124,19 +129,31 @@ def process_args(args):
         return
 
     reader = PointCloud(args.create_from)
-    cloud = reader.read_all(args.preview, args.max_files)
+    cloud = reader.read_all(args.preview, args.max_files, args.voxel_size)
 
     if args.write_to is not None:
         print("Writing .pcd ...")
         cloud.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
         o3d.io.write_point_cloud(args.write_to, cloud, compressed=False)
         with open(args.write_to.replace(".pcd", "-meta.json"), "w") as outfile:
-            json.dump({ "offset": reader.total_offset, "common_offset": reader.common_offset, "point_cloud_offset": reader.full_point_cloud_offset.tolist(), "mins": reader.cloud_mins.tolist(), "maxes": reader.cloud_maxes.tolist() }, outfile)
+            metadata = { 
+                "offset": reader.total_offset, 
+                "common_offset": reader.common_offset, 
+                "point_cloud_offset": reader.full_point_cloud_offset.tolist(), 
+                "mins": reader.cloud_mins.tolist(), 
+                "maxes": reader.cloud_maxes.tolist()
+            }
+            if args.voxel_size is not None:
+                metadata["voxel_size"] = args.voxel_size
+                metadata["original_point_count"] = reader.original_point_count
+                metadata["downsampled_point_count"] = reader.downsampled_point_count
+            json.dump(metadata, outfile)
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--create-from', type=str, help="A directory containing the point cloud as .laz files.")
+    parser.add_argument('--voxel-size', type=float, default=None, help="If given, the point cloud will be downsampled with this voxel size.")
     parser.add_argument('--preview', type=str, default="never", choices=['always', 'end', 'never'], help="Show constantly updated point cloud and data plot previews while processing ('always'), show them only at the end ('end'), or don't show them at all ('never').")
     parser.add_argument('--max-files', type=int, default=-1, help="Stop reading after the given number of files (useful for saving time while testing).")
     parser.add_argument('--write-to', type=str, default=None, help="Write the assembled point cloud to this location.")
