@@ -164,17 +164,17 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         # Keep a slightly larger partial cloud to make it quicker to extract the actual partial cloud
         # This reduced time usage from 27 to 9 seconds on first 20 frames of a random file.
-        c = previous_estimated_coordinate.np()
+        pec_np = previous_estimated_coordinate.np()
 
         if self.last_extracted_frame_coordinate is None or self.last_extracted_frame_coordinate.distance2d(self.current_estimated_coordinate) >= partial_radius * 0.8:
 
-            bbox = o3d.geometry.AxisAlignedBoundingBox(min_bound=c - pr * 2, max_bound=c + pr * 2)
+            bbox = o3d.geometry.AxisAlignedBoundingBox(min_bound=pec_np - pr * 2, max_bound=pec_np + pr * 2)
             self.last_extracted_frame = self.full_cloud.crop(bbox)
             self.last_extracted_frame_coordinate = self.current_estimated_coordinate.clone()
            
             self.time("larger partial cloud point extraction")
 
-        bbox = o3d.geometry.AxisAlignedBoundingBox(min_bound=c - pr, max_bound=c + pr)
+        bbox = o3d.geometry.AxisAlignedBoundingBox(min_bound=pec_np - pr, max_bound=pec_np + pr)
         partial_cloud = self.last_extracted_frame.crop(bbox)
 
         if len(partial_cloud.points) < 10:
@@ -189,8 +189,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
         
         # Move the points so that the current coordinate is in the origin.
         # Now, both the current frame and this part of the cloud should be positioned very close to each other around the origin.
-        partial_cloud_transform = c
-        partial_cloud.translate(-partial_cloud_transform, relative = True)
+        partial_cloud.translate(-pec_np, relative=True)
         self.time("partial cloud point movement")
 
         # Estimate normals for the target frame
@@ -207,7 +206,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         if self.build_cloud:
             transformed_frame = frame.transform(reg.transformation)
-            transformed_frame.translate(partial_cloud_transform, relative=True)
+            transformed_frame.translate(pec_np, relative=True)
             transformed_frame.paint_uniform_color([0,1,0])
 
             self.add_to_merged_frame(transformed_frame, handle_visualization=True)
