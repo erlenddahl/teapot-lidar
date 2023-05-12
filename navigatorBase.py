@@ -292,7 +292,8 @@ class NavigatorBase:
             coordinate = self.current_estimated_coordinate
 
         # Rotate the frame using the current heading
-        R = frame.get_rotation_matrix_from_xyz((0, 0, self.get_corrected_heading(coordinate.heading)))
+        heading = coordinate.heading
+        R = frame.get_rotation_matrix_from_xyz((0, 0, self.get_corrected_heading(heading)))
         frame.rotate(R, center=[0,0,0])
         self.time("frame rotation")
 
@@ -324,7 +325,7 @@ class NavigatorBase:
             tqdm.write("Showing source/frame (red) and target/point cloud extract before frame rotation. Press right arrow to continue.")
             self.vis.wait_until_right_arrow_is_pressed()
 
-        self.rotate_frame(source)
+        self.rotate_frame(source, previous_estimated_coordinate)
 
         if self.args.show_debug_visualization:
             self.vis.update_geometry(source)
