@@ -176,6 +176,10 @@ class NavigatorBase:
         self.initial_coordinate = self.get_current_actual_coordinate().clone()
         self.current_estimated_coordinate = self.initial_coordinate.clone()
 
+        sbet_data = self.reader.get_sbet_data()
+        tqdm.write(f"Coordinates transformed from CRS {sbet_data['crs_from']} to {sbet_data['crs_to']} with GPS epoch {sbet_data['gps_epoch']}")
+        tqdm.write(f"Initial coordinate (actual and estimate): " + self.to_actual(self.current_estimated_coordinate).short_str())
+
         self.actual_position_cylinder.translate(self.initial_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
         self.estimated_position_cylinder.translate(self.initial_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
         self.start_position_cylinder.translate(self.initial_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
@@ -205,6 +209,12 @@ class NavigatorBase:
             # Create a flat cylinder to indicate the skip-circle in the visualization.
             self.run_until_circle_center_cylinder = self.create_cylinder_exact(self.args.run_until_radius / self.position_cylinder_radius, 0.5, [0.8,0.8,0.8])
             self.run_until_circle_center_cylinder.translate(self.run_until_circle_center.np(), relative=False)
+
+    def to_actual(self, coordinate):
+        """ Translates the given local coordinate back to the global coordinate system using the point cloud offset.
+        """
+
+        return coordinate.clone().translate(self.full_point_cloud_offset)
 
     def finalize_navigation(self, navigation_exception):
 
