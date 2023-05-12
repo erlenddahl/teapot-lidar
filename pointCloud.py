@@ -89,25 +89,30 @@ class PointCloud:
                 self.visualizer.refresh_non_blocking()
 
         if voxel_size is not None:
-            self.original_point_count = len(full_cloud.points)
-            full_cloud = full_cloud.voxel_down_sample(voxel_size=voxel_size)
-            self.downsampled_point_count = len(full_cloud.points)
+            with tqdm(total=1, desc="Downsampling") as pbar:
+                self.original_point_count = len(full_cloud.points)
+                full_cloud = full_cloud.voxel_down_sample(voxel_size=voxel_size)
+                self.downsampled_point_count = len(full_cloud.points)
+                pbar.update(1)
 
         if preview != 'never':
             #self.visualizer.show_frame(full_cloud)
             #self.visualizer.run()
             o3d.visualization.draw_geometries([full_cloud])
 
-        points = np.asarray(full_cloud.points)
-        self.cloud_mins = np.amin(points, axis=0)
-        self.cloud_maxes = np.amax(points, axis=0)
-        self.full_point_cloud_offset = (self.cloud_maxes - self.cloud_mins) / 2
-        
-        points -= self.full_point_cloud_offset
-        full_cloud = o3d.geometry.PointCloud()
-        full_cloud.points = o3d.utility.Vector3dVector(points)
+        with tqdm(total=1, desc="Counting") as pbar:
+            points = np.asarray(full_cloud.points)
+            self.cloud_mins = np.amin(points, axis=0)
+            self.cloud_maxes = np.amax(points, axis=0)
+            self.full_point_cloud_offset = (self.cloud_maxes - self.cloud_mins) / 2
+            
+            points -= self.full_point_cloud_offset
+            full_cloud = o3d.geometry.PointCloud()
+            full_cloud.points = o3d.utility.Vector3dVector(points)
 
-        self.total_offset = [self.common_offset[0] + self.full_point_cloud_offset[0], self.common_offset[1] + self.full_point_cloud_offset[1], self.common_offset[2] + self.full_point_cloud_offset[2]]
+            self.total_offset = [self.common_offset[0] + self.full_point_cloud_offset[0], self.common_offset[1] + self.full_point_cloud_offset[1], self.common_offset[2] + self.full_point_cloud_offset[2]]
+
+            pbar.update(1)
 
         return full_cloud
 
@@ -132,22 +137,27 @@ def process_args(args):
     cloud = reader.read_all(args.preview, args.max_files, args.voxel_size)
 
     if args.write_to is not None:
-        print("Writing .pcd ...")
-        cloud.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
-        o3d.io.write_point_cloud(args.write_to, cloud, compressed=False)
-        with open(args.write_to.replace(".pcd", "-meta.json"), "w") as outfile:
-            metadata = { 
-                "offset": reader.total_offset, 
-                "common_offset": reader.common_offset, 
-                "point_cloud_offset": reader.full_point_cloud_offset.tolist(), 
-                "mins": reader.cloud_mins.tolist(), 
-                "maxes": reader.cloud_maxes.tolist()
-            }
-            if args.voxel_size is not None:
-                metadata["voxel_size"] = args.voxel_size
-                metadata["original_point_count"] = reader.original_point_count
-                metadata["downsampled_point_count"] = reader.downsampled_point_count
-            json.dump(metadata, outfile)
+        with tqdm(total=1, desc="Estimating normals") as pbar:
+            cloud.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
+            pbar.update(1)
+        with tqdm(total=1, desc="Writing cloud") as pbar:
+            o3d.io.write_point_cloud(args.write_to, cloud, compressed=False)
+            pbar.update(1)
+        with tqdm(total=1, desc="Writing metadata") as pbar:
+            with open(args.write_to.replace(".pcd", "-meta.json"), "w") as outfile:
+                metadata = { 
+                    "offset": reader.total_offset, 
+                    "common_offset": reader.common_offset, 
+                    "point_cloud_offset": reader.full_point_cloud_offset.tolist(), 
+                    "mins": reader.cloud_mins.tolist(), 
+                    "maxes": reader.cloud_maxes.tolist()
+                }
+                if args.voxel_size is not None:
+                    metadata["voxel_size"] = args.voxel_size
+                    metadata["original_point_count"] = reader.original_point_count
+                    metadata["downsampled_point_count"] = reader.downsampled_point_count
+                json.dump(metadata, outfile)
+            pbar.update(1)
 
 if __name__ == "__main__":
 
