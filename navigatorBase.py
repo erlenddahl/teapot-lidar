@@ -46,6 +46,7 @@ class NavigatorBase:
         self.has_waited = False
         self.wait_after_first_frame = args.wait_after_first_frame
         self.full_point_cloud_offset = None
+        self.previous_matrix = None
 
         self.skip_until_circle_center = None
         self.skip_until_circle_center_cylinder = None
@@ -306,7 +307,7 @@ class NavigatorBase:
         # Run the alignment
         iterations = 25
         diffs = []
-        transformation_matrix = np.identity(4)
+        transformation_matrix = np.identity(4) if self.previous_matrix is None else self.previous_matrix
         for i in range(10):
             reg = self.matcher.match(source, target, trans_init=transformation_matrix, threshold=1, max_iterations=iterations)
 
@@ -317,7 +318,8 @@ class NavigatorBase:
             if diff < 1e-3:
                 break
 
-        self.registration_configs.append({
+        self.previous_matrix = transformation_matrix
+
         metadata = {
             "iterations": len(diffs) * iterations,
             "diffs": diffs,
