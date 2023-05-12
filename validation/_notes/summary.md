@@ -1,9 +1,11 @@
 #### Table of Contents
 * [Summary](#summary)
+* [Coordinate systems](#coordinate-systems)
 * [Data recording limitations](#data-recording-limitations)
 * [Matching GNSS coordinates against a LiDAR frame](#gnss-lidar)
 * [Differences between 10hz and 20hz](#10hz-vs-20hz)
 * [NICP parameters](#nicp-parameters)
+* [Navigation verification by SBET noise](#noise-verification)
 
 <a name="summary"></a>
 # Summary
