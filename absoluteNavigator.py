@@ -37,6 +37,9 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
             pbar.update(1)
 
+        tqdm.write("Point cloud metadata:")
+        tqdm.write(json.dumps(data, indent=4, sort_keys=True))
+
     def navigate_through_file(self):
         """ Runs through each frame in the file. For each pair of frames, use NICP
         to align the frames, then merge them and downsample the result. The transformation
