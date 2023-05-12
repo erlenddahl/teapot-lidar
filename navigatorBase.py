@@ -309,7 +309,8 @@ class NavigatorBase:
         diffs = []
         transformation_matrix = np.identity(4) if self.previous_matrix is None else self.previous_matrix
         for i in range(10):
-            reg = self.matcher.match(source, target, trans_init=transformation_matrix, threshold=1, max_iterations=iterations)
+            threshold = max(1, 3 - len(diffs))
+            reg = self.matcher.match(source, target, trans_init=transformation_matrix, threshold=threshold, max_iterations=iterations)
 
             # If the calculated transformation matrix is (almost) identical to the one we sent in, we are happy.
             diff = np.abs(np.mean(reg.transformation[0:3, 3]-transformation_matrix[0:3, 3]))
