@@ -352,7 +352,7 @@ class NavigatorBase:
         metadata = {
             "iterations": len(diffs) * iterations,
             "diffs": diffs,
-            "frame_ix": self.reader.get_current_frame_index(),
+            "frame_ix": actual_coordinate.frame_ix,
             "pcap": self.reader.get_pcap_path()
         }
         self.registration_configs.append(metadata)
