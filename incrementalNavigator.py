@@ -43,6 +43,9 @@ class LidarNavigator(NavigatorBase):
         for i in tqdm(range(1, self.frame_limit), total=self.frame_limit, initial=1, **self.tqdm_config):
             
             try:
+                
+                if self.args.use_actual_coordinate:
+                    self.current_estimated_coordinate = actual_coordinate.clone()
 
                 if self.merge_next_frame(): 
 

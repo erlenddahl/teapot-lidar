@@ -67,6 +67,9 @@ class AbsoluteLidarNavigator(NavigatorBase):
         for i in tqdm(range(1, self.frame_limit), total=self.frame_limit, initial=1, **self.tqdm_config):
             
             try:
+                
+                if self.args.use_actual_coordinate:
+                    self.current_estimated_coordinate = actual_coordinate.clone()
 
                 if self.merge_next_frame():
 
@@ -156,9 +159,12 @@ class AbsoluteLidarNavigator(NavigatorBase):
         partial_radius = self.args.cloud_part_radius
         pr = np.array([partial_radius, partial_radius, partial_radius])
 
+        previous_estimated_coordinate = self.current_estimated_coordinate.clone()
+
         # Keep a slightly larger partial cloud to make it quicker to extract the actual partial cloud
         # This reduced time usage from 27 to 9 seconds on first 20 frames of a random file.
-        c = self.current_estimated_coordinate.np()
+        c = previous_estimated_coordinate.np()
+
         if self.last_extracted_frame_coordinate is None or self.last_extracted_frame_coordinate.distance2d(self.current_estimated_coordinate) >= partial_radius * 0.8:
 
             bbox = o3d.geometry.AxisAlignedBoundingBox(min_bound=c - pr * 2, max_bound=c + pr * 2)

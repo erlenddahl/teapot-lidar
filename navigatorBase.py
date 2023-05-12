@@ -736,6 +736,7 @@ class NavigatorBase:
     @staticmethod
     def add_standard_and_parse_args(parser):
         parser.add_argument('--algorithm', type=str, default="NICP", required=False, help="Use this registration algorithm (see names in algorithmHelper.py).")
+        parser.add_argument('--use-actual-coordinate', dest='use_actual_coordinate', default=False, action='store_true', help="If set to true, the actual coordinate will be used as input for the registration instead of the estimated coordinate.")
         
         parser.add_argument('--skip-last-frame-in-pcap-file', type=bool, default=True, required=False, help="The last frame in each PCAP file is often corrupted. This flag makes the pcap reader skip the last frame in each file.")
         parser.add_argument('--build-cloud-after', type=int, default=1, required=False, help="How often registered frames should be added to the generated point cloud. 0 or lower deactivates the generated point cloud. 1 or higher generates a point cloud with details (and time usage) decreasing with higher numbers.")
