@@ -87,9 +87,6 @@ class LidarNavigator(NavigatorBase):
         if self.run_until_ix > 0 and self.reader.get_current_frame_index() >= self.run_until_ix:
             return False
 
-        # Rotate the frame using the current heading
-        self.rotate_frame(frame)
-
         # Estimate normals for the target frame (the source frame will always have
         # normals from the previous step).
         frame.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))

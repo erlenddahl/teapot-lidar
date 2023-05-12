@@ -153,8 +153,6 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         self.time("position extraction")
 
-        self.rotate_frame(frame)
-
         # Extract a part of the cloud around the actual position. This is the cloud we are going to register against.
         partial_radius = self.args.cloud_part_radius
         pr = np.array([partial_radius, partial_radius, partial_radius])
@@ -197,7 +195,7 @@ class AbsoluteLidarNavigator(NavigatorBase):
 
         self.time("frame normal estimation")
 
-        reg = self.run_registration(frame, partial_cloud, actual_coordinate)
+        reg = self.run_registration(frame, partial_cloud, previous_estimated_coordinate, actual_coordinate)
 
         # Update the visualization
         if self.preview_always:

@@ -302,8 +302,13 @@ class NavigatorBase:
         angle = math.atan2(dx, dy)
         return angle
 
+    def run_registration(self, target, source, previous_estimated_coordinate, actual_coordinate):
+    def run_registration(self, source, target, previous_estimated_coordinate, actual_coordinate):
 
-    def run_registration(self, source, target, actual_coordinate):
+        self.rotate_frame(source)
+
+        self.time("frame rotation")
+
         # Run the alignment
         iterations = 25
         diffs = []
