@@ -49,6 +49,7 @@ class NavigatorBase:
         self.wait_after_first_frame = args.wait_after_first_frame
         self.full_point_cloud_offset = None
         self.previous_matrix = None
+        self.frame_index_offset = 0
 
         self.skip_until_circle_center = None
         self.skip_until_circle_center_cylinder = None
@@ -269,7 +270,7 @@ class NavigatorBase:
     def get_current_actual_coordinate(self):
 
         # Retrieve the index of the currently processed frame
-        ix = self.reader.get_current_frame_index() - 1
+        ix = self.reader.get_current_frame_index() + self.frame_index_offset
 
         # The frame index from the readers is the index of the last
         # read frame. If we haven't started reading yet, it will 
