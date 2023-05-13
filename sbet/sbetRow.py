@@ -18,6 +18,8 @@ class SbetRow:
             self.lon = 0
             self.age = 0
             self.index = 0
+            self.roll = 0
+            self.pitch = 0
             self.heading = 0
             return
 
@@ -37,13 +39,15 @@ class SbetRow:
         self.alt = row["alt"]
         self.alt_raw = row["alt"]
         self.age = sow - row["time"]
+        self.roll = row["roll"]
+        self.pitch = row["pitch"]
         self.heading = row["heading"]
         self.index = index
         self.x = -1
         self.y = -1
 
     def __str__(self, include_lat_lon=True):
-        return f'ix={self.index}' + (f', lat={self.lat}, lon={self.lon}, heading={self.heading}' if include_lat_lon else '') + f', alt={self.alt}, x={self.x}, y={self.y}, time={self.sow}, age={self.age}'
+        return f'ix={self.index}' + (f', lat={self.lat}, lon={self.lon}, roll={self.roll}, pitch={self.pitch}, heading={self.heading}' if include_lat_lon else '') + f', alt={self.alt}, x={self.x}, y={self.y}, time={self.sow}, age={self.age}'
 
     def calculate_transformed(self, transformer, gps_epoch):
 
@@ -59,6 +63,8 @@ class SbetRow:
             "x": self.x,
             "y": self.y,
             "z": self.alt,
+            "roll": self.roll,
+            "pitch": self.pitch,
             "heading": self.heading
         }
 
@@ -72,10 +78,10 @@ class SbetRow:
         return json
 
     def get_csv_headers(self):
-        return ["index", "time", "lat", "lon", "alt", "heading", "x", "y"]
+        return ["index", "time", "lat", "lon", "alt", "roll", "pitch", "heading", "x", "y"]
 
     def get_csv(self):
-        return [self.index, self.sow, self.lat, self.lon, self.alt, self.heading, self.x, self.y]
+        return [self.index, self.sow, self.lat, self.lon, self.alt, self.roll, self.pitch, self.heading, self.x, self.y]
 
     def distance2d(self, p):
         dx = p.x - self.x

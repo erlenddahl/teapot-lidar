@@ -104,6 +104,8 @@ class SbetParser:
                 row["lat"] = float(row["lat"])
                 row["lon"] = float(row["lon"])
                 row["alt"] = float(row["alt"])
+                row["roll"] = float(row["roll"])
+                row["pitch"] = float(row["pitch"])
                 row["heading"] = float(row["heading"])
                 rows.append(row)
         return rows
@@ -113,7 +115,7 @@ class SbetParser:
     def read_latlon(sbet_filename, smrmsg_filename):
 
         (sbet, mmr) = read_sbet(sbet_filename, smrmsg_filename)
-        sbet = sbet[["time", "lat", "lon", "alt", "heading"]]
+        sbet = sbet[["time", "lat", "lon", "alt", "roll", "pitch", "heading"]]
         sbet["lat"] = sbet["lat"] * 180 / np.pi
         sbet["lon"] = sbet["lon"] * 180 / np.pi
         
