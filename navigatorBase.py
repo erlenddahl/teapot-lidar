@@ -49,7 +49,7 @@ class NavigatorBase:
         self.wait_after_first_frame = args.wait_after_first_frame
         self.full_point_cloud_offset = None
         self.previous_matrix = None
-        self.frame_index_offset = 2
+        self.frame_index_offset = 1
 
         self.skip_until_circle_center = None
         self.skip_until_circle_center_cylinder = None
