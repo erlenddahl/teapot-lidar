@@ -294,7 +294,7 @@ class NavigatorBase:
 
         # Rotate the frame using the current heading
         heading = coordinate.heading
-        R = frame.get_rotation_matrix_from_xyz((0, 0, self.get_corrected_heading(heading)))
+        R = frame.get_rotation_matrix_from_xyz((coordinate.roll, coordinate.pitch, self.get_corrected_heading(heading)))
         frame.rotate(R, center=[0,0,0])
         self.time("frame rotation")
 
