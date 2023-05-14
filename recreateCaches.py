@@ -29,7 +29,7 @@ if __name__ == "__main__":
             successes += 1
         except Exception as e:
             failures.append(pcap)
-            print("ERROR:", e)
+            tqdm.write(f"ERROR: {e}")
 
-    print("Succesful:", successes)
-    print("Failed:", failures)
+    tqdm.write(f"Succesful: {successes}")
+    tqdm.write(f"Failed: {failures}")
