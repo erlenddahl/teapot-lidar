@@ -6,6 +6,7 @@
 * [Differences between 10hz and 20hz](#10hz-vs-20hz)
 * [NICP parameters](#nicp-parameters)
 * [Navigation verification by SBET noise](#noise-verification)
+* [Point cloud voxel size](#pointcloud-voxels)
 
 <a name="summary"></a>
 # Summary
@@ -65,6 +66,11 @@ The image below shows results for the 10 first frames in a random trip with a co
 
 <a name="noise-verification"></a>
 ## Navigation verification by SBET noise
-In order to verify that the navigators are working as intended (not in any way based on the true trajectory except for the first input coordinate), the absoluteNavigator was tested using --sbet-noise 5 5 5 and --sbet-noise-from-frame-ix 10. This makes the true trajectory very noisy. If the navigator "cheats", the navigation will also be noisy. I wasn't.
+In order to verify that the navigators are working as intended (not in any way based on the true trajectory except for the first input coordinate), the absoluteNavigator was tested using --sbet-noise 5 5 5 and --sbet-noise-from-frame-ix 10. This makes the true trajectory very noisy. If the navigator "cheats", the navigation will also be noisy. I wasn't, confirming that the navigation is independent of the true trajectory.
 
 ![A demonstration of the behaviour with noisy true trajectory.](noised_sbet.png)
+
+<a name="pointcloud-voxels"></a>
+## Point cloud voxel size
+To save time usage when loading the point cloud and when running registrations, it is desireable to downsample the point cloud as much as possible.
+The voxel size in the point cloud has been shown to affect the registrations. A voxel size of 0.100 was deemed to be a good balance between time usage and accuracy, details can be found [here](pointcloud_downsampling.md).
