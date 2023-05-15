@@ -7,7 +7,7 @@
 	"run-until-y": 6887374.395,
 	"recreate-caches": true,
 	"max-frame-radius": 25,
-	"wait-after-first-frame": 60,
+	"wait-after-first-frame": 15,
 	"hide-point-cloud": true,
 	"save-after-first-frame": true,
 	"save-after-frames": 50,
