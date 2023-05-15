@@ -49,7 +49,7 @@ class NavigatorBase:
         self.wait_after_first_frame = args.wait_after_first_frame
         self.full_point_cloud_offset = None
         self.previous_matrix = None
-        self.frame_index_offset = 1
+        self.frame_index_offset = 0
 
         self.skip_until_circle_center = None
         self.skip_until_circle_center_cylinder = None
@@ -201,7 +201,7 @@ class NavigatorBase:
 
             # Translate the "run until" circle 
             self.run_until_circle_center.translate(-self.full_point_cloud_offset)
-            
+
             # Calculate the ending frame
             self.run_until_ix, coordinate = self.find_first_frame_entering_circle(self.run_until_circle_center)
             if self.run_until_ix < 0:

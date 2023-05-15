@@ -7,5 +7,6 @@ validation/*/*/video
 validation/*/results/*/*/*.laz
 validation/*/results/*/*/*.pcd
 validation/*/*/*.txt
+validation/testing
 __pycache__
 .vscode
