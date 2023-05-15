@@ -199,12 +199,11 @@ class NavigatorBase:
 
         if self.run_until_circle_center is not None:
 
-            # Calculate the ending frame
-            self.run_until_ix, coordinate = self.find_first_frame_entering_circle(self.run_until_circle_center)
-            
             # Translate the "run until" circle 
             self.run_until_circle_center.translate(-self.full_point_cloud_offset)
             
+            # Calculate the ending frame
+            self.run_until_ix, coordinate = self.find_first_frame_entering_circle(self.run_until_circle_center)
             if self.run_until_ix < 0:
                 raise Exception("The actual position never entered the circle given by --run-until-[x/y/radius] (" + str(self.run_until_circle_center.x) + ", " + str(self.run_until_circle_center.y) + ", " + str(self.run_until_circle_center.radius) + ").")
                         
