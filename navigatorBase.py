@@ -770,7 +770,7 @@ class NavigatorBase:
             for key in data:
 
                 # Allow prefixing keys with # to ignore them
-                if key.startswith("#"): 
+                if key.startswith("#"):
                     continue 
                     
                 arg_key = key.replace("--", "").replace("-", "_")
@@ -784,7 +784,7 @@ class NavigatorBase:
 
                 value = getattr(args, arg_key, None)
                 is_default = value == defaults[arg_key]
-                if value is None or is_default or arg_keys[arg_key] == False:
+                if value is None or value == "[load]" or is_default or arg_keys[arg_key] == False:
                     setattr(args, arg_key, data[key])
 
     @staticmethod
