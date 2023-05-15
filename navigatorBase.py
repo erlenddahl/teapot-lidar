@@ -205,6 +205,9 @@ class NavigatorBase:
             # Translate the "run until" circle 
             self.run_until_circle_center.translate(-self.full_point_cloud_offset)
             
+            if self.run_until_ix < 0:
+                raise Exception("The actual position never entered the circle given by --run-until-[x/y/radius] (" + str(self.run_until_circle_center.x) + ", " + str(self.run_until_circle_center.y) + ", " + str(self.run_until_circle_center.radius) + ").")
+                        
             # And set the altitude on the skip-circle to the same as the first coordinate to enter the circle,
             # to allow it to be visualized together with the movement paths.
             self.run_until_circle_center.alt = (coordinate.alt if coordinate is not None else self.initial_coordinate.alt) - 5;
