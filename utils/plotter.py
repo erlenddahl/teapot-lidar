@@ -152,17 +152,6 @@ class Plotter:
         return {
             "summary": self.get_summary(),
             "timings": timer.timings if timer is not None else None,
-            "distances": self.distances,
-            "timeUsages": self.timeUsages,
-            "rmses": self.rmses,
-            "fitnesses": self.fitnesses,
-            "position_error_along_heading": self.position_error_along_heading,
-            "position_error_across_heading": self.position_error_across_heading,
-            "position_error_x": self.position_error_x,
-            "position_error_y": self.position_error_y,
-            "position_error_z": self.position_error_z,
-            "position_error_2d": self.position_error_2d,
-            "position_error_3d": self.position_error_3d
         }
 
     def save_plot(self, path):

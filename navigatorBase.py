@@ -359,9 +359,11 @@ class NavigatorBase:
             "iterations": len(diffs) * iterations,
             "diffs": diffs,
             "frame_ix": actual_coordinate.frame_ix,
-            "pcap": self.reader.get_pcap_path()
+            "pcap": self.reader.get_pcap_path(),
+            "threshold": threshold,
+            "fitness": reg.fitness,
+            "rmse": reg.inlier_rmse
         }
-        self.registration_configs.append(metadata)
 
         self.check_save_frame_pair(source, target, reg)
 
@@ -403,6 +405,22 @@ class NavigatorBase:
         tqdm.write(f"  Errors :: x: {self.plot.position_error_x[-1]:.2f}, y: {self.plot.position_error_y[-1]:.2f}, z: {self.plot.position_error_z[-1]:.2f}, along: {self.plot.position_error_along_heading[-1]:.2f}, across: {self.plot.position_error_across_heading[-1]:.2f} 2D: {self.plot.position_error_2d[-1]:.2f}, 3D: {self.plot.position_error_3d[-1]:.2f}")
         tqdm.write(f"  Actual heading: {self.get_current_actual_coordinate().heading:.2f}, estimated heading: {self.current_estimated_coordinate.heading:.2f}")
 
+        metadata["registration_time"] = registration_time
+        metadata["estimated_position"] = self.current_estimated_coordinate.json()
+        metadata["actual_position"] = actual_coordinate.json()
+        metadata["movement"] = movement.tolist()
+        metadata["distance"] = self.plot.distances[-1]
+        metadata["errors"] = {
+            "x": self.plot.position_error_x[-1],
+            "y": self.plot.position_error_y[-1],
+            "z": self.plot.position_error_z[-1],
+            "along": self.plot.position_error_along_heading[-1],
+            "across": self.plot.position_error_across_heading[-1],
+            "2d": self.plot.position_error_2d[-1],
+            "3d": self.plot.position_error_3d[-1]
+        }
+        self.registration_configs.append(metadata)
+
         # Append the new movement to the path
         self.movement_path.points.append(self.current_estimated_coordinate.np())
 
@@ -443,7 +461,6 @@ class NavigatorBase:
     def get_results(self):
         data = self.plot.get_json(self.timer)
 
-        data["movement"] = np.asarray(self.movement_path.points).tolist()
         data["algorithm"] = self.matcher.name
 
         return data
@@ -645,10 +662,8 @@ class NavigatorBase:
         
         results["initial_coordinate"] = self.initial_coordinate.json(True)
         results["current_estimated_coordinate"] = self.current_estimated_coordinate.json()
-        results["estimated_coordinates"] = [x.json() for x in self.estimated_coordinates]
-        results["actual_coordinates"] = [x.json(True) for x in self.actual_coordinates]
-        results["registration_configs"] = self.registration_configs
         results["point_cloud_offset"] = self.full_point_cloud_offset.tolist()
+        results["metadata"] = self.registration_configs
 
         status = "ongoing"
         if finished:
