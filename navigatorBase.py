@@ -406,8 +406,8 @@ class NavigatorBase:
         tqdm.write(f"  Actual heading: {self.get_current_actual_coordinate().heading:.2f}, estimated heading: {self.current_estimated_coordinate.heading:.2f}")
 
         metadata["registration_time"] = registration_time
-        metadata["estimated_position"] = self.current_estimated_coordinate.json()
-        metadata["actual_position"] = actual_coordinate.json()
+        metadata["estimated_position"] = self.to_actual(self.current_estimated_coordinate).json()
+        metadata["actual_position"] = self.to_actual(actual_coordinate).json()
         metadata["movement"] = movement.tolist()
         metadata["distance"] = self.plot.distances[-1]
         metadata["errors"] = {
