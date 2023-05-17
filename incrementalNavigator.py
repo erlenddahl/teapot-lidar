@@ -62,6 +62,7 @@ class LidarNavigator(NavigatorBase):
             except Exception as e:
                 
                 navigation_exception = e
+                print(e)
                 
                 break
 
