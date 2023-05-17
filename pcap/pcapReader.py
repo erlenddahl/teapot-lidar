@@ -1,4 +1,5 @@
 from ouster import client, pcap
+from ouster.client.core import ClientTimeout
 import open3d as o3d
 from pcap.colormaps import colorize, normalize
 from sbet.sbetParser import SbetParser
@@ -86,7 +87,15 @@ class PcapReader:
                 next(iterator)
             self.last_read_frame_ix += 1
             self.last_read_frame_ix_including_skips += 1
-            return next(iterator)
+            
+            # If reading the frame fails (due to slow hard drive/lots of traffic),
+            # try again up to 20 times to avoid breaking a long-running analysis.
+            for i in range(20):
+                try:
+                    return next(iterator)
+                except ClientTimeout:
+                    continue
+
         except StopIteration:
             return None
 
