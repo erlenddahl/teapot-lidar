@@ -72,6 +72,9 @@ class SbetParser:
                 return sbetRow
 
         self.current_index = 0
+
+        raise Exception(f"Failed to find a coordinate for the frame at index={frame_ix}, time={timestamp}, sow={sow}. Sbet file has coordinates from sow={self.rows[0]['time']} to sow={self.rows[-1]['time']}")
+
         return None
 
     def get_gps_epoch(self, pcap_filename):

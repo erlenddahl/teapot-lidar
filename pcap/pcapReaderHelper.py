@@ -82,6 +82,9 @@ class PcapReaderHelper:
         if len(jsons) != len(pcaps):
             raise ValueError("Number of JSON files does not match number of PCAP files.")
 
+        if len(pcaps) < 1:
+            raise Exception("Found no PCAP files in the given location(s).")
+
         if len(pcaps) == 1:
             return PcapReader(pcaps[0], jsons[0], skip_frames, args=args)
         else:

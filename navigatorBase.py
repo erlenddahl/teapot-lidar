@@ -309,7 +309,7 @@ class NavigatorBase:
         return heading_corrected
 
     def calculate_heading(self, prev, curr):
-        """ Calculates a headinv between the previous and current coordinates.
+        """ Calculates a heading between the previous and current coordinates.
         Heading 0 is straight North, PI/2 straight East, PI or -PI straight South, and -PI/2 straight West.
         """
 
