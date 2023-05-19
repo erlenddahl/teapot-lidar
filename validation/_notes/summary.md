@@ -18,9 +18,9 @@ The analysis was performed by processing the PCAP files for each of the collecte
 
 Site specific details and results can be found in the following documents:
 - [Lillehammer](./../Lillehammer/results/summary.md)
-- Dovre (not ready)
 - Drivdalen (not ready)
 - Lismarka (not ready)
+- [Dovre](./../Dovre/results/summary.md)
 
 <a name="coordinate-systems"></a>
 ## Coordinate systems
