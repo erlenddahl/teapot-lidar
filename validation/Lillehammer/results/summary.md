@@ -27,25 +27,25 @@
 | Trip# | Frequency | Start time | Comment |
 |-------|-----------|------------|---------|
 | 1     | 10 hz     | 14:43      | No SBET data, unusable. Confirmed by KV. |
-| 2 | 10 hz | 15:09 | No SBET data, unusable. Confirmed by KV. |
-| 3 | 10 hz | 19:45 | OK |
-| 4 | 10 hz | 20:01 | OK |
-| 5 | 20 hz | 20:19 | OK |
-| 6 | 20 hz | 20:35 | OK, slight detour at 255855.01,6784094.03 |
-| 7 | 20 hz | 21:17 | OK |
+| 2     | 10 hz     | 15:09      | No SBET data, unusable. Confirmed by KV. |
+| 3     | 10 hz     | 19:45      | OK |
+| 4     | 10 hz     | 20:01      | OK |
+| 5     | 20 hz     | 20:19      | OK |
+| 6     | 20 hz     | 20:35      | OK, slight detour at 255855.01,6784094.03 |
+| 7     | 20 hz     | 21:17      | OK |
 
 
 <a name="2022"></a>
 ### February 16th 2022 (with snow):
 | Trip# | Frequency | Start time | Comment |
 |-------|-----------|------------|---------|
-| 1 | 10 hz | 19:53 | OK |
-| 2 | 10 hz | 20:04 | OK, navigation issues after 579295.42,6776465.81 |
-| 3 | 20 hz | 20:27 | OK, missing one PCAP file in the beginning, but we skip that part of the route in the analysis. |
-| 4 | 20 hz | 20:38 | OK |
-| 5 | 20 hz | 20:48 | OK |
+| 1     | 10 hz     | 19:53      | OK |
+| 2     | 10 hz     | 20:04      | OK, navigation issues after 579295.42,6776465.81 |
+| 3     | 20 hz     | 20:27      | OK, missing one PCAP file in the beginning, but we skip that part of the route in the analysis. |
+| 4     | 20 hz     | 20:38      | OK |
+| 5     | 20 hz     | 20:48      | OK |
 
-The image below shows the driving route on a map of Lillehammer. All 10 valid trips are drawn, but as they are very similar, it's hard to differentiate them in this plot. The brown detour on the right hand side is part of the 2021 trips -- they started at the parkin spot at the bottom end of the brown arm, and drove north before entering the standard route. The 2022 trips started approximately at the same spot, but drove west, directly entering the route. Because of this discrepancy, and because trip 2022-3 is missing a PCAP file, the analysis start point is set to be after all trips are driving the same route without issues (white circle), and because of the navigation issues in trip 2022-2, the end point is set to the last left turn (black circle).
+The image below shows the driving route on a map of Lillehammer. All 10 valid trips are drawn, but as they are very similar, it's hard to differentiate them in this plot. The brown detour on the right hand side is part of the 2021 trips -- they started at the parking spot at the bottom end of the brown arm, and drove north before entering the standard route. The 2022 trips started approximately at the same spot, but drove west, directly entering the route. Because of this discrepancy, and because trip 2022-3 is missing a PCAP file, the analysis start point is set to be after all trips are driving the same route without issues (white circle), and because of the navigation issues in trip 2022-2, the end point is set to the last left turn (black circle).
 
 ![The driving route shown on a map.](full_route.png)
 
@@ -105,8 +105,6 @@ The numbers in the four results column represents the results for that combinati
 - N/P: This trip has not yet been processed.
 
 _**Meters driven before failure**_
-
-All entries with ~3200 meters did complete the entire route, but because of slight variances in driving routes, the lengths vary slightly.
 
 | Trip#   | Bare/Bare | Bare/Snow | Snow/Bare | Snow/Snow |
 |---------|-----------|-----------|-----------|-----------|
