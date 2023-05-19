@@ -79,25 +79,26 @@ This section is about Dovre specifically. See [this document](./../../_notes/sum
 To make the results comparable, the trip analyses all started at the same point. This point is indicated with the white circle on the image above. The analyses ran until failure, or until the actual position reached the end circle.
 
 **Common command line arguments:**
+
 Differs by trip direction. Command line arguments are identical except for switched skip-until and run-until arguments.
 
 West-East:
 ```
 {
-	"preview": "always",
-	"build-cloud-after": 5,
-	"skip-until-x": 515453.627,
-	"skip-until-y": 6887374.395,
-	"run-until-x": 510862.556,
-	"run-until-y": 6884823.316,
-	"recreate-caches": true,
-	"max-frame-radius": 25,
-	"wait-after-first-frame": 15,
-	"hide-point-cloud": true,
-	"save-after-first-frame": true,
-	"save-after-frames": 50,
-	"raise-on-2d-error": 25,
-	"raise-on-3d-error": 50,
+    "preview": "always",
+    "build-cloud-after": 5,
+    "skip-until-x": 515453.627,
+    "skip-until-y": 6887374.395,
+    "run-until-x": 510862.556,
+    "run-until-y": 6884823.316,
+    "recreate-caches": true,
+    "max-frame-radius": 25,
+    "wait-after-first-frame": 15,
+    "hide-point-cloud": true,
+    "save-after-first-frame": true,
+    "save-after-frames": 50,
+    "raise-on-2d-error": 25,
+    "raise-on-3d-error": 50,
     "sbet-crs-from": 4937,
     "sbet-crs-to": 5972,
     "use-actual-coordinate": false,
