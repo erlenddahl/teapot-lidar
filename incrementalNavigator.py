@@ -98,8 +98,10 @@ class LidarNavigator(NavigatorBase):
         actual_coordinate = self.get_current_actual_coordinate().clone()
         self.actual_position_cylinder.translate(actual_coordinate.np() + np.array([0, 0, self.position_cylinder_height / 2]), relative=False)
 
+        previous_estimated_coordinate = self.current_estimated_coordinate.clone()
+
         # Run the alignment
-        reg = self.run_registration(frame, self.previous_frame, actual_coordinate)
+        reg = self.run_registration(frame, self.previous_frame, previous_estimated_coordinate, actual_coordinate)
 
         self.transform_and_add_to_merged_frame(frame, reg)
 

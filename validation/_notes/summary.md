@@ -10,7 +10,7 @@
 
 <a name="summary"></a>
 # Summary
-This analysis is based on data collected from four locations in two different data collection campaigns (one without snow in 2021, and one with snow in early 2022) using a vehicle equipped with high-precision GNSS equipment, an IMU, and a LiDAR. The vehicle drove 6-8 trips each time in each location, about half of the trips with 10hz, and the other half with 20hz.
+This analysis is based on data collected from four locations in two different data collection campaigns (one without snow in 2021, and one with snow in early 2022) using a vehicle equipped with high-precision GNSS equipment, an IMU, and a LiDAR. The vehicle drove 6-8 trips each time in each location, about half of the trips with 10hz, and the other half with 20hz. The data collection was performed by The Norwegian Mapping Authority (NMA).
 
 The collected LiDAR data was stored as PCAP files, and the GNSS coordinates as SBET files. Coordinates from the SBET files were matched against LiDAR frames in the PCAP files using their timestamps.
 
@@ -40,7 +40,7 @@ To avoid registration problems every time the analysis progressed from one file 
 
 <a name="gnss-lidar"></a>
 ## Matching GNSS coordinates against a LiDAR frame
-A LiDAR frame is recorded while the LiDAR is spinning around. Recording a frame takes approximately X milliseconds, as shown by the series of timestamps recorded in the meta data of each frame. As the vehicle is moving while this happens, its position will have changed between the start and end of each frame. Testing showed that using the last timestamp in a frame gave the best match against the timestamps on the GNSS coordinates.
+A LiDAR frame is recorded while the LiDAR is spinning around. Recording a frame takes approximately 1-2 milliseconds, as shown by the series of timestamps recorded in the meta data of each frame. As the vehicle is moving while this happens, its position will have changed between the start and end of each frame. This movement is not very large; at 40 km/h, the vehicle would have moved 1.65 centimetres in 1.5 milliseconds. Testing showed that using the last timestamp in a frame gave the best match against the timestamps on the GNSS coordinates.
 
 <a name="10hz-vs-20hz"></a>
 ## Differences between 10hz and 20hz
@@ -48,7 +48,7 @@ The PCAP files with 20hz have approximately 0.135 meters between frames (dependi
 
 ![A demonstration of the differences between 10 and 20 hz.](10hz_vs_20hz.png)
 
-10hz can be simulated from 20hz files by running them with --skip-every-frame 1, which makes the navigator skip every second frame. This was tested on a few runs of the Lillehammer 2021 dataset, and showed that [TODO: conclusion]
+10hz can be simulated from 20hz files by running them with --skip-every-frame 1, which makes the navigator skip every second frame. The results from the full analyses showed that while 10hz usually was enough for datasets from the same year, 20hz gave noticeably better results when using datasets with snow against point clouds without, and the other way around.
 
 <a name="nicp-parameters"></a>
 ## NICP parameters
