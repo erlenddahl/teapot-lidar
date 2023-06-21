@@ -82,20 +82,20 @@ Differs by trip direction. Command line arguments are identical except for switc
 North-South:
 ```
 {
-	"preview": "always",
-	"build-cloud-after": 5,
-	"skip-until-x": 533125.505,
-	"skip-until-y": 6916529.301,
-	"run-until-x": 532188.611,
-	"run-until-y": 6911485.961,
-	"recreate-caches": true,
-	"max-frame-radius": 25,
-	"wait-after-first-frame": 15,
-	"hide-point-cloud": true,
-	"save-after-first-frame": true,
-	"save-after-frames": 50,
-	"raise-on-2d-error": 25,
-	"raise-on-3d-error": 50,
+    "preview": "always",
+    "build-cloud-after": 5,
+    "skip-until-x": 533125.505,
+    "skip-until-y": 6916529.301,
+    "run-until-x": 532188.611,
+    "run-until-y": 6911485.961,
+    "recreate-caches": true,
+    "max-frame-radius": 25,
+    "wait-after-first-frame": 15,
+    "hide-point-cloud": true,
+    "save-after-first-frame": true,
+    "save-after-frames": 50,
+    "raise-on-2d-error": 25,
+    "raise-on-3d-error": 50,
     "sbet-crs-from": 4937,
     "sbet-crs-to": 5972,
     "use-actual-coordinate": false,
@@ -106,20 +106,20 @@ North-South:
 South-North:
 ```
 {
-	"preview": "always",
-	"build-cloud-after": 5,
-	"skip-until-x": 532188.611,
-	"skip-until-y": 6911485.961,
-	"run-until-x": 533125.505,
-	"run-until-y": 6916529.301,
-	"recreate-caches": true,
-	"max-frame-radius": 25,
-	"wait-after-first-frame": 15,
-	"hide-point-cloud": true,
-	"save-after-first-frame": true,
-	"save-after-frames": 50,
-	"raise-on-2d-error": 25,
-	"raise-on-3d-error": 50,
+    "preview": "always",
+    "build-cloud-after": 5,
+    "skip-until-x": 532188.611,
+    "skip-until-y": 6911485.961,
+    "run-until-x": 533125.505,
+    "run-until-y": 6916529.301,
+    "recreate-caches": true,
+    "max-frame-radius": 25,
+    "wait-after-first-frame": 15,
+    "hide-point-cloud": true,
+    "save-after-first-frame": true,
+    "save-after-frames": 50,
+    "raise-on-2d-error": 25,
+    "raise-on-3d-error": 50,
     "sbet-crs-from": 4937,
     "sbet-crs-to": 5972,
     "use-actual-coordinate": false,
@@ -341,4 +341,37 @@ python absoluteNavigator.py --pcap "validation\Drivdalen\2022-01-26\pcap\7_sorov
 python absoluteNavigator.py --pcap "validation\Drivdalen\2022-01-26\pcap\8_nordover_10hz" --sbet "validation\Drivdalen\2022-01-26\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Drivdalen\2022-01-26\pointcloud\combined_100.pcd" --save-to "validation\Drivdalen\results\ABS, PCAP2022, PC2022\8_nordover_10hz" --load-arguments "validation\Drivdalen\default-arguments.json" --preview never
 python absoluteNavigator.py --pcap "validation\Drivdalen\2022-01-26\pcap\9_sorover_21Hz" --sbet "validation\Drivdalen\2022-01-26\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Drivdalen\2022-01-26\pointcloud\combined_100.pcd" --save-to "validation\Drivdalen\results\ABS, PCAP2022, PC2022\9_sorover_10hz" --load-arguments "validation\Drivdalen\default-arguments-reversed.json" --preview never
 python absoluteNavigator.py --pcap "validation\Drivdalen\2022-01-26\pcap\10_nordover_21Hz" --sbet "validation\Drivdalen\2022-01-26\navigation\sbet-output-UTC-1000.out" --point-cloud "validation\Drivdalen\2022-01-26\pointcloud\combined_100.pcd" --save-to "validation\Drivdalen\results\ABS, PCAP2022, PC2022\10_nordover_10hz" --load-arguments "validation\Drivdalen\default-arguments.json" --preview never
+```
+
+
+<a name="inc-pcap2021"></a>
+### Incremental, PCAPs from 2021
+
+```
+python incrementalNavigator.py --pcap "validation\Drivdalen\2021-10-20\pcap\1_ned_10hz" --sbet "validation\Drivdalen\2021-10-20\navigation\sbet-output-UTC-1000.out" --save-to "validation\Drivdalen\results\INC, PCAP2021\1_ned_10hz" --load-arguments "validation\Drivdalen\default-arguments.json" --preview never
+python incrementalNavigator.py --pcap "validation\Drivdalen\2021-10-20\pcap\1_opp_10hz" --sbet "validation\Drivdalen\2021-10-20\navigation\sbet-output-UTC-1000.out" --save-to "validation\Drivdalen\results\INC, PCAP2021\1_opp_10hz" --load-arguments "validation\Drivdalen\default-arguments-reversed.json" --preview never
+python incrementalNavigator.py --pcap "validation\Drivdalen\2021-10-20\pcap\2_ned_10hz" --sbet "validation\Drivdalen\2021-10-20\navigation\sbet-output-UTC-1000.out" --save-to "validation\Drivdalen\results\INC, PCAP2021\2_ned_10hz" --load-arguments "validation\Drivdalen\default-arguments.json" --preview never
+python incrementalNavigator.py --pcap "validation\Drivdalen\2021-10-20\pcap\2_opp_10hz" --sbet "validation\Drivdalen\2021-10-20\navigation\sbet-output-UTC-1000.out" --save-to "validation\Drivdalen\results\INC, PCAP2021\2_opp_10hz" --load-arguments "validation\Drivdalen\default-arguments-reversed.json" --preview never
+python incrementalNavigator.py --pcap "validation\Drivdalen\2021-10-20\pcap\3_ned_20hz" --sbet "validation\Drivdalen\2021-10-20\navigation\sbet-output-UTC-1000.out" --save-to "validation\Drivdalen\results\INC, PCAP2021\3_ned_20hz" --load-arguments "validation\Drivdalen\default-arguments.json" --preview never
+python incrementalNavigator.py --pcap "validation\Drivdalen\2021-10-20\pcap\3_opp_20hz" --sbet "validation\Drivdalen\2021-10-20\navigation\sbet-output-UTC-1000.out" --save-to "validation\Drivdalen\results\INC, PCAP2021\3_opp_20hz" --load-arguments "validation\Drivdalen\default-arguments-reversed.json" --preview never
+python incrementalNavigator.py --pcap "validation\Drivdalen\2021-10-20\pcap\4_ned_20hz" --sbet "validation\Drivdalen\2021-10-20\navigation\sbet-output-UTC-1000.out" --save-to "validation\Drivdalen\results\INC, PCAP2021\4_ned_20hz" --load-arguments "validation\Drivdalen\default-arguments.json" --preview never
+python incrementalNavigator.py --pcap "validation\Drivdalen\2021-10-20\pcap\4_opp_20hz" --sbet "validation\Drivdalen\2021-10-20\navigation\sbet-output-UTC-1000.out" --save-to "validation\Drivdalen\results\INC, PCAP2021\4_opp_20hz" --load-arguments "validation\Drivdalen\default-arguments-reversed.json" --preview never
+python incrementalNavigator.py --pcap "validation\Drivdalen\2021-10-20\pcap\5_ned_20hz" --sbet "validation\Drivdalen\2021-10-20\navigation\sbet-output-UTC-1000.out" --save-to "validation\Drivdalen\results\INC, PCAP2021\5_ned_20hz" --load-arguments "validation\Drivdalen\default-arguments.json" --preview never
+python incrementalNavigator.py --pcap "validation\Drivdalen\2021-10-20\pcap\5_opp_20hz" --sbet "validation\Drivdalen\2021-10-20\navigation\sbet-output-UTC-1000.out" --save-to "validation\Drivdalen\results\INC, PCAP2021\5_opp_20hz" --load-arguments "validation\Drivdalen\default-arguments-reversed.json" --preview never
+```
+
+<a name="inc-pcap2022"></a>
+### Incremental, PCAPs from 2022
+
+```
+python incrementalNavigator.py --pcap "validation\Drivdalen\2022-01-26\pcap\1_sorover_20hz" --sbet "validation\Drivdalen\2022-01-26\navigation\sbet-output-UTC-1000.out" --save-to "validation\Drivdalen\results\INC, PCAP2022\1_sorover_20hz" --load-arguments "validation\Drivdalen\default-arguments-reversed.json" --preview never
+python incrementalNavigator.py --pcap "validation\Drivdalen\2022-01-26\pcap\2_nordover_20hz" --sbet "validation\Drivdalen\2022-01-26\navigation\sbet-output-UTC-1000.out" --save-to "validation\Drivdalen\results\INC, PCAP2022\2_nordover_20hz" --load-arguments "validation\Drivdalen\default-arguments.json" --preview never
+python incrementalNavigator.py --pcap "validation\Drivdalen\2022-01-26\pcap\3_sorover_20hz" --sbet "validation\Drivdalen\2022-01-26\navigation\sbet-output-UTC-1000.out" --save-to "validation\Drivdalen\results\INC, PCAP2022\3_sorover_20hz" --load-arguments "validation\Drivdalen\default-arguments-reversed.json" --preview never
+python incrementalNavigator.py --pcap "validation\Drivdalen\2022-01-26\pcap\4_nordover_20hz" --sbet "validation\Drivdalen\2022-01-26\navigation\sbet-output-UTC-1000.out" --save-to "validation\Drivdalen\results\INC, PCAP2022\4_nordover_20hz" --load-arguments "validation\Drivdalen\default-arguments.json" --preview never
+python incrementalNavigator.py --pcap "validation\Drivdalen\2022-01-26\pcap\5_sorover_20hz" --sbet "validation\Drivdalen\2022-01-26\navigation\sbet-output-UTC-1000.out" --save-to "validation\Drivdalen\results\INC, PCAP2022\5_sorover_20hz" --load-arguments "validation\Drivdalen\default-arguments-reversed.json" --preview never
+python incrementalNavigator.py --pcap "validation\Drivdalen\2022-01-26\pcap\6_nordover_20hz" --sbet "validation\Drivdalen\2022-01-26\navigation\sbet-output-UTC-1000.out" --save-to "validation\Drivdalen\results\INC, PCAP2022\6_nordover_20hz" --load-arguments "validation\Drivdalen\default-arguments.json" --preview never
+python incrementalNavigator.py --pcap "validation\Drivdalen\2022-01-26\pcap\7_sorover_10hz" --sbet "validation\Drivdalen\2022-01-26\navigation\sbet-output-UTC-1000.out" --save-to "validation\Drivdalen\results\INC, PCAP2022\7_sorover_10hz" --load-arguments "validation\Drivdalen\default-arguments-reversed.json" --preview never
+python incrementalNavigator.py --pcap "validation\Drivdalen\2022-01-26\pcap\8_nordover_10hz" --sbet "validation\Drivdalen\2022-01-26\navigation\sbet-output-UTC-1000.out" --save-to "validation\Drivdalen\results\INC, PCAP2022\8_nordover_10hz" --load-arguments "validation\Drivdalen\default-arguments.json" --preview never
+python incrementalNavigator.py --pcap "validation\Drivdalen\2022-01-26\pcap\9_sorover_21Hz" --sbet "validation\Drivdalen\2022-01-26\navigation\sbet-output-UTC-1000.out" --save-to "validation\Drivdalen\results\INC, PCAP2022\9_sorover_10hz" --load-arguments "validation\Drivdalen\default-arguments-reversed.json" --preview never
+python incrementalNavigator.py --pcap "validation\Drivdalen\2022-01-26\pcap\10_nordover_21Hz" --sbet "validation\Drivdalen\2022-01-26\navigation\sbet-output-UTC-1000.out" --save-to "validation\Drivdalen\results\INC, PCAP2022\10_nordover_10hz" --load-arguments "validation\Drivdalen\default-arguments.json" --preview never
 ```

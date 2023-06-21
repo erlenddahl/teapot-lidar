@@ -82,20 +82,20 @@ Differs by trip direction. Command line arguments are identical except for switc
 West-East:
 ```
 {
-	"preview": "always",
-	"build-cloud-after": 5,
-	"skip-until-x": 581089.271,
-	"skip-until-y": 6773020.305,
-	"run-until-x": 583937.3003,
-	"run-until-y": 6771878.0647,
-	"recreate-caches": true,
-	"max-frame-radius": 25,
-	"wait-after-first-frame": 15,
-	"hide-point-cloud": true,
-	"save-after-first-frame": true,
-	"save-after-frames": 50,
-	"raise-on-2d-error": 25,
-	"raise-on-3d-error": 50,
+    "preview": "always",
+    "build-cloud-after": 5,
+    "skip-until-x": 581089.271,
+    "skip-until-y": 6773020.305,
+    "run-until-x": 583937.3003,
+    "run-until-y": 6771878.0647,
+    "recreate-caches": true,
+    "max-frame-radius": 25,
+    "wait-after-first-frame": 15,
+    "hide-point-cloud": true,
+    "save-after-first-frame": true,
+    "save-after-frames": 50,
+    "raise-on-2d-error": 25,
+    "raise-on-3d-error": 50,
     "sbet-crs-from": 4937,
     "sbet-crs-to": 5972,
     "use-actual-coordinate": false,
@@ -106,20 +106,20 @@ West-East:
 East-West:
 ```
 {
-	"preview": "always",
-	"build-cloud-after": 5,
-	"skip-until-x": 583937.3003,
-	"skip-until-y": 6771878.0647,
-	"run-until-x": 581089.271,
-	"run-until-y": 6773020.305,
-	"recreate-caches": true,
-	"max-frame-radius": 25,
-	"wait-after-first-frame": 15,
-	"hide-point-cloud": true,
-	"save-after-first-frame": true,
-	"save-after-frames": 50,
-	"raise-on-2d-error": 25,
-	"raise-on-3d-error": 50,
+    "preview": "always",
+    "build-cloud-after": 5,
+    "skip-until-x": 583937.3003,
+    "skip-until-y": 6771878.0647,
+    "run-until-x": 581089.271,
+    "run-until-y": 6773020.305,
+    "recreate-caches": true,
+    "max-frame-radius": 25,
+    "wait-after-first-frame": 15,
+    "hide-point-cloud": true,
+    "save-after-first-frame": true,
+    "save-after-frames": 50,
+    "raise-on-2d-error": 25,
+    "raise-on-3d-error": 50,
     "sbet-crs-from": 4937,
     "sbet-crs-to": 5972,
     "use-actual-coordinate": false,
@@ -341,4 +341,37 @@ python absoluteNavigator.py --pcap "validation\Lismarka\2022-02-16\pcap\4_ost_20
 python absoluteNavigator.py --pcap "validation\Lismarka\2022-02-16\pcap\4_vest_20hz" --sbet "validation\Lismarka\2022-02-16\navigation\sbet-output.out" --point-cloud "validation\Lismarka\2022-02-16\pointcloud\combined_100.pcd" --save-to "validation\Lismarka\results\ABS, PCAP2022, PC2022\4_vest_20hz" --load-arguments "validation\Lismarka\default-arguments-reversed.json" --preview never
 python absoluteNavigator.py --pcap "validation\Lismarka\2022-02-16\pcap\5_ost_20Hz" --sbet "validation\Lismarka\2022-02-16\navigation\sbet-output.out" --point-cloud "validation\Lismarka\2022-02-16\pointcloud\combined_100.pcd" --save-to "validation\Lismarka\results\ABS, PCAP2022, PC2022\5_ost_20hz" --load-arguments "validation\Lismarka\default-arguments.json" --preview never
 python absoluteNavigator.py --pcap "validation\Lismarka\2022-02-16\pcap\5_vest_20Hz" --sbet "validation\Lismarka\2022-02-16\navigation\sbet-output.out" --point-cloud "validation\Lismarka\2022-02-16\pointcloud\combined_100.pcd" --save-to "validation\Lismarka\results\ABS, PCAP2022, PC2022\5_vest_20hz" --load-arguments "validation\Lismarka\default-arguments-reversed.json" --preview never
+```
+
+
+<a name="inc-pcap2021"></a>
+### Incremental, PCAPs from 2021
+
+```
+python incrementalNavigator.py --pcap "validation\Lismarka\2021-10-22\pcap\1_ost_10hz" --sbet "validation\Lismarka\2021-10-22\navigation\sbet-output-UTC-1000.out" --save-to "validation\Lismarka\results\INC, PCAP2021\1_ost_10hz" --load-arguments "validation\Lismarka\default-arguments.json" --preview never
+python incrementalNavigator.py --pcap "validation\Lismarka\2021-10-22\pcap\1_vest_10hz" --sbet "validation\Lismarka\2021-10-22\navigation\sbet-output-UTC-1000.out" --save-to "validation\Lismarka\results\INC, PCAP2021\1_vest_10hz" --load-arguments "validation\Lismarka\default-arguments-reversed.json" --preview never
+python incrementalNavigator.py --pcap "validation\Lismarka\2021-10-22\pcap\2_ost_10hz" --sbet "validation\Lismarka\2021-10-22\navigation\sbet-output-UTC-1000.out" --save-to "validation\Lismarka\results\INC, PCAP2021\2_ost_10hz" --load-arguments "validation\Lismarka\default-arguments.json" --preview never
+python incrementalNavigator.py --pcap "validation\Lismarka\2021-10-22\pcap\2_vest_10hz" --sbet "validation\Lismarka\2021-10-22\navigation\sbet-output-UTC-1000.out" --save-to "validation\Lismarka\results\INC, PCAP2021\2_vest_10hz" --load-arguments "validation\Lismarka\default-arguments-reversed.json" --preview never
+python incrementalNavigator.py --pcap "validation\Lismarka\2021-10-22\pcap\3_ost_20hz" --sbet "validation\Lismarka\2021-10-22\navigation\sbet-output-UTC-1000.out" --save-to "validation\Lismarka\results\INC, PCAP2021\3_ost_20hz" --load-arguments "validation\Lismarka\default-arguments.json" --preview never
+python incrementalNavigator.py --pcap "validation\Lismarka\2021-10-22\pcap\3_vest_20hz" --sbet "validation\Lismarka\2021-10-22\navigation\sbet-output-UTC-1000.out" --save-to "validation\Lismarka\results\INC, PCAP2021\3_vest_20hz" --load-arguments "validation\Lismarka\default-arguments-reversed.json" --preview never
+python incrementalNavigator.py --pcap "validation\Lismarka\2021-10-22\pcap\4_ost_20hz" --sbet "validation\Lismarka\2021-10-22\navigation\sbet-output-UTC-1000.out" --save-to "validation\Lismarka\results\INC, PCAP2021\4_ost_20hz" --load-arguments "validation\Lismarka\default-arguments.json" --preview never
+python incrementalNavigator.py --pcap "validation\Lismarka\2021-10-22\pcap\4_vest_20hz" --sbet "validation\Lismarka\2021-10-22\navigation\sbet-output-UTC-1000.out" --save-to "validation\Lismarka\results\INC, PCAP2021\4_vest_20hz" --load-arguments "validation\Lismarka\default-arguments-reversed.json" --preview never
+python incrementalNavigator.py --pcap "validation\Lismarka\2021-10-22\pcap\5_ost_20hz" --sbet "validation\Lismarka\2021-10-22\navigation\sbet-output-UTC-1000.out" --save-to "validation\Lismarka\results\INC, PCAP2021\5_ost_20hz" --load-arguments "validation\Lismarka\default-arguments.json" --preview never
+python incrementalNavigator.py --pcap "validation\Lismarka\2021-10-22\pcap\5_vest_20hz" --sbet "validation\Lismarka\2021-10-22\navigation\sbet-output-UTC-1000.out" --save-to "validation\Lismarka\results\INC, PCAP2021\5_vest_20hz" --load-arguments "validation\Lismarka\default-arguments-reversed.json" --preview never
+```
+
+<a name="inc-pcap2022"></a>
+### Incremental, PCAPs from 2022
+
+```
+python incrementalNavigator.py --pcap "validation\Lismarka\2022-02-16\pcap\1_ost_10hz" --sbet "validation\Lismarka\2022-02-16\navigation\sbet-output.out" --save-to "validation\Lismarka\results\INC, PCAP2022\1_ost_10hz" --load-arguments "validation\Lismarka\default-arguments.json" --preview never
+python incrementalNavigator.py --pcap "validation\Lismarka\2022-02-16\pcap\1_vest_10hz" --sbet "validation\Lismarka\2022-02-16\navigation\sbet-output.out" --save-to "validation\Lismarka\results\INC, PCAP2022\1_vest_10hz" --load-arguments "validation\Lismarka\default-arguments-reversed.json" --preview never
+python incrementalNavigator.py --pcap "validation\Lismarka\2022-02-16\pcap\2_ost_10hz" --sbet "validation\Lismarka\2022-02-16\navigation\sbet-output.out" --save-to "validation\Lismarka\results\INC, PCAP2022\2_ost_10hz" --load-arguments "validation\Lismarka\default-arguments.json" --preview never
+python incrementalNavigator.py --pcap "validation\Lismarka\2022-02-16\pcap\2_vest_10hz" --sbet "validation\Lismarka\2022-02-16\navigation\sbet-output.out" --save-to "validation\Lismarka\results\INC, PCAP2022\2_vest_10hz" --load-arguments "validation\Lismarka\default-arguments-reversed.json" --preview never
+python incrementalNavigator.py --pcap "validation\Lismarka\2022-02-16\pcap\3_ost_20hz" --sbet "validation\Lismarka\2022-02-16\navigation\sbet-output.out" --save-to "validation\Lismarka\results\INC, PCAP2022\3_ost_20hz" --load-arguments "validation\Lismarka\default-arguments.json" --preview never
+python incrementalNavigator.py --pcap "validation\Lismarka\2022-02-16\pcap\3_vest_20hz" --sbet "validation\Lismarka\2022-02-16\navigation\sbet-output.out" --save-to "validation\Lismarka\results\INC, PCAP2022\3_vest_20hz" --load-arguments "validation\Lismarka\default-arguments-reversed.json" --preview never
+python incrementalNavigator.py --pcap "validation\Lismarka\2022-02-16\pcap\4_ost_20hz" --sbet "validation\Lismarka\2022-02-16\navigation\sbet-output.out" --save-to "validation\Lismarka\results\INC, PCAP2022\4_ost_20hz" --load-arguments "validation\Lismarka\default-arguments.json" --preview never
+python incrementalNavigator.py --pcap "validation\Lismarka\2022-02-16\pcap\4_vest_20hz" --sbet "validation\Lismarka\2022-02-16\navigation\sbet-output.out" --save-to "validation\Lismarka\results\INC, PCAP2022\4_vest_20hz" --load-arguments "validation\Lismarka\default-arguments-reversed.json" --preview never
+python incrementalNavigator.py --pcap "validation\Lismarka\2022-02-16\pcap\5_ost_20Hz" --sbet "validation\Lismarka\2022-02-16\navigation\sbet-output.out" --save-to "validation\Lismarka\results\INC, PCAP2022\5_ost_20hz" --load-arguments "validation\Lismarka\default-arguments.json" --preview never
+python incrementalNavigator.py --pcap "validation\Lismarka\2022-02-16\pcap\5_vest_20Hz" --sbet "validation\Lismarka\2022-02-16\navigation\sbet-output.out" --save-to "validation\Lismarka\results\INC, PCAP2022\5_vest_20hz" --load-arguments "validation\Lismarka\default-arguments-reversed.json" --preview never
 ```

@@ -361,3 +361,36 @@ python absoluteNavigator.py --pcap "validation\Dovre\2022-01-26\pcap\8_sorover_2
 python absoluteNavigator.py --pcap "validation\Dovre\2022-01-26\pcap\9_nordover_20Hz" --sbet "validation\Dovre\2022-01-26\navigation\220127\sbet-output-UTC-1000.out" --point-cloud "validation\Dovre\2022-01-26\pointcloud\combined_100.pcd" --save-to "validation\Dovre\results\ABS, PCAP2022, PC2022\9_nordover_20hz" --load-arguments "validation\Dovre\default-arguments.json"
 python absoluteNavigator.py --pcap "validation\Dovre\2022-01-26\pcap\10_sorover_20Hz" --sbet "validation\Dovre\2022-01-26\navigation\220127\sbet-output-UTC-1000.out" --point-cloud "validation\Dovre\2022-01-26\pointcloud\combined_100.pcd" --save-to "validation\Dovre\results\ABS, PCAP2022, PC2022\10_sorover_20hz" --load-arguments "validation\Dovre\default-arguments-reversed.json"
 ```
+
+
+<a name="inc-pcap2021"></a>
+### Incremental, PCAPs from 2021
+
+```
+python incrementalNavigator.py --pcap "validation\Dovre\2021-10-20\pcap\1_ned_20hz" --sbet "validation\Dovre\2021-10-20\navigation\sbet-output-UTC-1000.out" --save-to "validation\Dovre\results\INC, PCAP2021\1_ned_20hz" --load-arguments "validation\Dovre\default-arguments.json"
+python incrementalNavigator.py --pcap "validation\Dovre\2021-10-20\pcap\1_opp_20hz" --sbet "validation\Dovre\2021-10-20\navigation\sbet-output-UTC-1000.out" --save-to "validation\Dovre\results\INC, PCAP2021\1_opp_20hz" --load-arguments "validation\Dovre\default-arguments-reversed.json"
+python incrementalNavigator.py --pcap "validation\Dovre\2021-10-20\pcap\2_ned_20hz" --sbet "validation\Dovre\2021-10-20\navigation\sbet-output-UTC-1000.out" --save-to "validation\Dovre\results\INC, PCAP2021\2_ned_20hz" --load-arguments "validation\Dovre\default-arguments.json"
+python incrementalNavigator.py --pcap "validation\Dovre\2021-10-20\pcap\2_opp_20hz" --sbet "validation\Dovre\2021-10-20\navigation\sbet-output-UTC-1000.out" --save-to "validation\Dovre\results\INC, PCAP2021\2_opp_20hz" --load-arguments "validation\Dovre\default-arguments-reversed.json"
+python incrementalNavigator.py --pcap "validation\Dovre\2021-10-20\pcap\3_ned_20hz" --sbet "validation\Dovre\2021-10-20\navigation\sbet-output-UTC-1000.out" --save-to "validation\Dovre\results\INC, PCAP2021\3_ned_20hz" --load-arguments "validation\Dovre\default-arguments.json"
+python incrementalNavigator.py --pcap "validation\Dovre\2021-10-20\pcap\3_opp_20hz" --sbet "validation\Dovre\2021-10-20\navigation\sbet-output-UTC-1000.out" --save-to "validation\Dovre\results\INC, PCAP2021\3_opp_20hz" --load-arguments "validation\Dovre\default-arguments-reversed.json"
+python incrementalNavigator.py --pcap "validation\Dovre\2021-10-20\pcap\4_ned_10hz" --sbet "validation\Dovre\2021-10-20\navigation\sbet-output-UTC-1000.out" --save-to "validation\Dovre\results\INC, PCAP2021\4_ned_10hz" --load-arguments "validation\Dovre\default-arguments.json"
+python incrementalNavigator.py --pcap "validation\Dovre\2021-10-20\pcap\4_opp_10hz" --sbet "validation\Dovre\2021-10-20\navigation\sbet-output-UTC-1000.out" --save-to "validation\Dovre\results\INC, PCAP2021\4_opp_10hz" --load-arguments "validation\Dovre\default-arguments-reversed.json"
+python incrementalNavigator.py --pcap "validation\Dovre\2021-10-20\pcap\5_ned_10hz" --sbet "validation\Dovre\2021-10-20\navigation\sbet-output-UTC-1000.out" --save-to "validation\Dovre\results\INC, PCAP2021\5_ned_10hz" --load-arguments "validation\Dovre\default-arguments.json"
+python incrementalNavigator.py --pcap "validation\Dovre\2021-10-20\pcap\5_opp_10hz" --sbet "validation\Dovre\2021-10-20\navigation\sbet-output-UTC-1000.out" --save-to "validation\Dovre\results\INC, PCAP2021\5_opp_10hz" --load-arguments "validation\Dovre\default-arguments-reversed.json"
+```
+
+<a name="inc-pcap2022"></a>
+### Incremental, PCAPs from 2022
+
+```
+python incrementalNavigator.py --pcap "validation\Dovre\2022-01-26\pcap\1_sorover_10Hz" --sbet "validation\Dovre\2022-01-26\navigation\220126\sbet-output-UTC-1000.out" --save-to "validation\Dovre\results\INC, PCAP2022\1_sorover_10hz" --load-arguments "validation\Dovre\default-arguments-reversed.json"
+python incrementalNavigator.py --pcap "validation\Dovre\2022-01-26\pcap\2_nordover_10Hz" --sbet "validation\Dovre\2022-01-26\navigation\220126\sbet-output-UTC-1000.out" --save-to "validation\Dovre\results\INC, PCAP2022\2_nordover_10hz" --load-arguments "validation\Dovre\default-arguments.json"
+python incrementalNavigator.py --pcap "validation\Dovre\2022-01-26\pcap\3_sorover_10Hz" --sbet "validation\Dovre\2022-01-26\navigation\220126\sbet-output-UTC-1000.out" --save-to "validation\Dovre\results\INC, PCAP2022\3_sorover_10hz" --load-arguments "validation\Dovre\default-arguments-reversed.json"
+python incrementalNavigator.py --pcap "validation\Dovre\2022-01-26\pcap\4_nordover_10Hz" --sbet "validation\Dovre\2022-01-26\navigation\220126\sbet-output-UTC-1000.out" --save-to "validation\Dovre\results\INC, PCAP2022\4_nordover_10hz" --load-arguments "validation\Dovre\default-arguments.json"
+python incrementalNavigator.py --pcap "validation\Dovre\2022-01-26\pcap\5_nordover_20Hz" --sbet "validation\Dovre\2022-01-26\navigation\220126\sbet-output-UTC-1000.out" --save-to "validation\Dovre\results\INC, PCAP2022\5_nordover_20hz" --load-arguments "validation\Dovre\default-arguments.json"
+python incrementalNavigator.py --pcap "validation\Dovre\2022-01-26\pcap\6_sorover_20Hz" --sbet "validation\Dovre\2022-01-26\navigation\220126\sbet-output-UTC-1000.out" --save-to "validation\Dovre\results\INC, PCAP2022\6_sorover_20hz" --load-arguments "validation\Dovre\default-arguments-reversed.json"
+python incrementalNavigator.py --pcap "validation\Dovre\2022-01-26\pcap\7_nordover_20Hz" --sbet "validation\Dovre\2022-01-26\navigation\220126\sbet-output-UTC-1000.out" --save-to "validation\Dovre\results\INC, PCAP2022\7_nordover_20hz" --load-arguments "validation\Dovre\default-arguments.json"
+python incrementalNavigator.py --pcap "validation\Dovre\2022-01-26\pcap\8_sorover_20Hz" --sbet "validation\Dovre\2022-01-26\navigation\220127\sbet-output-UTC-1000.out" --save-to "validation\Dovre\results\INC, PCAP2022\8_sorover_20hz" --load-arguments "validation\Dovre\default-arguments-reversed.json"
+python incrementalNavigator.py --pcap "validation\Dovre\2022-01-26\pcap\9_nordover_20Hz" --sbet "validation\Dovre\2022-01-26\navigation\220127\sbet-output-UTC-1000.out" --save-to "validation\Dovre\results\INC, PCAP2022\9_nordover_20hz" --load-arguments "validation\Dovre\default-arguments.json"
+python incrementalNavigator.py --pcap "validation\Dovre\2022-01-26\pcap\10_sorover_20Hz" --sbet "validation\Dovre\2022-01-26\navigation\220127\sbet-output-UTC-1000.out" --save-to "validation\Dovre\results\INC, PCAP2022\10_sorover_20hz" --load-arguments "validation\Dovre\default-arguments-reversed.json"
+```
