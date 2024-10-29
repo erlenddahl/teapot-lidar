@@ -293,7 +293,203 @@ _**Links to individual trip details**_
 
 <a name="analysis-inc"></a>
 ## Incremental navigation
-[Not run.]
+_**Meters driven before failure**_
+| Trip#   | Bare | Snow |
+|---------|------|------|
+| 1     | 260.669 | 10.331 |
+| 2     | 290.381 | 81.227 |
+| 3     | 211.264 | 4.220 |
+| 4     | 138.628 | 14.491 |
+| 5     | 275.504 | 95.135 |
+| 6     | 259.422 | 65.243 |
+| 7     | 270.509 | 94.245 |
+| 8     | 194.534 | 22.318 |
+| 9     | 275.908 | 10.768 |
+| 10     | 257.155 | 32.814 |
+| **Average** | **243.397** | **43.079** |
+
+
+
+_**Percentage of route driven before failure**_
+| Trip#   | Bare | Snow |
+|---------|------|------|
+| 1     | 7.0 | 0.3 |
+| 2     | 7.8 | 2.2 |
+| 3     | 5.7 | 0.1 |
+| 4     | 3.7 | 0.4 |
+| 5     | 7.4 | 2.6 |
+| 6     | 7.0 | 1.8 |
+| 7     | 7.3 | 2.5 |
+| 8     | 5.3 | 0.6 |
+| 9     | 7.5 | 0.3 |
+| 10     | 7.0 | 0.9 |
+| **Average** | **6.6** | **1.2** |
+
+
+
+_**2D difference between actual and estimated coordinates [M]**_
+| Trip#   | Bare | Snow |
+|---------|------|------|
+| 1     | 1.974 | 2.053 |
+| 2     | 17.161 | 7.851 |
+| 3     | 1.047 | 2.714 |
+| 4     | 2.594 | 13.426 |
+| 5     | 0.675 | 0.775 |
+| 6     | 3.540 | 14.567 |
+| 7     | 1.068 | 1.932 |
+| 8     | 2.689 | 10.812 |
+| 9     | 2.831 | 4.301 |
+| 10     | 3.171 | 7.520 |
+| **Average** | **3.675** | **6.595** |
+
+
+
+_**3D difference between actual and estimated coordinates [M]**_
+| Trip#   | Bare | Snow |
+|---------|------|------|
+| 1     | 2.229 | 2.054 |
+| 2     | 17.166 | 7.852 |
+| 3     | 1.235 | 2.717 |
+| 4     | 2.613 | 13.426 |
+| 5     | 1.491 | 0.798 |
+| 6     | 3.575 | 14.570 |
+| 7     | 1.716 | 1.944 |
+| 8     | 2.712 | 10.813 |
+| 9     | 3.160 | 4.304 |
+| 10     | 3.211 | 7.522 |
+| **Average** | **3.911** | **6.600** |
+
+
+
+_**Reported registration fitness**_
+| Trip#   | Bare | Snow |
+|---------|------|------|
+| 1     | 0.998 | 0.961 |
+| 2     | 0.999 | 0.988 |
+| 3     | 0.996 | 0.998 |
+| 4     | 0.993 | 0.993 |
+| 5     | 0.997 | 0.998 |
+| 6     | 0.993 | 1.000 |
+| 7     | 0.992 | 0.998 |
+| 8     | 0.996 | 0.999 |
+| 9     | 0.992 | 0.945 |
+| 10     | 0.991 | 1.000 |
+| **Average** | **0.995** | **0.988** |
+
+
+
+_**Reported registration RMSE**_
+| Trip#   | Bare | Snow |
+|---------|------|------|
+| 1     | 0.141 | 0.190 |
+| 2     | 0.132 | 0.197 |
+| 3     | 0.139 | 0.212 |
+| 4     | 0.132 | 0.258 |
+| 5     | 0.134 | 0.144 |
+| 6     | 0.131 | 0.143 |
+| 7     | 0.163 | 0.149 |
+| 8     | 0.158 | 0.189 |
+| 9     | 0.172 | 0.196 |
+| 10     | 0.159 | 0.152 |
+| **Average** | **0.146** | **0.183** |
+
+
+
+_**Registration iterations before convergence**_
+| Trip#   | Bare | Snow |
+|---------|------|------|
+| 1     | 51.928 | 88.889 |
+| 2     | 48.993 | 93.852 |
+| 3     | 50.000 | 62.500 |
+| 4     | 52.488 | 88.636 |
+| 5     | 48.111 | 56.818 |
+| 6     | 50.914 | 59.615 |
+| 7     | 64.433 | 56.870 |
+| 8     | 58.803 | 75.000 |
+| 9     | 61.111 | 67.857 |
+| 10     | 62.698 | 60.417 |
+| **Average** | **54.948** | **71.046** |
+
+
+
+_**Time usage per frame**_
+| Trip#   | Bare | Snow |
+|---------|------|------|
+| 1     | 1.974 | 2.053 |
+| 2     | 17.161 | 7.851 |
+| 3     | 1.047 | 2.714 |
+| 4     | 2.594 | 13.426 |
+| 5     | 0.675 | 0.775 |
+| 6     | 3.540 | 14.567 |
+| 7     | 1.068 | 1.932 |
+| 8     | 2.689 | 10.812 |
+| 9     | 2.831 | 4.301 |
+| 10     | 3.171 | 7.520 |
+| **Average** | **3.675** | **6.595** |
+
+
+
+_**Processing status**_
+| Trip#   | Bare | Snow |
+|---------|------|------|
+| 1     | failed | failed |
+| 2     | failed | failed |
+| 3     | failed | failed |
+| 4     | failed | failed |
+| 5     | failed | failed |
+| 6     | failed | failed |
+| 7     | failed | failed |
+| 8     | failed | failed |
+| 9     | failed | failed |
+| 10     | failed | failed |
+
+
+
+_**Ended because**_
+| Trip#   | Bare | Snow |
+|---------|------|------|
+| 1     | The navigation error (39.74185296944471) is larger than the given limit (--raise-on-2d-error 25). | The navigation error (33.352883537949424) is larger than the given limit (--raise-on-2d-error 25). |
+| 2     | The navigation error (29.088251122247346) is larger than the given limit (--raise-on-2d-error 25). | The navigation error (25.0182277118378) is larger than the given limit (--raise-on-2d-error 25). |
+| 3     | The navigation error (28.720477477444447) is larger than the given limit (--raise-on-2d-error 25). | The navigation error (26.87563405276592) is larger than the given limit (--raise-on-2d-error 25). |
+| 4     | The navigation error (28.523614384286116) is larger than the given limit (--raise-on-2d-error 25). | The navigation error (25.176122079005243) is larger than the given limit (--raise-on-2d-error 25). |
+| 5     | The navigation error (41.80614142920837) is larger than the given limit (--raise-on-2d-error 25). | The navigation error (27.18793156935913) is larger than the given limit (--raise-on-2d-error 25). |
+| 6     | The navigation error (28.08223620095394) is larger than the given limit (--raise-on-2d-error 25). | The navigation error (25.356124465651686) is larger than the given limit (--raise-on-2d-error 25). |
+| 7     | The navigation error (43.4198596549817) is larger than the given limit (--raise-on-2d-error 25). | The navigation error (47.38411327373047) is larger than the given limit (--raise-on-2d-error 25). |
+| 8     | The navigation error (32.50433447319034) is larger than the given limit (--raise-on-2d-error 25). | The navigation error (25.241914734480915) is larger than the given limit (--raise-on-2d-error 25). |
+| 9     | The navigation error (27.685682331739294) is larger than the given limit (--raise-on-2d-error 25). | The navigation error (43.379168315619964) is larger than the given limit (--raise-on-2d-error 25). |
+| 10     | The navigation error (30.74517327789169) is larger than the given limit (--raise-on-2d-error 25). | The navigation error (25.302285037463022) is larger than the given limit (--raise-on-2d-error 25). |
+
+
+
+_**LiDAR Frequency**_
+| Trip#   | Bare | Snow |
+|---------|------|------|
+| 1     | 20 hz | 10 hz |
+| 2     | 20 hz | 10 hz |
+| 3     | 20 hz | 10 hz |
+| 4     | 20 hz | 10 hz |
+| 5     | 20 hz | 20 hz |
+| 6     | 20 hz | 20 hz |
+| 7     | 10 hz | 20 hz |
+| 8     | 10 hz | 20 hz |
+| 9     | 10 hz | 20 hz |
+| 10     | 10 hz | 20 hz |
+
+
+
+_**Links to individual trip details**_
+| Trip#   | Bare | Snow |
+|---------|------|------|
+| 1     | [Link](./INC%2C%20PCAP2021/1_ned_20hz) | [Link](./INC%2C%20PCAP2022/2_nordover_10hz) |
+| 2     | [Link](./INC%2C%20PCAP2021/1_opp_20hz) | [Link](./INC%2C%20PCAP2022/1_sorover_10hz) |
+| 3     | [Link](./INC%2C%20PCAP2021/2_ned_20hz) | [Link](./INC%2C%20PCAP2022/4_nordover_10hz) |
+| 4     | [Link](./INC%2C%20PCAP2021/2_opp_20hz) | [Link](./INC%2C%20PCAP2022/3_sorover_10hz) |
+| 5     | [Link](./INC%2C%20PCAP2021/3_ned_20hz) | [Link](./INC%2C%20PCAP2022/5_nordover_20hz) |
+| 6     | [Link](./INC%2C%20PCAP2021/3_opp_20hz) | [Link](./INC%2C%20PCAP2022/6_sorover_20hz) |
+| 7     | [Link](./INC%2C%20PCAP2021/4_ned_10hz) | [Link](./INC%2C%20PCAP2022/7_nordover_20hz) |
+| 8     | [Link](./INC%2C%20PCAP2021/4_opp_10hz) | [Link](./INC%2C%20PCAP2022/8_sorover_20hz) |
+| 9     | [Link](./INC%2C%20PCAP2021/5_ned_10hz) | [Link](./INC%2C%20PCAP2022/9_nordover_20hz) |
+| 10     | [Link](./INC%2C%20PCAP2021/5_opp_10hz) | [Link](./INC%2C%20PCAP2022/10_sorover_20hz) |
 
 <a name="run-configs"></a>
 ## Run configurations
